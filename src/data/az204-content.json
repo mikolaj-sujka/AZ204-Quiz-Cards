@@ -1,0 +1,697 @@
+{
+  "metadata": {
+    "examCode": "AZ-204",
+    "examName": "Developing Solutions for Microsoft Azure",
+    "skillsMeasuredAsOf": "2026-01-14",
+    "examRetiresOn": "2026-07-31",
+    "language": "pl-PL",
+    "sourceUrls": [
+      "https://learn.microsoft.com/en-us/credentials/certifications/azure-developer/",
+      "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-204",
+      "https://learn.microsoft.com/en-us/training/courses/az-204t00"
+    ],
+    "sourceQuiz": {
+      "url": "https://az-204.vercel.app/",
+      "repository": "https://github.com/arvigeus/AZ-204",
+      "license": "Custom Non-Commercial Attribution License (CNAL) Version 1.0",
+      "policy": "Source-quiz items are imported into a generated Microsoft Learn-mapped bank; closed questions are available in exams and all items are available as flashcards."
+    }
+  },
+  "chapters": [
+    {
+      "id": "compute",
+      "title": "Develop Azure compute solutions",
+      "weight": "25-30%",
+      "summary": "Compute obejmuje kontenery, Azure App Service i Azure Functions. Egzamin sprawdza tworzenie, wdrażanie, konfigurację, skalowanie i diagnostykę rozwiązań aplikacyjnych.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-204",
+        "https://learn.microsoft.com/en-us/azure/app-service/",
+        "https://learn.microsoft.com/en-us/azure/azure-functions/",
+        "https://learn.microsoft.com/en-us/azure/container-apps/"
+      ],
+      "subchapters": [
+        {
+          "id": "containers",
+          "title": "Implement containerized solutions",
+          "skills": [
+            "Create and manage container images for solutions",
+            "Publish an image to Azure Container Registry",
+            "Run containers by using Azure Container Instances",
+            "Create solutions by using Azure Container Apps"
+          ],
+          "studyNotes": "Rozróżniaj Azure Container Registry jako rejestr obrazów, Azure Container Instances jako szybkie uruchamianie pojedynczych grup kontenerów oraz Azure Container Apps jako platformę aplikacji kontenerowych z revision, ingress i skalowaniem.",
+          "sourceUrls": [
+            "https://learn.microsoft.com/en-us/azure/container-registry/",
+            "https://learn.microsoft.com/en-us/azure/container-instances/container-instances-overview",
+            "https://learn.microsoft.com/en-us/azure/container-apps/overview"
+          ]
+        },
+        {
+          "id": "app-service",
+          "title": "Implement Azure App Service Web Apps",
+          "skills": [
+            "Create an Azure App Service Web App",
+            "Configure diagnostics and logging",
+            "Deploy code and containerized solutions",
+            "Configure TLS, API settings, and service connections",
+            "Implement autoscaling",
+            "Configure deployment slots"
+          ],
+          "studyNotes": "App Service to PaaS dla aplikacji webowych i API. Ucz się planów App Service, app settings, deployment slots, diagnostics logs, scale up/scale out i managed identity.",
+          "sourceUrls": [
+            "https://learn.microsoft.com/en-us/azure/app-service/overview",
+            "https://learn.microsoft.com/en-us/azure/app-service/deploy-staging-slots",
+            "https://learn.microsoft.com/en-us/azure/app-service/troubleshoot-diagnostic-logs"
+          ]
+        },
+        {
+          "id": "functions",
+          "title": "Implement Azure Functions",
+          "skills": [
+            "Create and configure an Azure Functions app",
+            "Implement input and output bindings",
+            "Implement function triggers by using data operations, timers, and webhooks"
+          ],
+          "studyNotes": "Azure Functions opiera się na triggers i bindings. Trigger uruchamia funkcję, input binding pobiera dane, output binding zapisuje wynik bez ręcznego kodu klienta usługi.",
+          "sourceUrls": [
+            "https://learn.microsoft.com/en-us/azure/azure-functions/functions-overview",
+            "https://learn.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings",
+            "https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "storage",
+      "title": "Develop for Azure storage",
+      "weight": "15-20%",
+      "summary": "Storage obejmuje Azure Cosmos DB i Azure Blob Storage, z naciskiem na SDK, consistency, change feed, metadata, lifecycle policies i operacje na danych.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-204",
+        "https://learn.microsoft.com/en-us/azure/cosmos-db/",
+        "https://learn.microsoft.com/en-us/azure/storage/blobs/"
+      ],
+      "subchapters": [
+        {
+          "id": "cosmos-db",
+          "title": "Develop solutions that use Azure Cosmos DB",
+          "skills": [
+            "Perform operations on containers and items by using the SDK",
+            "Set the appropriate consistency level for operations",
+            "Implement change feed notifications"
+          ],
+          "studyNotes": "Najważniejsze punkty: partition key, Request Units, consistency levels, change feed processor, TTL, indexing policy i SDK dla API for NoSQL.",
+          "sourceUrls": [
+            "https://learn.microsoft.com/en-us/azure/cosmos-db/introduction",
+            "https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels",
+            "https://learn.microsoft.com/en-us/azure/cosmos-db/change-feed"
+          ]
+        },
+        {
+          "id": "blob-storage",
+          "title": "Develop solutions that use Azure Blob Storage",
+          "skills": [
+            "Set and retrieve properties and metadata",
+            "Perform operations on data by using the appropriate SDK",
+            "Implement storage policies and data lifecycle management"
+          ],
+          "studyNotes": "Blob Storage wymaga znajomości kontenerów, blob types, access tiers, metadata, properties, lifecycle management, soft delete i SDK clients.",
+          "sourceUrls": [
+            "https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction",
+            "https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview",
+            "https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blob-properties-metadata"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "title": "Implement Azure security",
+      "weight": "15-20%",
+      "summary": "Security obejmuje Microsoft Identity platform, Microsoft Entra ID, Shared Access Signatures, Microsoft Graph, Azure App Configuration, Azure Key Vault i Managed Identities.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-204",
+        "https://learn.microsoft.com/en-us/entra/identity-platform/",
+        "https://learn.microsoft.com/en-us/azure/key-vault/",
+        "https://learn.microsoft.com/en-us/azure/app-configuration/"
+      ],
+      "subchapters": [
+        {
+          "id": "auth",
+          "title": "Implement user authentication and authorization",
+          "skills": [
+            "Authenticate and authorize users by using the Microsoft Identity platform",
+            "Authenticate and authorize users and apps by using Microsoft Entra ID",
+            "Create and implement shared access signatures",
+            "Implement solutions that interact with Microsoft Graph"
+          ],
+          "studyNotes": "Rozróżniaj delegated permissions, application permissions, scopes, app registrations, tokens OAuth2/OIDC, SAS typy i Microsoft Graph endpoints.",
+          "sourceUrls": [
+            "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview",
+            "https://learn.microsoft.com/en-us/graph/overview",
+            "https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview"
+          ]
+        },
+        {
+          "id": "secure-solutions",
+          "title": "Implement secure Azure solutions",
+          "skills": [
+            "Secure app configuration data by using Azure App Configuration or Azure Key Vault",
+            "Develop code that uses keys, secrets, and certificates stored in Azure Key Vault",
+            "Implement Managed Identities for Azure resources"
+          ],
+          "studyNotes": "Managed identity usuwa potrzebę trzymania secretów w kodzie. Key Vault przechowuje secrets, keys i certificates, a App Configuration centralizuje ustawienia i feature flags.",
+          "sourceUrls": [
+            "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview",
+            "https://learn.microsoft.com/en-us/azure/key-vault/general/overview",
+            "https://learn.microsoft.com/en-us/azure/azure-app-configuration/overview"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "monitoring",
+      "title": "Monitor, troubleshoot, and optimize Azure solutions",
+      "weight": "5-10%",
+      "summary": "Monitoring obejmuje Azure Monitor Application Insights, metrics, logs, traces, availability tests, alerts i instrumentację aplikacji.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-204",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview"
+      ],
+      "subchapters": [
+        {
+          "id": "app-insights",
+          "title": "Monitor and troubleshoot solutions by using Azure Monitor Application Insights",
+          "skills": [
+            "Monitor and analyze metrics, logs, and traces",
+            "Implement availability tests and alerts",
+            "Instrument an app or service to use Application Insights"
+          ],
+          "studyNotes": "Application Insights zbiera telemetry: requests, dependencies, exceptions, traces, custom events i availability tests. W egzaminie ważne są connection string, SDK/agent i alerting.",
+          "sourceUrls": [
+            "https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview",
+            "https://learn.microsoft.com/en-us/azure/azure-monitor/app/availability-overview",
+            "https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/alerts-overview"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "integration",
+      "title": "Connect to and consume Azure services and third-party services",
+      "weight": "20-25%",
+      "summary": "Integration obejmuje API Management, Event Grid, Event Hubs, Service Bus i Queue Storage. Egzamin sprawdza dobór usługi, policies, access i wzorce event/message.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-204",
+        "https://learn.microsoft.com/en-us/azure/api-management/",
+        "https://learn.microsoft.com/en-us/azure/event-grid/",
+        "https://learn.microsoft.com/en-us/azure/event-hubs/",
+        "https://learn.microsoft.com/en-us/azure/service-bus-messaging/",
+        "https://learn.microsoft.com/en-us/azure/storage/queues/"
+      ],
+      "subchapters": [
+        {
+          "id": "api-management",
+          "title": "Implement Azure API Management",
+          "skills": [
+            "Create an Azure API Management instance",
+            "Create and document APIs",
+            "Configure access to APIs",
+            "Implement policies for APIs"
+          ],
+          "studyNotes": "API Management to gateway, developer portal, products, subscriptions i policies. Zapamiętaj inbound/backend/outbound/on-error oraz typowe policies: rate-limit, quota, validate-jwt, set-header, rewrite-uri.",
+          "sourceUrls": [
+            "https://learn.microsoft.com/en-us/azure/api-management/api-management-key-concepts",
+            "https://learn.microsoft.com/en-us/azure/api-management/api-management-policies",
+            "https://learn.microsoft.com/en-us/azure/api-management/api-management-subscriptions"
+          ]
+        },
+        {
+          "id": "events",
+          "title": "Develop event-based solutions",
+          "skills": [
+            "Implement solutions that use Azure Event Grid",
+            "Implement solutions that use Azure Event Hubs"
+          ],
+          "studyNotes": "Event Grid sluzy do reaktywnego routingu zdarzen, a Event Hubs do wysokoprzepustowego ingestu strumieni zdarzen/telemetrii. To bardzo czesty wybor porownawczy.",
+          "sourceUrls": [
+            "https://learn.microsoft.com/en-us/azure/event-grid/overview",
+            "https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about",
+            "https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-capture-overview"
+          ]
+        },
+        {
+          "id": "messages",
+          "title": "Develop message-based solutions",
+          "skills": [
+            "Implement solutions that use Azure Service Bus",
+            "Implement solutions that use Azure Queue Storage"
+          ],
+          "studyNotes": "Service Bus daje enterprise messaging: queues, topics/subscriptions, sessions, duplicate detection i dead-lettering. Queue Storage jest prostsze i tańsze dla podstawowych kolejek.",
+          "sourceUrls": [
+            "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview",
+            "https://learn.microsoft.com/en-us/azure/storage/queues/storage-queues-introduction",
+            "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dead-letter-queues"
+          ]
+        }
+      ]
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "fc-containers-choice",
+      "chapterId": "compute",
+      "subchapterId": "containers",
+      "front": "Kiedy wybrać Azure Container Apps zamiast Azure Container Instances?",
+      "back": "Azure Container Apps wybierasz, gdy potrzebujesz aplikacji kontenerowej z managed ingress, revisions, autoscaling i integracją z Dapr/KEDA. Azure Container Instances jest lepszy do prostego, szybkiego uruchomienia kontenera bez orkiestracji.",
+      "keyPoints": ["Container Apps: aplikacje i microservices", "Container Instances: proste container groups", "ACR: prywatny rejestr obrazow"],
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/container-apps/overview", "https://learn.microsoft.com/en-us/azure/container-instances/container-instances-overview"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified"
+    },
+    {
+      "id": "fc-app-service-slots",
+      "chapterId": "compute",
+      "subchapterId": "app-service",
+      "front": "Co daje deployment slot w Azure App Service?",
+      "back": "Deployment slot pozwala wdrożyć nową wersję do osobnego środowiska, przetestować ją i wykonać swap z production. Ustawienia oznaczone jako slot setting pozostają przy slocie.",
+      "keyPoints": ["Blue-green deployment", "Swap with preview", "Slot settings nie przechodzą przy swap"],
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/app-service/deploy-staging-slots"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified"
+    },
+    {
+      "id": "fc-functions-bindings",
+      "chapterId": "compute",
+      "subchapterId": "functions",
+      "front": "Trigger vs binding w Azure Functions",
+      "back": "Trigger uruchamia funkcję. Binding deklaratywnie łączy funkcję z danymi wejściowymi lub wyjściowymi, np. blob, queue, Cosmos DB albo HTTP.",
+      "keyPoints": ["Jedna funkcja ma jeden trigger", "Może mieć wiele input/output bindings", "Bindings ograniczają kod integracyjny"],
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified"
+    },
+    {
+      "id": "fc-cosmos-partition",
+      "chapterId": "storage",
+      "subchapterId": "cosmos-db",
+      "front": "Dlaczego partition key jest krytyczny w Azure Cosmos DB?",
+      "back": "Partition key decyduje o dystrybucji danych i żądań. Zły wybór może tworzyć hot partitions, a dobry pozwala skalować throughput i wykonywać efektywne point reads.",
+      "keyPoints": ["Logical partition limit: 20 GB", "Physical partition throughput: 10,000 RU/s", "Point read wymaga id + partition key"],
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview", "https://learn.microsoft.com/en-us/azure/cosmos-db/concepts-limits"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified"
+    },
+    {
+      "id": "fc-blob-lifecycle",
+      "chapterId": "storage",
+      "subchapterId": "blob-storage",
+      "front": "Do czego służy lifecycle management w Azure Blob Storage?",
+      "back": "Lifecycle management automatycznie przenosi lub usuwa blobs według reguł, np. Hot -> Cool -> Archive po określonej liczbie dni od modyfikacji lub ostatniego dostępu.",
+      "keyPoints": ["Obniżanie kosztów", "Reguły bazują na warunkach", "Archive wymaga rehydration przed odczytem"],
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified"
+    },
+    {
+      "id": "fc-auth-permissions",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "front": "Delegated permissions vs application permissions w Microsoft Graph",
+      "back": "Delegated permissions działają w kontekście zalogowanego użytkownika. Application permissions działają bez użytkownika, jako aplikacja/daemon, i zwykle wymagają admin consent.",
+      "keyPoints": ["Delegated: user + app", "Application: app-only", "Scopes są częścią tokena"],
+      "sourceUrls": ["https://learn.microsoft.com/en-us/graph/auth/auth-concepts"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified"
+    },
+    {
+      "id": "fc-managed-identity",
+      "chapterId": "security",
+      "subchapterId": "secure-solutions",
+      "front": "Po co używać Managed Identity z Key Vault?",
+      "back": "Managed Identity pozwala aplikacji uzyskać token Microsoft Entra ID bez przechowywania client secret. Następnie Key Vault autoryzuje dostęp przez RBAC albo access policies.",
+      "keyPoints": ["Brak secretów w kodzie", "System-assigned lub user-assigned", "Least privilege przez RBAC"],
+      "sourceUrls": ["https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview", "https://learn.microsoft.com/en-us/azure/key-vault/general/authentication"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified"
+    },
+    {
+      "id": "fc-app-insights",
+      "chapterId": "monitoring",
+      "subchapterId": "app-insights",
+      "front": "Jakie typy telemetry zbiera Application Insights?",
+      "back": "Application Insights zbiera requests, dependencies, exceptions, traces, metrics, custom events i availability test results. Dane można analizować w Azure Monitor Logs/KQL.",
+      "keyPoints": ["APM dla aplikacji", "Availability tests", "Alerts na metrics/logs"],
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified"
+    },
+    {
+      "id": "fc-apim-policies",
+      "chapterId": "integration",
+      "subchapterId": "api-management",
+      "front": "Czym są policies w Azure API Management?",
+      "back": "Policies to deklaratywne reguły wykonywane w pipeline gateway: inbound, backend, outbound i on-error. Służą m.in. do rate limiting, JWT validation, transformacji i routingu.",
+      "keyPoints": ["XML policy expressions", "rate-limit i quota", "validate-jwt dla OAuth/OIDC"],
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/api-management/api-management-policies"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified"
+    },
+    {
+      "id": "fc-event-grid-hubs",
+      "chapterId": "integration",
+      "subchapterId": "events",
+      "front": "Event Grid vs Event Hubs",
+      "back": "Event Grid jest do routingu dyskretnych zdarzeń i reakcji serverless. Event Hubs jest do ingestu dużych strumieni eventów/telemetrii z partycjami i consumer groups.",
+      "keyPoints": ["Event Grid: push events", "Event Hubs: streaming ingestion", "Capture zapisuje stream do storage"],
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/event-grid/compare-messaging-services", "https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified"
+    },
+    {
+      "id": "fc-servicebus-queue",
+      "chapterId": "integration",
+      "subchapterId": "messages",
+      "front": "Service Bus Queue vs Storage Queue",
+      "back": "Service Bus Queue wybierasz dla enterprise messaging: ordering przez sessions, dead-lettering, duplicate detection, transactions i publish/subscribe przez topics. Storage Queue jest prostsza i dobra do podstawowego work queue.",
+      "keyPoints": ["Service Bus: brokered messaging", "Storage Queue: prostota i skala", "Topics/subscriptions tylko Service Bus"],
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview", "https://learn.microsoft.com/en-us/azure/storage/queues/storage-queues-introduction"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q-containers-platform-choice",
+      "type": "single",
+      "chapterId": "compute",
+      "subchapterId": "containers",
+      "prompt": "Zespół chce uruchomić microservice jako kontener, mieć ingress HTTP, revisions i autoscaling bez zarządzania klastrem Kubernetes. Którą usługę Azure wybierzesz?",
+      "options": [
+        { "id": "a", "text": "Azure Container Registry" },
+        { "id": "b", "text": "Azure Container Apps" },
+        { "id": "c", "text": "Azure Queue Storage" },
+        { "id": "d", "text": "Azure Container Instances" }
+      ],
+      "answerIds": ["b"],
+      "explanation": "Azure Container Apps jest platformą dla aplikacji i microservices kontenerowych z managed ingress, revisions i skalowaniem. ACR przechowuje obrazy, a ACI jest prostsze i nie daje tego samego modelu aplikacji.",
+      "whyWrong": {
+        "a": "ACR jest rejestrem obrazów, nie środowiskiem uruchomieniowym aplikacji.",
+        "c": "Queue Storage to kolejka wiadomości, nie hosting kontenerów.",
+        "d": "ACI nadaje się do prostych container groups, ale nie jest najlepszym wyborem dla managed revisions i autoscaling aplikacji."
+      },
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/container-apps/overview", "https://learn.microsoft.com/en-us/azure/container-instances/container-instances-overview"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-appservice-slot-settings",
+      "type": "multiple",
+      "chapterId": "compute",
+      "subchapterId": "app-service",
+      "prompt": "Które stwierdzenia o deployment slots w Azure App Service są poprawne?",
+      "options": [
+        { "id": "a", "text": "Slot pozwala przetestować wdrożenie przed swap do production." },
+        { "id": "b", "text": "Ustawienia oznaczone jako slot setting pozostają przy slocie podczas swap." },
+        { "id": "c", "text": "Sloty są dostępne wyłącznie dla Azure Functions Consumption plan." },
+        { "id": "d", "text": "Swap zawsze usuwa poprzednią wersję aplikacji." }
+      ],
+      "answerIds": ["a", "b"],
+      "explanation": "Deployment slots wspierają bezpieczniejsze wdrożenia i swap. Slot-specific settings pozostają przypisane do slota, co pozwala mieć inne connection strings lub flagi dla staging.",
+      "whyWrong": {
+        "c": "Deployment slots są funkcją App Service planów wspierających sloty; nie są wyłącznie dla Functions Consumption.",
+        "d": "Swap zamienia sloty; poprzednia wersja zwykle pozostaje dostępna w drugim slocie."
+      },
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/app-service/deploy-staging-slots"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-functions-trigger-binding",
+      "type": "single",
+      "chapterId": "compute",
+      "subchapterId": "functions",
+      "prompt": "W Azure Functions co uruchamia funkcję po dodaniu wiadomości do kolejki?",
+      "options": [
+        { "id": "a", "text": "Output binding" },
+        { "id": "b", "text": "Queue trigger" },
+        { "id": "c", "text": "Application setting" },
+        { "id": "d", "text": "Deployment slot" }
+      ],
+      "answerIds": ["b"],
+      "explanation": "Trigger jest mechanizmem uruchamiającym funkcję. Queue trigger uruchamia funkcję, gdy w kolejce pojawi się wiadomość.",
+      "whyWrong": {
+        "a": "Output binding zapisuje dane po wykonaniu funkcji.",
+        "c": "Application setting może konfigurować funkcję, ale jej nie uruchamia.",
+        "d": "Deployment slot dotyczy wdrożeń, nie mechanizmu wyzwalania."
+      },
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-cosmos-name-limits-correction",
+      "type": "multiple",
+      "chapterId": "storage",
+      "subchapterId": "cosmos-db",
+      "prompt": "W audycie starego quizu znaleziono twierdzenie, że nazwy database/container w Azure Cosmos DB muszą mieć 3-63 znaki. Co jest poprawne według aktualnych limitów Microsoft?",
+      "options": [
+        { "id": "a", "text": "Maksymalna długość nazwy database lub container to 255 znaków." },
+        { "id": "b", "text": "Minimum manual throughput dla container/shared-throughput database to 400 RU/s." },
+        { "id": "c", "text": "Każda logical partition ma limit 20 GB storage." },
+        { "id": "d", "text": "Database name i container name zawsze muszą mieć dokładnie 63 znaki." }
+      ],
+      "answerIds": ["a", "b", "c"],
+      "explanation": "Aktualne limity Microsoft Learn wskazują 255 znaków jako maksymalną długość nazwy database/container, 400 RU/s jako minimum manual throughput oraz 20 GB limitu storage dla logical partition.",
+      "whyWrong": {
+        "d": "To błędna reguła. Limit 3-63 znaków nie dotyczy nazw database/container Cosmos DB w aktualnych limitach."
+      },
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/cosmos-db/concepts-limits"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-cosmos-consistency",
+      "type": "single",
+      "chapterId": "storage",
+      "subchapterId": "cosmos-db",
+      "prompt": "Aplikacja koszyka zakupowego wymaga spójności odczytów i zapisów w obrębie sesji użytkownika, ale nie wymaga global strong consistency. Który consistency level jest najtrafniejszy?",
+      "options": [
+        { "id": "a", "text": "Strong" },
+        { "id": "b", "text": "Bounded staleness" },
+        { "id": "c", "text": "Session" },
+        { "id": "d", "text": "Eventual" }
+      ],
+      "answerIds": ["c"],
+      "explanation": "Session consistency zapewnia monotonic reads/writes i read-your-writes w ramach sesji klienta, co pasuje do koszyka użytkownika.",
+      "whyWrong": {
+        "a": "Strong jest mocniejsze i droższe wydajnościowo niż potrzeba w tym scenariuszu.",
+        "b": "Bounded staleness ogranicza opóźnienie replikacji, ale nie jest najbardziej naturalnym wyborem dla per-user session.",
+        "d": "Eventual nie gwarantuje read-your-writes w sesji."
+      },
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-blob-lifecycle-archive",
+      "type": "single",
+      "chapterId": "storage",
+      "subchapterId": "blob-storage",
+      "prompt": "Chcesz automatycznie przenosić rzadko używane blobs do Cool, a po dłuższym czasie do Archive. Czego użyjesz?",
+      "options": [
+        { "id": "a", "text": "Blob index tags only" },
+        { "id": "b", "text": "Lifecycle management policy" },
+        { "id": "c", "text": "Azure Event Hubs Capture" },
+        { "id": "d", "text": "Stored access policy" }
+      ],
+      "answerIds": ["b"],
+      "explanation": "Lifecycle management policy definiuje reguły automatycznego tieringu lub usuwania blobów według wieku, ostatniej modyfikacji, prefiksu albo tagów.",
+      "whyWrong": {
+        "a": "Blob index tags mogą być warunkiem reguły, ale same nie wykonują lifecycle transitions.",
+        "c": "Event Hubs Capture zapisuje strumień zdarzeń do Storage/Data Lake, nie zarządza cyklem życia blobów.",
+        "d": "Stored access policy zarządza uprawnieniami SAS."
+      },
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-graph-permission-types",
+      "type": "single",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "prompt": "Aplikacja daemon ma czytać dane z Microsoft Graph bez zalogowanego użytkownika. Jaki typ uprawnień jest właściwy?",
+      "options": [
+        { "id": "a", "text": "Delegated permissions" },
+        { "id": "b", "text": "Application permissions" },
+        { "id": "c", "text": "Storage account SAS" },
+        { "id": "d", "text": "Function key" }
+      ],
+      "answerIds": ["b"],
+      "explanation": "Application permissions są używane w scenariuszach app-only, np. daemon/service bez interaktywnego użytkownika.",
+      "whyWrong": {
+        "a": "Delegated permissions wymagają kontekstu zalogowanego użytkownika.",
+        "c": "SAS dotyczy Azure Storage, nie Microsoft Graph permissions.",
+        "d": "Function key zabezpiecza endpoint Azure Functions, nie daje uprawnień Graph."
+      },
+      "sourceUrls": ["https://learn.microsoft.com/en-us/graph/auth/auth-concepts"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-keyvault-managed-identity",
+      "type": "single",
+      "chapterId": "security",
+      "subchapterId": "secure-solutions",
+      "prompt": "Aplikacja w App Service ma pobrać sekret z Key Vault bez przechowywania client secret w konfiguracji. Co jest najlepszym wzorcem?",
+      "options": [
+        { "id": "a", "text": "Shared Access Signature" },
+        { "id": "b", "text": "Managed Identity + uprawnienie do Key Vault" },
+        { "id": "c", "text": "Connection string zapisany w repozytorium" },
+        { "id": "d", "text": "Public anonymous access do Key Vault" }
+      ],
+      "answerIds": ["b"],
+      "explanation": "Managed Identity pozwala aplikacji uzyskać token Microsoft Entra ID bez secretów. Key Vault musi przyznać tej tożsamości odpowiednie uprawnienia.",
+      "whyWrong": {
+        "a": "SAS jest mechanizmem Azure Storage, nie standardowym dostępem do Key Vault.",
+        "c": "Sekrety w repozytorium są antywzorcem bezpieczeństwa.",
+        "d": "Key Vault nie powinien być publicznie anonimowy."
+      },
+      "sourceUrls": ["https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview", "https://learn.microsoft.com/en-us/azure/key-vault/general/authentication"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-appinsights-availability",
+      "type": "single",
+      "chapterId": "monitoring",
+      "subchapterId": "app-insights",
+      "prompt": "Chcesz regularnie sprawdzać zewnętrzną dostępność endpointu web API i generować alert, gdy endpoint nie odpowiada. Która funkcja pasuje najlepiej?",
+      "options": [
+        { "id": "a", "text": "Application Insights availability test" },
+        { "id": "b", "text": "Blob lifecycle policy" },
+        { "id": "c", "text": "Cosmos DB change feed" },
+        { "id": "d", "text": "Service Bus session" }
+      ],
+      "answerIds": ["a"],
+      "explanation": "Availability tests w Application Insights monitorują dostępność endpointów z zewnątrz i mogą być powiązane z alertami.",
+      "whyWrong": {
+        "b": "Lifecycle policy zarządza blobami, nie testuje endpointów.",
+        "c": "Change feed służy do reagowania na zmiany w Cosmos DB.",
+        "d": "Service Bus session pomaga w ordering/grupowaniu wiadomości."
+      },
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/azure-monitor/app/availability-overview", "https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/alerts-overview"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-apim-rate-limit-jwt",
+      "type": "multiple",
+      "chapterId": "integration",
+      "subchapterId": "api-management",
+      "prompt": "Które Azure API Management policies pasują do ograniczenia liczby wywołań i walidacji tokenu JWT?",
+      "options": [
+        { "id": "a", "text": "rate-limit" },
+        { "id": "b", "text": "validate-jwt" },
+        { "id": "c", "text": "set-body" },
+        { "id": "d", "text": "blob-tier" }
+      ],
+      "answerIds": ["a", "b"],
+      "explanation": "rate-limit ogranicza wywołania w danym okresie, a validate-jwt sprawdza token JWT w APIM gateway.",
+      "whyWrong": {
+        "c": "set-body zmienia body request/response, ale nie ogranicza ruchu ani nie waliduje JWT.",
+        "d": "blob-tier nie jest APIM policy."
+      },
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/api-management/rate-limit-policy", "https://learn.microsoft.com/en-us/azure/api-management/validate-jwt-policy"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-events-service-choice",
+      "type": "single",
+      "chapterId": "integration",
+      "subchapterId": "events",
+      "prompt": "System IoT wysyła bardzo duży strumień telemetrii, który ma być konsumowany przez kilka niezależnych aplikacji analitycznych. Która usługa jest najtrafniejsza?",
+      "options": [
+        { "id": "a", "text": "Azure Event Hubs" },
+        { "id": "b", "text": "Azure Event Grid" },
+        { "id": "c", "text": "Azure App Configuration" },
+        { "id": "d", "text": "Azure Key Vault" }
+      ],
+      "answerIds": ["a"],
+      "explanation": "Event Hubs jest projektowany do wysokoprzepustowego ingestu eventów i telemetrii, z partycjami i consumer groups.",
+      "whyWrong": {
+        "b": "Event Grid jest do routingu zdarzeń, a nie typowo do masowego stream ingestu telemetrii.",
+        "c": "App Configuration przechowuje konfigurację aplikacji.",
+        "d": "Key Vault przechowuje secrets, keys i certificates."
+      },
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about", "https://learn.microsoft.com/en-us/azure/event-grid/compare-messaging-services"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-messages-service-choice",
+      "type": "single",
+      "chapterId": "integration",
+      "subchapterId": "messages",
+      "prompt": "Aplikacja wymaga kolejki z dead-letter queue, duplicate detection i opcją publish/subscribe przez topics. Co wybierzesz?",
+      "options": [
+        { "id": "a", "text": "Azure Queue Storage" },
+        { "id": "b", "text": "Azure Service Bus" },
+        { "id": "c", "text": "Azure Blob Storage" },
+        { "id": "d", "text": "Azure Container Registry" }
+      ],
+      "answerIds": ["b"],
+      "explanation": "Azure Service Bus zapewnia enterprise messaging, w tym queues, topics/subscriptions, dead-lettering i duplicate detection.",
+      "whyWrong": {
+        "a": "Queue Storage jest prostsze i nie ma wszystkich enterprise messaging capabilities Service Bus.",
+        "c": "Blob Storage przechowuje obiekty, nie obsługuje brokered messaging.",
+        "d": "ACR przechowuje obrazy kontenerów."
+      },
+      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview", "https://learn.microsoft.com/en-us/azure/storage/queues/storage-queues-introduction"],
+      "verifiedAt": "2026-07-05",
+      "auditStatus": "verified",
+      "origin": "original"
+    }
+  ],
+  "importedQuestionManifest": [
+    { "sourceTopic": "API Management", "count": 25, "mappedChapterId": "integration", "mappedSubchapterId": "api-management", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/API Management.md" },
+    { "sourceTopic": "AZ CLI", "count": 18, "mappedChapterId": null, "mappedSubchapterId": null, "auditStatus": "microsoft_mapped", "sourcePath": "Questions/AZ CLI.md" },
+    { "sourceTopic": "App Configuration", "count": 13, "mappedChapterId": "security", "mappedSubchapterId": "secure-solutions", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/App Configuration.md" },
+    { "sourceTopic": "App Service", "count": 97, "mappedChapterId": "compute", "mappedSubchapterId": "app-service", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/App Service.md" },
+    { "sourceTopic": "Application Insights", "count": 36, "mappedChapterId": "monitoring", "mappedSubchapterId": "app-insights", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Application Insights.md" },
+    { "sourceTopic": "Azure", "count": 5, "mappedChapterId": null, "mappedSubchapterId": null, "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Azure.md" },
+    { "sourceTopic": "Blob Storage", "count": 24, "mappedChapterId": "storage", "mappedSubchapterId": "blob-storage", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Blob Storage.md" },
+    { "sourceTopic": "Compute Solutions", "count": 7, "mappedChapterId": "compute", "mappedSubchapterId": "containers", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Compute Solutions.md" },
+    { "sourceTopic": "Containers", "count": 61, "mappedChapterId": "compute", "mappedSubchapterId": "containers", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Containers.md" },
+    { "sourceTopic": "Cosmos DB", "count": 62, "mappedChapterId": "storage", "mappedSubchapterId": "cosmos-db", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Cosmos DB.md" },
+    { "sourceTopic": "Docker", "count": 5, "mappedChapterId": "compute", "mappedSubchapterId": "containers", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Docker.md" },
+    { "sourceTopic": "Entra ID", "count": 34, "mappedChapterId": "security", "mappedSubchapterId": "auth", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Entra ID.md" },
+    { "sourceTopic": "Event Grid", "count": 16, "mappedChapterId": "integration", "mappedSubchapterId": "events", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Event Grid.md" },
+    { "sourceTopic": "Event Hubs", "count": 16, "mappedChapterId": "integration", "mappedSubchapterId": "events", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Event Hubs.md" },
+    { "sourceTopic": "Functions", "count": 54, "mappedChapterId": "compute", "mappedSubchapterId": "functions", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Functions.md" },
+    { "sourceTopic": "Graph", "count": 16, "mappedChapterId": "security", "mappedSubchapterId": "auth", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Graph.md" },
+    { "sourceTopic": "Key Vault", "count": 13, "mappedChapterId": "security", "mappedSubchapterId": "secure-solutions", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Key Vault.md" },
+    { "sourceTopic": "Managed Identities", "count": 31, "mappedChapterId": "security", "mappedSubchapterId": "secure-solutions", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Managed Identities.md" },
+    { "sourceTopic": "Message Queues", "count": 18, "mappedChapterId": "integration", "mappedSubchapterId": "messages", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Message Queues.md" },
+    { "sourceTopic": "Monitor", "count": 12, "mappedChapterId": "monitoring", "mappedSubchapterId": "app-insights", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Monitor.md" },
+    { "sourceTopic": "Queue Storage", "count": 1, "mappedChapterId": "integration", "mappedSubchapterId": "messages", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Queue Storage.md" },
+    { "sourceTopic": "Resource Groups", "count": 1, "mappedChapterId": null, "mappedSubchapterId": null, "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Resource Groups.md" },
+    { "sourceTopic": "Service Bus", "count": 27, "mappedChapterId": "integration", "mappedSubchapterId": "messages", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Service Bus.md" },
+    { "sourceTopic": "Shared Access Signatures", "count": 7, "mappedChapterId": "security", "mappedSubchapterId": "auth", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Shared Access Signatures.md" },
+    { "sourceTopic": "Storage Redundancy", "count": 16, "mappedChapterId": "storage", "mappedSubchapterId": "blob-storage", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Storage Redundancy.md" },
+    { "sourceTopic": "Storage Security", "count": 10, "mappedChapterId": "security", "mappedSubchapterId": "auth", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Storage Security.md" }
+  ]
+}
