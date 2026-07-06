@@ -136,6 +136,17 @@ export function App() {
           <strong>{verifiedQuestions.length}</strong>
           <span>pytań testowych</span>
         </div>
+
+        <div className="sidebar-links" aria-label="Sources and licenses">
+          <a href="https://github.com/mikolaj-sujka/AZ204-Quiz-Cards/blob/main/NOTICE.md" target="_blank" rel="noreferrer">
+            <ExternalLink aria-hidden="true" />
+            Sources & licenses
+          </a>
+          <a href="https://github.com/arvigeus/AZ-204" target="_blank" rel="noreferrer">
+            <ExternalLink aria-hidden="true" />
+            Upstream quiz
+          </a>
+        </div>
       </aside>
 
       <main className="main-content">

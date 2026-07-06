@@ -108,6 +108,7 @@ a {
 .metric-card small,
 .chapter-stat-row,
 .audit-item span,
+.sidebar-links,
 .source-links {
   color: var(--muted);
 }
@@ -140,6 +141,7 @@ a {
 .filter-title svg,
 .retirement-banner svg,
 .metric-icon svg,
+.sidebar-links svg,
 .source-links svg {
   width: 18px;
   height: 18px;
@@ -166,6 +168,23 @@ a {
 
 .sidebar-card strong {
   font-size: 2rem;
+}
+
+.sidebar-links {
+  display: grid;
+  gap: 8px;
+  font-size: 0.86rem;
+}
+
+.sidebar-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.sidebar-links a:hover {
+  color: var(--yellow-soft);
 }
 
 .main-content {

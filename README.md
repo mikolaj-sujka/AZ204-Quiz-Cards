@@ -24,13 +24,28 @@ npm run test
 npm run build
 ```
 
+## Deploy To GitHub Pages
+
+The app is configured for:
+
+```text
+https://mikolaj-sujka.github.io/AZ204-Quiz-Cards/
+```
+
+Deployment runs automatically from GitHub Actions on every push to `main`.
+
+In GitHub, open **Settings -> Pages** and set **Build and deployment / Source** to
+**GitHub Actions**. The workflow in `.github/workflows/deploy-pages.yml` installs
+dependencies, validates content, runs tests, builds the Vite app, and publishes
+`dist`.
+
 ## Run Locally
 
 ```bash
 npm run dev
 ```
 
-Open `http://localhost:5173/`.
+Open `http://localhost:5173/AZ204-Quiz-Cards/`.
 
 ## Content Model
 
