@@ -22,6 +22,7 @@ npm run dev
 npm run validate:content
 npm run test
 npm run build
+npm run watch:exam
 ```
 
 ## Deploy To GitHub Pages
@@ -97,6 +98,29 @@ npm run test:e2e
 ```
 
 `validate:content` checks that active original content and generated source-quiz items have required chapter/subchapter mapping, answers, dates, and Microsoft Learn source URLs.
+
+## Exam Watch
+
+`.github/workflows/exam-watch.yml` runs every three days and checks only official
+Microsoft Learn sources:
+
+- official Microsoft Learn AZ-204 certification, study guide, and training pages
+
+If it detects a possible update, it opens or updates a review PR from
+`automation/az204-microsoft-learn-watch`. The PR contains:
+
+- `reports/az204-microsoft-learn-watch.md` with the detected Microsoft Learn changes
+- `scripts/exam-watch.snapshot.json` advanced to the newly reviewed source state
+
+Useful local commands:
+
+```bash
+npm run watch:exam
+npm run watch:exam:pr
+npm run watch:exam:update-snapshot
+```
+
+Merge the generated PR only after reviewing the detected Microsoft Learn changes.
 
 ## Design
 

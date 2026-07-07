@@ -22,6 +22,26 @@
   --shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
 }
 
+:root[data-theme="day"] {
+  color: #132033;
+  background: #f4f8ff;
+  --bg: #f4f8ff;
+  --surface: #ffffff;
+  --surface-2: #eaf2ff;
+  --surface-3: #f8fbff;
+  --text: #132033;
+  --muted: #607189;
+  --line: rgba(31, 102, 184, 0.18);
+  --yellow: #1f6ed4;
+  --yellow-soft: #0b4f9f;
+  --gold: #2f8ee8;
+  --blue: #1f6ed4;
+  --coral: #cf4c35;
+  --amber: #1f6ed4;
+  --green: #218358;
+  --shadow: 0 18px 48px rgba(24, 74, 126, 0.14);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -33,6 +53,14 @@ body {
     radial-gradient(circle at 18% 8%, rgba(247, 201, 72, 0.18), transparent 28rem),
     radial-gradient(circle at 85% 12%, rgba(110, 168, 255, 0.12), transparent 22rem),
     linear-gradient(180deg, #0b0b0b, #080808 45%, #11100c),
+    var(--bg);
+}
+
+:root[data-theme="day"] body {
+  background:
+    radial-gradient(circle at 18% 8%, rgba(47, 142, 232, 0.18), transparent 28rem),
+    radial-gradient(circle at 85% 12%, rgba(40, 184, 166, 0.11), transparent 22rem),
+    linear-gradient(180deg, #f7fbff, #eef5ff 48%, #f9fbff),
     var(--bg);
 }
 
@@ -133,6 +161,7 @@ a {
 }
 
 .nav-button svg,
+.theme-toggle svg,
 .icon-button svg,
 .primary-action svg,
 .secondary-action svg,
@@ -168,6 +197,27 @@ a {
 
 .sidebar-card strong {
   font-size: 2rem;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  font-weight: 800;
+}
+
+.theme-toggle:hover {
+  border-color: rgba(247, 201, 72, 0.42);
+  color: var(--yellow-soft);
+  transform: translateX(2px);
 }
 
 .sidebar-links {
@@ -819,6 +869,151 @@ select:focus {
   background:
     linear-gradient(145deg, rgba(72, 54, 10, 0.96), rgba(12, 12, 12, 0.98)),
     #111;
+}
+
+:root[data-theme="day"] .sidebar {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+:root[data-theme="day"] .brand-icon,
+:root[data-theme="day"] .primary-action {
+  background: linear-gradient(145deg, #2f8ee8, #1f6ed4);
+  color: #ffffff;
+  box-shadow: 0 12px 30px rgba(31, 110, 212, 0.22);
+}
+
+:root[data-theme="day"] .nav-button.is-active,
+:root[data-theme="day"] .nav-button:hover,
+:root[data-theme="day"] .theme-toggle:hover,
+:root[data-theme="day"] .subchapter-list button:hover,
+:root[data-theme="day"] .option-button:hover,
+:root[data-theme="day"] .dropdown-option:hover,
+:root[data-theme="day"] .dropdown-option.is-active {
+  border-color: rgba(31, 110, 212, 0.36);
+  background: rgba(31, 110, 212, 0.08);
+  color: #0b4f9f;
+}
+
+:root[data-theme="day"] .exam-header-copy {
+  background:
+    linear-gradient(125deg, rgba(255, 255, 255, 0.98), rgba(223, 239, 255, 0.92)),
+    #ffffff;
+  color: #132033;
+}
+
+:root[data-theme="day"] .exam-header-copy::after {
+  border-color: rgba(31, 110, 212, 0.18);
+}
+
+:root[data-theme="day"] .exam-header-copy .eyebrow,
+:root[data-theme="day"] .exam-header-copy p {
+  color: #607189;
+}
+
+:root[data-theme="day"] .exam-header-copy,
+:root[data-theme="day"] .retirement-banner,
+:root[data-theme="day"] .panel,
+:root[data-theme="day"] .metric-card,
+:root[data-theme="day"] .empty-state,
+:root[data-theme="day"] .exam-panel,
+:root[data-theme="day"] .flashcard-stage,
+:root[data-theme="day"] .chapter-card,
+:root[data-theme="day"] .question-card,
+:root[data-theme="day"] .audit-item,
+:root[data-theme="day"] .table-row {
+  background: rgba(255, 255, 255, 0.94);
+}
+
+:root[data-theme="day"] .retirement-banner,
+:root[data-theme="day"] .result-panel {
+  border-color: rgba(31, 110, 212, 0.28);
+  background: rgba(31, 110, 212, 0.08);
+}
+
+:root[data-theme="day"] .filter-bar,
+:root[data-theme="day"] .result-hero {
+  background:
+    linear-gradient(135deg, rgba(31, 110, 212, 0.1), rgba(255, 255, 255, 0.95) 38%),
+    var(--surface);
+}
+
+:root[data-theme="day"] .filter-title,
+:root[data-theme="day"] .exam-toolbar-vertical {
+  background: rgba(255, 255, 255, 0.76);
+}
+
+:root[data-theme="day"] .dropdown-trigger,
+:root[data-theme="day"] select,
+:root[data-theme="day"] .source-links a {
+  background:
+    linear-gradient(135deg, rgba(31, 110, 212, 0.08), rgba(255, 255, 255, 0.98)),
+    #ffffff;
+}
+
+:root[data-theme="day"] .dropdown-menu {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(238, 245, 255, 0.98)),
+    #ffffff;
+  box-shadow: 0 28px 70px rgba(24, 74, 126, 0.2);
+}
+
+:root[data-theme="day"] .metric-icon,
+:root[data-theme="day"] .status-pill,
+:root[data-theme="day"] .segmented-control,
+:root[data-theme="day"] .option-marker,
+:root[data-theme="day"] .explanation,
+:root[data-theme="day"] .table-head {
+  background: #eaf2ff;
+}
+
+:root[data-theme="day"] .segmented-control button.is-active,
+:root[data-theme="day"] .icon-button,
+:root[data-theme="day"] .secondary-action,
+:root[data-theme="day"] .subchapter-list button,
+:root[data-theme="day"] .option-button {
+  background: #ffffff;
+}
+
+:root[data-theme="day"] .status-pill.verified {
+  background: rgba(33, 131, 88, 0.1);
+  color: #12613d;
+}
+
+:root[data-theme="day"] .status-pill.warning {
+  background: rgba(31, 110, 212, 0.1);
+  color: #0b4f9f;
+}
+
+:root[data-theme="day"] .flashcard:hover,
+:root[data-theme="day"] .chapter-card:hover,
+:root[data-theme="day"] .metric-card:hover,
+:root[data-theme="day"] .question-card:hover,
+:root[data-theme="day"] .audit-item:hover {
+  border-color: rgba(31, 110, 212, 0.36);
+  box-shadow: 0 18px 48px rgba(24, 74, 126, 0.16);
+}
+
+:root[data-theme="day"] .flashcard-face {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(232, 242, 255, 0.98)),
+    #ffffff;
+}
+
+:root[data-theme="day"] .flashcard-back {
+  background:
+    linear-gradient(145deg, rgba(221, 238, 255, 0.98), rgba(255, 255, 255, 0.98)),
+    #ffffff;
+}
+
+:root[data-theme="day"] .flashcard-front::after,
+:root[data-theme="day"] .flashcard-back::after {
+  color: rgba(31, 110, 212, 0.12);
+}
+
+:root[data-theme="day"] .markdown-lite pre {
+  border-color: rgba(31, 110, 212, 0.18);
+  background: #10213a;
+  color: #eaf2ff;
 }
 
 .flashcard ul,

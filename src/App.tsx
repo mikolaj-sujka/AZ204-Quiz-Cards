@@ -14,6 +14,8 @@ import {
   RotateCcw,
   SearchCheck,
   Shuffle,
+  Moon,
+  Sun,
   X
 } from 'lucide-react';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
@@ -55,6 +57,7 @@ import {
 } from './domain/progress';
 
 type View = 'dashboard' | 'flashcards' | 'exam' | 'audit';
+type ThemeMode = 'day' | 'night';
 
 type StudyTarget = {
   chapterId: ChapterId;
@@ -88,10 +91,25 @@ function useProgress() {
   return [progress, setProgress] as const;
 }
 
+function useThemeMode() {
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    const storedTheme = window.localStorage.getItem('az204-theme');
+    return storedTheme === 'day' || storedTheme === 'night' ? storedTheme : 'night';
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem('az204-theme', theme);
+  }, [theme]);
+
+  return [theme, setTheme] as const;
+}
+
 export function App() {
   const [view, setView] = useState<View>('dashboard');
   const [target, setTarget] = useState<StudyTarget>(defaultTarget);
   const [progress, setProgress] = useProgress();
+  const [theme, setTheme] = useThemeMode();
 
   const selectedChapter =
     content.chapters.find((chapter) => chapter.id === target.chapterId) ?? content.chapters[0];
@@ -131,6 +149,17 @@ export function App() {
           </NavButton>
         </nav>
 
+        <button
+          className="theme-toggle"
+          type="button"
+          title={theme === 'day' ? 'Switch to night mode' : 'Switch to day mode'}
+          aria-label={theme === 'day' ? 'Switch to night mode' : 'Switch to day mode'}
+          onClick={() => setTheme(theme === 'day' ? 'night' : 'day')}
+        >
+          {theme === 'day' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+          <span>{theme === 'day' ? 'Day mode' : 'Night mode'}</span>
+        </button>
+
         <div className="sidebar-card">
           <span className="mini-label">Active pool</span>
           <strong>{verifiedQuestions.length}</strong>
@@ -141,10 +170,6 @@ export function App() {
           <a href="https://github.com/mikolaj-sujka/AZ204-Quiz-Cards/blob/main/NOTICE.md" target="_blank" rel="noreferrer">
             <ExternalLink aria-hidden="true" />
             Sources & licenses
-          </a>
-          <a href="https://github.com/arvigeus/AZ-204" target="_blank" rel="noreferrer">
-            <ExternalLink aria-hidden="true" />
-            Upstream quiz
           </a>
         </div>
       </aside>

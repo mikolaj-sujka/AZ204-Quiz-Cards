@@ -1,0 +1,46 @@
+name: AZ-204 Microsoft Learn PR Agent
+
+on:
+  schedule:
+    # GitHub cron uses UTC. This runs roughly every three days.
+    - cron: '0 7 */3 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  watch:
+    name: Check Microsoft Learn sources
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Microsoft Learn sources
+        id: exam-watch
+        run: npm run watch:exam:pr
+
+      - name: Create review pull request
+        if: steps.exam-watch.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: automation/az204-microsoft-learn-watch
+          delete-branch: true
+          commit-message: 'chore: update AZ-204 Microsoft Learn watch report'
+          title: 'AZ-204 Microsoft Learn watch: review source updates'
+          body-path: reports/az204-microsoft-learn-watch.md
+          add-paths: |
+            reports/az204-microsoft-learn-watch.md
+            scripts/exam-watch.snapshot.json

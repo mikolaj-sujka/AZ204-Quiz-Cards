@@ -10,7 +10,11 @@
     "typecheck": "tsc --noEmit --pretty false",
     "test": "vitest run",
     "test:watch": "vitest",
+    "import:source-quiz": "node scripts/importSourceQuiz.mjs",
     "validate:content": "node scripts/validateContent.mjs",
+    "watch:exam": "node scripts/checkExamUpdates.mjs",
+    "watch:exam:pr": "node scripts/checkExamUpdates.mjs --pr --advance-snapshot",
+    "watch:exam:update-snapshot": "node scripts/checkExamUpdates.mjs --update-snapshot",
     "test:e2e": "npm run build && playwright test"
   },
   "dependencies": {
