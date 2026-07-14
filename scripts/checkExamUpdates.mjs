@@ -220,7 +220,11 @@ function compareOfficialSources(previous, current) {
   }
 
   for (const previousSource of previous.officialSources ?? []) {
-    if (!current.officialSources.some((source) => normalizeUrlKey(source.url) === normalizeUrlKey(previousSource.url))) {
+    if (
+      !current.officialSources.some(
+        (source) => normalizeUrlKey(source.url) === normalizeUrlKey(previousSource.url)
+      )
+    ) {
       addChange(changes, 'microsoft-learn', `${previousSource.label} is no longer watched.`, {
         url: previousSource.url
       });
@@ -243,7 +247,9 @@ function formatChange(change) {
         ? shortHash(change.before)
         : change.before;
     const after =
-      typeof change.after === 'string' && change.after.length === 64 ? shortHash(change.after) : change.after;
+      typeof change.after === 'string' && change.after.length === 64
+        ? shortHash(change.after)
+        : change.after;
     parts.push(`  Before: \`${before ?? '(none)'}\``);
     parts.push(`  After: \`${after ?? '(none)'}\``);
   }
@@ -298,7 +304,8 @@ function formatReport(current, changes) {
 
 async function writeReport(current, changes) {
   const markdown = formatReport(current, changes);
-  const markdownPath = writePrReport && changes.length > 0 ? prReportMarkdownPath : localReportMarkdownPath;
+  const markdownPath =
+    writePrReport && changes.length > 0 ? prReportMarkdownPath : localReportMarkdownPath;
 
   await writeJson(localReportJsonPath, {
     checkedAt: current.checkedAt,

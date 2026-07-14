@@ -91,12 +91,12 @@ for (const flashcard of content.flashcards) {
 }
 
 const backlogTotal = content.importedQuestionManifest.reduce((sum, item) => sum + item.count, 0);
-if (backlogTotal !== 625) {
-  errors.push(`Imported question backlog should total 625, got ${backlogTotal}.`);
-}
-
-if (!Array.isArray(sourceQuiz.items) || sourceQuiz.items.length !== 625) {
-  errors.push(`Generated source quiz should contain 625 items, got ${sourceQuiz.items?.length ?? 0}.`);
+if (!Array.isArray(sourceQuiz.items) || sourceQuiz.items.length === 0) {
+  errors.push(`Generated source quiz should contain items, got ${sourceQuiz.items?.length ?? 0}.`);
+} else if (backlogTotal !== sourceQuiz.items.length) {
+  errors.push(
+    `Imported question manifest total (${backlogTotal}) does not match generated source quiz item count (${sourceQuiz.items.length}).`
+  );
 }
 
 for (const item of sourceQuiz.items ?? []) {

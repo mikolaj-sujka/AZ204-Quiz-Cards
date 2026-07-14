@@ -1,0 +1,11 @@
+node_modules
+dist
+coverage
+playwright-report
+test-results
+package-lock.json
+src/data/source-quiz.generated.json
+src/data/az204-content.json
+exam-watch-report.json
+exam-watch-report.md
+scripts/exam-watch.snapshot.json

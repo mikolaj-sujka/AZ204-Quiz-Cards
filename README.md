@@ -5,9 +5,9 @@ A local-first React + TypeScript study app for **Exam AZ-204: Developing Solutio
 The app includes:
 
 - Microsoft Learn-aligned chapters and subchapters.
-- 625 imported source-quiz items mapped to Microsoft Learn topic sources.
-- 516 closed source-quiz questions available in exams.
-- 625 imported source-quiz items plus original cards available as flashcards.
+- 589 imported source-quiz items mapped to Microsoft Learn topic sources.
+- 484 closed source-quiz questions available in exams.
+- 589 imported source-quiz items plus original cards available as flashcards.
 - Flashcards with “znam / powtórz” progress in `localStorage`.
 - Sequential subchapter exams and weighted 100-question mock exam mode.
 - End-of-exam review with score, all questions, correct answers, explanations, and Microsoft Learn links.
@@ -65,10 +65,10 @@ The app uses two content layers:
 
 The generated bank currently contains:
 
-- `625` total imported study items.
-- `516` closed questions usable in exams.
-- `109` open/code questions usable as flashcards.
-- Known corrected items include Cosmos DB resource-name limits and a Cosmos DB composite-index answer.
+- `589` total imported study items.
+- `484` closed questions usable in exams.
+- `105` open/code questions usable as flashcards.
+- A 2026-07-13 Microsoft Learn audit removed 36 duplicate/out-of-scope/unfixable items and corrected 23 others (see `scripts/importSourceQuiz.mjs`, `EXCLUDED_IDS`/`ID_CORRECTIONS`/`TEXT_CORRECTIONS`, for the full list and reasoning). Known corrected items include Cosmos DB resource-name limits and a Cosmos DB composite-index answer.
 
 ## Audit And Sources
 

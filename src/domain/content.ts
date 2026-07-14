@@ -125,7 +125,9 @@ export const sourceQuizFlashcards: Flashcard[] = sourceQuizBank.items.map((item)
   keyPoints: [
     `Source topic: ${item.sourceTopic}`,
     item.options.length > 0 ? 'Format: pytanie testowe' : 'Format: pytanie opisowe/kodowe',
-    item.correctionNotes ? `Audit correction: ${item.correctionNotes}` : 'Microsoft Learn source mapped'
+    item.correctionNotes
+      ? `Audit correction: ${item.correctionNotes}`
+      : 'Microsoft Learn source mapped'
   ],
   sourceUrls: item.sourceUrls,
   verifiedAt: item.verifiedAt,
