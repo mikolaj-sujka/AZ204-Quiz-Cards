@@ -74,9 +74,10 @@ not be marked `verified` — flag it instead of guessing.
 
 ## Architecture quick map
 
-- `src/domain/content.ts` — types + all content-shaping logic (merging original
-  + imported banks, filtering by chapter/subchapter, weighted mock exam
-  selection). Read this first to understand how the two data files combine.
+- `src/domain/content.ts` — types + all content-shaping logic (combining the
+  original and imported banks, filtering by chapter/subchapter, weighted mock
+  exam selection). Read this first to understand how the two data files
+  combine.
 - `src/domain/progress.ts` — `localStorage`-backed flashcard ratings and exam
   attempt history. Pure functions, easy to unit test.
 - `src/domain/scoring.ts` — answer comparison/scoring for exams.
@@ -102,3 +103,12 @@ npm run test
 `npm run test:e2e` and a manual pass in the browser are worth it for anything
 touching `src/App.tsx` UI behavior (flashcard flow, exam flow) since those are
 the two things this app is actually used for daily.
+
+If `package.json`/`package-lock.json` change, also run `npm ci` (not just
+`npm install`) before pushing — CI uses `npm ci`, which is strict about the
+lockfile matching exactly. CI pins npm to `10.9.8` (see the "Pin npm version"
+step in the workflows); regenerating the lockfile with a different npm major
+version can produce a lockfile that's only consistent for that other npm
+version, causing `npm ci` to fail in CI with a "Missing: ..." error even
+though `npm install` succeeds locally. If that happens, regenerate with
+`npx npm@10.9.8 install` to match CI exactly.
