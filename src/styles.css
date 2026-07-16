@@ -261,8 +261,7 @@ a {
 .panel,
 .metric-card,
 .empty-state,
-.exam-panel,
-.flashcard-stage {
+.exam-panel {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(20, 20, 20, 0.94);
@@ -578,7 +577,6 @@ select:focus {
 
 .panel,
 .exam-panel,
-.flashcard-stage,
 .empty-state {
   padding: 22px;
 }
@@ -791,77 +789,6 @@ select:focus {
   transform: translateY(-2px);
 }
 
-.flashcard-stage {
-  display: grid;
-  gap: 16px;
-  perspective: 1400px;
-}
-
-.flashcard {
-  position: relative;
-  display: block;
-  width: 100%;
-  min-height: 360px;
-  padding: 0;
-  border: 1px solid rgba(17, 63, 103, 0.18);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text);
-  text-align: left;
-  transform-style: preserve-3d;
-  transition:
-    transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    border-color 180ms ease,
-    box-shadow 180ms ease;
-}
-
-.flashcard:hover {
-  border-color: rgba(247, 201, 72, 0.42);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
-  transform: translateY(-3px) rotateX(1deg);
-}
-
-.flashcard-stage.is-flipped .flashcard {
-  border-color: rgba(247, 201, 72, 0.55);
-  transform: rotateY(180deg);
-}
-
-.flashcard-stage.is-flipped .flashcard:hover {
-  transform: translateY(-3px) rotateY(180deg) rotateX(1deg);
-}
-
-.flashcard-face {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  align-content: start;
-  gap: 18px;
-  min-height: 360px;
-  padding: clamp(22px, 5vw, 54px);
-  overflow: auto;
-  border-radius: 8px;
-  background: linear-gradient(145deg, rgba(32, 32, 32, 0.98), rgba(15, 15, 15, 0.98)), #111;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-.flashcard-front::after,
-.flashcard-back::after {
-  position: absolute;
-  right: 22px;
-  bottom: 18px;
-  color: rgba(247, 201, 72, 0.18);
-  font-size: clamp(3rem, 10vw, 8rem);
-  font-weight: 900;
-  content: 'AZ';
-  pointer-events: none;
-}
-
-.flashcard-back {
-  transform: rotateY(180deg);
-  background: linear-gradient(145deg, rgba(72, 54, 10, 0.96), rgba(12, 12, 12, 0.98)), #111;
-}
-
 :root[data-theme='day'] .sidebar {
   background: rgba(255, 255, 255, 0.88);
 }
@@ -906,7 +833,6 @@ select:focus {
 :root[data-theme='day'] .metric-card,
 :root[data-theme='day'] .empty-state,
 :root[data-theme='day'] .exam-panel,
-:root[data-theme='day'] .flashcard-stage,
 :root[data-theme='day'] .chapter-card,
 :root[data-theme='day'] .question-card,
 :root[data-theme='day'] .audit-item,
@@ -970,7 +896,6 @@ select:focus {
   color: #0b4f9f;
 }
 
-:root[data-theme='day'] .flashcard:hover,
 :root[data-theme='day'] .chapter-card:hover,
 :root[data-theme='day'] .metric-card:hover,
 :root[data-theme='day'] .question-card:hover,
@@ -979,60 +904,32 @@ select:focus {
   box-shadow: 0 18px 48px rgba(24, 74, 126, 0.16);
 }
 
-:root[data-theme='day'] .flashcard-face {
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(232, 242, 255, 0.98)), #ffffff;
-}
-
-:root[data-theme='day'] .flashcard-back {
-  background:
-    linear-gradient(145deg, rgba(221, 238, 255, 0.98), rgba(255, 255, 255, 0.98)), #ffffff;
-}
-
-:root[data-theme='day'] .flashcard-front::after,
-:root[data-theme='day'] .flashcard-back::after {
-  color: rgba(31, 110, 212, 0.12);
-}
-
 :root[data-theme='day'] .markdown-lite pre {
   border-color: rgba(31, 110, 212, 0.18);
   background: #10213a;
   color: #eaf2ff;
 }
 
-.flashcard ul,
+.article-detail ul,
 .explanation ul {
   margin: 0;
   padding-left: 20px;
   line-height: 1.6;
 }
 
-.tap-hint {
-  color: var(--muted);
-  font-weight: 700;
+.article-detail {
+  display: grid;
+  gap: 16px;
 }
 
-.card-controls {
-  justify-content: center;
-  flex-wrap: wrap;
+.article-row {
+  width: 100%;
+  text-align: left;
 }
 
-.leech-badge {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  border: 1px solid rgba(255, 107, 74, 0.4);
-  border-radius: 8px;
-  background: rgba(255, 107, 74, 0.1);
-  color: var(--coral);
-  font-weight: 700;
-}
-
-.leech-badge svg {
-  flex: 0 0 auto;
-  width: 18px;
-  height: 18px;
+.article-section h3 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
 }
 
 .shortcut-hint {
@@ -1438,18 +1335,14 @@ select:focus {
 
   .exam-toolbar-vertical,
   .result-hero,
-  .exam-step-controls {
+  .exam-step-controls,
+  .article-detail .card-controls {
     align-items: stretch;
     flex-direction: column;
   }
 
   .exam-progress-meta {
     margin-left: 0;
-  }
-
-  .flashcard,
-  .flashcard-face {
-    min-height: 420px;
   }
 
   .submit-button {

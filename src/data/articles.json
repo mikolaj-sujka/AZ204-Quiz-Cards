@@ -1,0 +1,1413 @@
+{
+  "generatedAt": "2026-07-15",
+  "sourceNote": "Original articles researched and written against official Microsoft Learn AZ-204 documentation.",
+  "articles": [
+    {
+      "id": "art-compute-containers-azure-container-registry",
+      "chapterId": "compute",
+      "subchapterId": "containers",
+      "topic": "Azure Container Registry",
+      "title": "Azure Container Registry: SKUs, image storage, ACR Tasks, and authentication",
+      "summary": "Covers how ACR stores and tags images, what separates the Basic/Standard/Premium tiers, how ACR Tasks automate builds and base-image patching, and which authentication method to use in which scenario.",
+      "keyPoints": [
+        "ACR is a private, managed Docker/OCI registry: registry → repository → tagged images, each image identified by a unique SHA-256 manifest digest",
+        "Three SKUs — Basic, Standard, Premium — share the same APIs and features; they differ in included storage (10/100/500 GiB), throughput, and webhook limits (2/10/500)",
+        "Only Premium adds geo-replication, private link/private endpoints, content trust (image signing), customer-managed keys, and dedicated Task agent pools",
+        "ACR Tasks automate image lifecycle: quick tasks (cloud-based `az acr build`), and automatically triggered tasks on source commit, base image update, or a schedule; multi-step tasks define YAML build/test/patch pipelines",
+        "Recommended auth is Microsoft Entra ID (individual login for developers, service principal or managed identity for unattended CI/CD); the built-in admin user is a single non-RBAC account meant for testing, not production",
+        "You can change SKU at any time with no downtime, but must remove Premium-only resources (e.g. geo-replications) before downgrading"
+      ],
+      "sections": [
+        {
+          "heading": "Registry structure and image tagging",
+          "body": "ACR organizes content as registry → repository → tagged artifact. A **repository** groups images/artifacts that share a name but differ by tag (e.g. `acr-helloworld:latest`, `:v1`). Every push generates a unique **manifest** with a SHA-256 digest, so you can always pull an exact image by tag or by digest (`repo@sha256:...`). Layers are deduplicated within a registry for storage efficiency, but registries don't share layers with each other. Untagged ('orphan') images still consume storage until explicitly deleted."
+        },
+        {
+          "heading": "Choosing a SKU",
+          "body": "Basic, Standard, and Premium share the same data-plane capabilities (Entra auth, deletion, webhooks, zone redundancy where supported) and differ mainly in scale: storage (10/100/500 GiB included, 40/40/100 TiB hard cap) and webhooks (2/10/500). Only **Standard and above** support anonymous pull and artifact cache rules, and only **Premium** adds geo-replication, private endpoints, content trust, customer-managed encryption keys, connected registries, and dedicated Tasks agent pools. You can upgrade or downgrade with `az acr update --sku Premium` at any time without downtime, but Premium-only resources must be removed first when downgrading."
+        },
+        {
+          "heading": "ACR Tasks",
+          "body": "ACR Tasks build and patch container images in the cloud without a local Docker Engine. **Quick tasks** (`az acr build`) run an on-demand build/push. **Automatically triggered tasks** fire on a source-code commit or pull request, on a **base image update** (rebuilding dependent app images automatically when a tracked base image changes — the key OS/framework-patching scenario), or on a schedule. **Multi-step tasks** use YAML to chain build → test → patch steps, e.g. build an image, run it, execute tests, then package a Helm chart."
+        },
+        {
+          "heading": "Authentication options",
+          "body": "For interactive developer/tester access, use an **individual Microsoft Entra identity** via `az acr login` (token valid 3 hours). For unattended CI/CD or orchestrator access, use a **Microsoft Entra service principal** or a **managed identity** — both support Entra RBAC. The **admin user** is a single built-in account, disabled by default, that grants full push/pull with no RBAC; it's needed for some portal-only scenarios (like deploying straight from ACR to Container Instances/Container Apps in the portal) but isn't recommended for general use. Non-Entra **tokens and scope maps** give repository-scoped permissions independent of RBAC, useful for external systems."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/container-registry/",
+        "https://learn.microsoft.com/en-us/azure/container-registry/container-registry-intro",
+        "https://learn.microsoft.com/en-us/azure/container-registry/container-registry-skus",
+        "https://learn.microsoft.com/en-us/azure/container-registry/container-registry-authentication",
+        "https://learn.microsoft.com/en-us/azure/container-registry/container-registry-tasks-overview",
+        "https://learn.microsoft.com/en-us/azure/container-registry/container-registry-concepts"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 1
+    },
+    {
+      "id": "art-compute-containers-azure-container-instances",
+      "chapterId": "compute",
+      "subchapterId": "containers",
+      "topic": "Azure Container Instances",
+      "title": "Azure Container Instances: fast, serverless containers without an orchestrator",
+      "summary": "Explains when ACI is the right choice over an orchestrator, how multi-container groups behave, restart policies, and the resource limits you can request.",
+      "keyPoints": [
+        "ACI is the fastest, simplest way to run Linux or Windows containers in Azure without managing VMs or adopting an orchestrator; billed per second for the exact CPU/memory requested",
+        "A container group is the top-level ACI resource — containers sharing lifecycle, local network, and storage, conceptually like a Kubernetes pod",
+        "Multi-container groups are Linux-only; Windows supports only single-container groups",
+        "Three restart policies: Always (default), Never (run at most once), OnFailure (restarted only on nonzero exit) — well suited to per-second-billed batch/run-once jobs",
+        "Standard container groups support up to 31 vCPU, 240 GB memory, 50 GB storage; minimum allocation is 1 vCPU and 1 GB memory per group",
+        "Volume mounting (Azure file share, secret, emptyDir, git repo) is also restricted to Linux containers; groups can be deployed into a virtual network"
+      ],
+      "sections": [
+        {
+          "heading": "When to use ACI",
+          "body": "ACI is described as 'serverless containers' — the fastest and simplest way to run a container in Azure without provisioning VMs or standing up an orchestrator. Startup is measured in seconds thanks to cached base OS images. It's billed per second for exactly the CPU/memory you request, which suits burst or on-demand workloads rather than long-running orchestrated services. ACI has no built-in orchestration or autoscaling of its own; for orchestration you'd schedule ACI containers as AKS virtual nodes instead."
+        },
+        {
+          "heading": "Container groups",
+          "body": "A **container group** is the unit of deployment: multiple containers scheduled onto the same host, sharing lifecycle, a local network, and storage volumes — similar to a Kubernetes pod. Containers in a group share one external IP, exposed ports, and a DNS name, and reach each other over `localhost` on any port. Multi-container groups are **Linux-only**; Windows groups may contain only a single container. The group's total CPU/memory equals the sum of each container's requested resources, with a minimum of 1 vCPU and 1 GB memory per group; a container can request a resource **limit** higher than its **request**, letting it burst using the group's spare capacity."
+        },
+        {
+          "heading": "Restart policies",
+          "body": "Set via `--restart-policy` on `az container create`: **Always** (default, containers always restart), **Never** (run at most once), and **OnFailure** (restart only on a nonzero exit code, i.e. run at least once). Because billing is per second, `Never`/`OnFailure` are natural fits for run-once batch, build, or rendering jobs — billing stops once the process exits. Note the container group's IP address can change across a restart."
+        },
+        {
+          "heading": "Resource limits and other capabilities",
+          "body": "Standard container groups support up to **31 vCPU, 240 GB memory, and 50 GB storage**, with hard caps of 60 containers and 20 volumes per group. Supported mountable volume types — Azure file share, secret, emptyDir, and cloned git repo — are also Linux-only. Groups can be deployed into an Azure virtual network (requiring a NAT gateway for outbound connectivity) and can use managed identities, including for ACR image pulls. Note: GPU container support in ACI was retired on July 14, 2025 and should no longer be treated as an available option."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/container-instances/container-instances-overview",
+        "https://learn.microsoft.com/en-us/azure/container-instances/container-instances-container-groups",
+        "https://learn.microsoft.com/en-us/azure/container-instances/container-instances-restart-policy",
+        "https://learn.microsoft.com/en-us/azure/container-instances/container-instances-resource-and-quota-limits"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 2
+    },
+    {
+      "id": "art-compute-containers-azure-container-apps",
+      "chapterId": "compute",
+      "subchapterId": "containers",
+      "topic": "Azure Container Apps",
+      "title": "Azure Container Apps: environments, revisions, ingress, Dapr, and KEDA autoscaling",
+      "summary": "A deep dive into the exam-heaviest container topic — how environments, revisions, ingress, Dapr sidecars, and KEDA scale rules fit together in Azure Container Apps.",
+      "keyPoints": [
+        "An environment is a secure boundary around one or more container apps/jobs, backed by a virtual network and (by default) a shared Log Analytics workspace",
+        "A revision is an immutable snapshot; template-scope changes (image, scale rules) create a new revision, configuration-scope changes (secrets, ingress, Dapr) apply to all revisions without creating one",
+        "Single revision mode runs one active revision at a time with zero-downtime cutover; multiple revision mode lets you split traffic by percentage across revisions for blue-green/canary/A-B testing",
+        "Ingress can be external (public, environment IP) or internal (reachable only within the environment); traffic splitting only matters in multiple revision mode",
+        "Dapr runs as a per-app sidecar (HTTP 3500 / gRPC 50001) providing service invocation, state, pub/sub, bindings, actors, and secrets building blocks",
+        "Autoscaling uses KEDA scale rules (HTTP, TCP, or any custom KEDA scaler like Service Bus/Event Hubs/CPU/memory); apps can scale to zero on event-driven triggers but NOT when the scale rule is CPU or memory based"
+      ],
+      "sections": [
+        {
+          "heading": "Environments",
+          "body": "A Container Apps **environment** is a secure boundary around one or more container apps and jobs; Azure manages OS upgrades, scaling, failover, and resource balancing for everything inside it. Each environment is backed by a virtual network (auto-created, or bring your own for finer control), and apps in the same environment write logs — stdout/stderr, scaling events, Dapr sidecar logs — to the same Log Analytics workspace by default. Use one environment when apps should share networking/Dapr config/logs or need Dapr service invocation between them; use separate environments when apps must be isolated (e.g. test vs. prod)."
+        },
+        {
+          "heading": "Revisions",
+          "body": "A **revision** is an immutable, versioned snapshot of a container app, created automatically on first deployment. Changes under `properties.template` (container image, scale rules, revision suffix) create a **new revision**; changes under `properties.configuration` (secrets, ingress traffic split/labels, Dapr settings, registry credentials) apply globally without a new revision. **Single revision mode** (default) keeps only one revision active, cutting over traffic once the new one passes readiness checks with zero downtime; **multiple revision mode** lets several revisions run concurrently with a controlled traffic split — the basis for blue-green and A/B testing. Revision **labels** give a revision a stable URL that can be moved between revisions without changing the URL."
+        },
+        {
+          "heading": "Ingress",
+          "body": "Enabling ingress avoids manually provisioning a load balancer. **External** ingress is reachable from the public internet (via the environment's inbound IP) and from other apps in the environment; **internal** ingress is reachable only from within the same environment. HTTP ingress supports TLS termination, HTTP/1.1, HTTP/2, WebSocket, and gRPC; TCP ingress covers non-HTTP protocols, with external TCP requiring a VNet-based environment. **Traffic splitting** — percentage-based allocation across active revisions — is only meaningful in multiple revision mode."
+        },
+        {
+          "heading": "Dapr integration",
+          "body": "Dapr is exposed to a container app as a managed **sidecar** (HTTP port 3500, gRPC port 50001), enabled per container app via `enable-dapr` settings (app ID, app port, protocol). It provides building-block APIs: service-to-service invocation with automatic mTLS, state management, pub/sub, bindings, actors, and secrets, backed by separately configured Dapr components (e.g. Azure Cosmos DB or Blob storage for state, Service Bus/Event Hubs for pub/sub, Key Vault for secrets) that can be shared across apps. Dapr actor reminders require `minReplicas` ≥ 1, since they can't rely on scale-to-zero; Dapr isn't supported on Container Apps jobs."
+        },
+        {
+          "heading": "KEDA-based autoscaling",
+          "body": "Container Apps uses **KEDA** to scale replicas via declarative scale rules; adding or editing a rule creates a new revision. Default limits are min 0 / max 10 replicas (range 0–1,000 for min, 1–1,000 for max). Scale rule triggers fall into three categories: **HTTP** (scales on concurrent requests, default threshold 10), **TCP** (concurrent connections, default threshold 10), and **custom** KEDA scalers (CPU, memory, or event sources like Service Bus, Event Hubs, Kafka, Storage Queues). Multiple rules can combine, and scaling triggers when **any** rule's condition is met. Scale-to-zero is supported for HTTP/TCP/event-driven triggers but explicitly **not supported when scaling on CPU or memory**, which always require at least one running replica."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/container-apps/overview",
+        "https://learn.microsoft.com/en-us/azure/container-apps/environment",
+        "https://learn.microsoft.com/en-us/azure/container-apps/revisions",
+        "https://learn.microsoft.com/en-us/azure/container-apps/ingress-overview",
+        "https://learn.microsoft.com/en-us/azure/container-apps/dapr-overview",
+        "https://learn.microsoft.com/en-us/azure/container-apps/scale-app"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 3
+    },
+    {
+      "id": "art-compute-app-service-app-service-plans-and-hosting-models",
+      "chapterId": "compute",
+      "subchapterId": "app-service",
+      "topic": "App Service plans & hosting models",
+      "title": "App Service plans: choosing between shared, dedicated, and isolated compute",
+      "summary": "Explains what an App Service plan controls, how the Free/Shared/Basic/Standard/Premium/Isolated tiers differ, and why compute isolation is a plan-level (not app-level) decision.",
+      "keyPoints": [
+        "An App Service plan fixes OS, region, VM size/instance count, and pricing tier for every app placed in it; all apps (and their slots) in a plan run on — and scale with — the same VM instances",
+        "Shared-compute tiers (Free, Shared) run on VMs shared with other customers' apps and cannot scale out; dedicated tiers (Basic through PremiumV4) run on VMs not shared across customers; Isolated (IsolatedV2) adds a dedicated virtual network (App Service Environment)",
+        "Max scale-out instances per plan: Basic 3, Standard 10, Premium v1 20, Premium v2/v3/v4 30, IsolatedV2 100",
+        "Deployment slots require Standard (5 slots) or Premium/Isolated (20 slots); Free/Shared/Basic support none",
+        "Regional VNet integration (outbound only) requires Basic tier or above; Isolated apps are inherently VNet-resident since the App Service Environment lives inside the VNet",
+        "To isolate one app's compute from another app, put each in its own plan — isolation is not automatic just because they're different apps"
+      ],
+      "sections": [
+        {
+          "heading": "What a plan controls",
+          "body": "Every App Service app runs inside a plan, which defines the OS, region, VM instance size, instance count, and pricing tier — Azure Functions can also run in a dedicated App Service plan. Scaling (manual or autoscale) is applied at the plan level and affects **every app sharing that plan**, including all of an app's deployment slots, since slots run on the same VM instances as the app itself."
+        },
+        {
+          "heading": "Tier categories: shared, dedicated, isolated",
+          "body": "**Shared compute** (Free, Shared) runs your app on the same VM as other customers' apps, with a CPU-minute quota and no scale-out — dev/test only. **Dedicated compute** (Basic, Standard, Premium, Premium v2/v3/v4) runs on VMs not shared with other customers, though apps placed in the *same* plan still share those VM instances with each other. **Isolated** (IsolatedV2, via an App Service Environment) adds a dedicated virtual network on top of dedicated compute for maximum network isolation and scale-out headroom. Max scale-out instances per plan scale with tier: Basic 3, Standard 10, Premium v1 20, Premium v2/v3/v4 30, IsolatedV2 up to 100."
+        },
+        {
+          "heading": "Feature gating by tier",
+          "body": "Custom domains require above-Free tiers (Free is limited to the `azurewebsites.net` subdomain). TLS/SSL certificate bindings require Basic or above. **Deployment slots require Standard (5 slots) or Premium/Isolated (20 slots)** — Free, Shared, and Basic support none. Regional **VNet integration** (outbound-only) requires Basic tier or higher; Isolated doesn't need it separately since the App Service Environment already sits inside a VNet, with up to 2 VNet integrations per plan and a dedicated delegated subnet (minimum `/28`, recommended `/26` or larger)."
+        },
+        {
+          "heading": "Scaling up vs. scaling out",
+          "body": "**Scaling up** means changing pricing tier or VM size within a tier to unlock features (e.g. moving to Standard to get staging slots) or get more cores/memory. **Scaling out** means increasing the instance count within the current tier's limits, either manually or via autoscale rules. Because scaling operates at the plan level, all apps and slots hosted in that plan scale together."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/app-service/overview",
+        "https://learn.microsoft.com/en-us/azure/app-service/overview-hosting-plans",
+        "https://learn.microsoft.com/en-us/azure/app-service/manage-scale-up",
+        "https://learn.microsoft.com/en-us/azure/app-service/deploy-staging-slots",
+        "https://learn.microsoft.com/en-us/azure/app-service/overview-vnet-integration",
+        "https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 1
+    },
+    {
+      "id": "art-compute-app-service-deployment-slots-and-traffic-routing",
+      "chapterId": "compute",
+      "subchapterId": "app-service",
+      "topic": "Deployment slots & traffic routing",
+      "title": "Deployment slots: swapping, slot-sticky settings, and percentage traffic routing",
+      "summary": "Covers exactly what happens during a slot swap, which settings follow the slot versus the app content, and how to route a percentage of production traffic to a slot for testing.",
+      "keyPoints": [
+        "Deployment slots require Standard tier (5 slots) or Premium/Isolated (20 slots); each slot is a full live app with its own hostname",
+        "A swap applies the target slot's slot-specific settings to the source slot, restarts and warms it, then switches routing — the target slot stays online throughout, so production should be the swap target",
+        "Slot-sticky settings (never swapped) include IP restrictions, Always On, diagnostic logs, CORS, scale settings, custom domains, and TLS/certificate settings; app settings/connection strings only stay sticky if explicitly marked as a 'deployment slot setting'",
+        "\"Swap with preview\" pauses after applying settings/warm-up so you can validate before completing or canceling the swap; it is not usable when Easy Auth is enabled on either slot",
+        "Auto swap triggers an automatic swap on every push to the source slot once it's warmed up, but is not supported on Linux web apps or Web App for Containers",
+        "Percentage-based traffic routing pins a client to a slot via the x-ms-routing-name cookie for one hour or until cookies are cleared; a manual ?x-ms-routing-name= query parameter can force routing even at 0%"
+      ],
+      "sections": [
+        {
+          "heading": "How a swap works",
+          "body": "Swapping applies the target slot's slot-specific settings (app settings/connection strings marked sticky, auth settings, continuous deployment config) to the **source** slot and restarts it; once all source-slot instances finish restarting and warming up (via `applicationInitialization` or a root HTTP ping), App Service completes the swap by switching routing rules. The **target slot stays online throughout** the process — this is why production should always be the swap target, giving zero-downtime deployment. If a swap fails partway, it auto-reverts."
+        },
+        {
+          "heading": "Slot-sticky vs. swapped settings",
+          "body": "Some settings never move with a swap regardless of configuration: protocol/TLS settings, publishing endpoints, custom domains, scale settings, WebJobs schedulers, IP restrictions, Always On, diagnostic log settings, CORS, and managed identities. App settings, connection strings, and mounted storage accounts swap **with the app content by default**, unless explicitly checked as a 'Deployment slot setting' (portal) or set via `--slot-settings` (CLI) — in which case they stay with the slot instead. Language/framework version, 32/64-bit mode, and WebSockets settings always follow the content, not the slot."
+        },
+        {
+          "heading": "Swap with preview and auto swap",
+          "body": "**Swap with preview** (multi-phase swap) pauses after phase one — settings applied and source slot restarted — so you can validate before choosing 'Complete Swap' or 'Cancel Swap' (revert); it cannot be used when site authentication (Easy Auth) is enabled on either slot. **Auto swap** automatically swaps a source slot into a configured target slot after every deployment once the app is warmed up, giving zero-downtime CI/CD, but it is **not supported on Linux web apps or Web App for Containers**. A bad swap can be undone by immediately re-swapping the same two slots."
+        },
+        {
+          "heading": "Percentage-based traffic routing",
+          "body": "Beyond full swaps, you can route a **percentage of production traffic** to a slot by setting a Traffic % value (0–100) per slot; a routed client is pinned to that slot for one hour (or until cookies are cleared) via the `x-ms-routing-name` cookie. You can also force routing manually with a query string — `?x-ms-routing-name=<slotname>` to opt in, or `?x-ms-routing-name=self` to opt back to production — which works even when the slot's traffic percentage is set to 0%, letting you access a slot privately without exposing it to the public."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/app-service/deploy-staging-slots"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 2
+    },
+    {
+      "id": "art-compute-app-service-autoscaling-rules",
+      "chapterId": "compute",
+      "subchapterId": "app-service",
+      "topic": "Autoscaling rules",
+      "title": "App Service scaling: Azure Monitor autoscale vs. the newer Automatic Scaling feature",
+      "summary": "Clarifies the difference between rule-based Azure Monitor autoscale and App Service's newer, simpler Automatic Scaling feature, and which pricing tiers support each.",
+      "keyPoints": [
+        "Azure Monitor autoscale is rule-based (metric thresholds like CPU%, or schedules) and scales at the App Service plan level; it requires Standard tier or above",
+        "Automatic Scaling is a distinct, newer App Service feature: no rules or schedules to configure, reacts only to incoming HTTP traffic, and is configured per app; it requires Premium v2–v4 tiers",
+        "Automatic Scaling supports 'Always ready instances' (minimum instances always running, default/minimum 1) and 'prewarmed instances' (buffer to avoid cold start, default 1) plus an optional per-app maximum scale limit",
+        "Only one scaling method can be active per App Service plan — Autoscale and Automatic Scaling are mutually exclusive on the same plan",
+        "Automatic Scaling disables ARR (session) affinity and is not supported for Azure Functions apps or for deployment-slot traffic",
+        "Manual (fixed instance count) scaling is available from Basic tier and up"
+      ],
+      "sections": [
+        {
+          "heading": "Azure Monitor autoscale",
+          "body": "Azure Monitor autoscale is the traditional rule-based option: you define conditions on metrics (e.g. 'CPU > 70% → add 1 instance', 'CPU < 20% → remove 1 instance') or on a schedule (recurring windows or specific date ranges), each with its own instance-count settings, plus a cooldown period between scale actions to prevent flapping. It requires the app's plan to be **Standard tier or above**, and it scales the **App Service plan** as a whole — affecting every app sharing that plan."
+        },
+        {
+          "heading": "Automatic Scaling — how it differs",
+          "body": "Automatic Scaling is explicitly documented as **different from Azure autoscale**: it reacts only to incoming HTTP traffic, with no rules or schedules to configure, and is set **per app** rather than per plan. It requires **Premium v2, v3, or v4** tiers. Because it's mutually exclusive with rule-based autoscale, only one scaling method should be active on a given plan at a time."
+        },
+        {
+          "heading": "Always ready and prewarmed instances",
+          "body": "Automatic Scaling introduces **Always ready instances** — the minimum number of instances kept running at all times (minimum value 1, set via `--minimum-elastic-instance-count`) — and **prewarmed instances**, a buffer (default 1, changeable only via CLI) that becomes active once the always-ready instances are exhausted, eliminating cold-start delay during scale-out. A plan-level **maximum burst** caps how far automatic scaling can grow (up to 30 instances for Premium v2/v3/v4), and an optional per-app 'enforce scale-out limit' further caps an individual app below that ceiling."
+        },
+        {
+          "heading": "Constraints and comparison",
+          "body": "Enabling Automatic Scaling automatically disables ARR (session) affinity for existing apps in the plan, since sticky sessions conflict with dynamic traffic-based scaling. It does **not** support Azure Functions apps sharing the plan (Functions should use their own Premium plan) and is not supported for deployment-slot traffic. Manual scaling (a fixed instance count with no autoscale or automatic behavior) is available from **Basic tier and up**, while rule-based autoscale needs Standard+ and Automatic Scaling needs Premium v2–v4."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/app-service/manage-automatic-scaling",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/autoscale/autoscale-get-started",
+        "https://learn.microsoft.com/en-us/azure/app-service/manage-scale-up"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 3
+    },
+    {
+      "id": "art-compute-app-service-authentication-easy-auth-and-custom-doma",
+      "chapterId": "compute",
+      "subchapterId": "app-service",
+      "topic": "Authentication (Easy Auth) & custom domains/TLS",
+      "title": "Easy Auth, custom domains, and TLS certificates in App Service",
+      "summary": "Explains how App Service's built-in authentication module works and which identity providers it supports, plus how to verify a custom domain and choose between managed and bring-your-own TLS certificates.",
+      "keyPoints": [
+        "Easy Auth is a platform-level module that intercepts every request before it reaches app code — no SDK or code changes required; it runs in-process (IIS module) on Windows and as a separate sidecar container (Ambassador pattern) on Linux/containers",
+        "Built-in identity providers: Microsoft Entra ID, Facebook, Google, X (Twitter), GitHub, Apple (preview), and any generic OpenID Connect provider",
+        "Custom domain verification needs an A record (root domain) or CNAME (subdomain/wildcard) plus a TXT record (asuid) holding the app's domain verification ID to prove ownership and prevent subdomain takeover",
+        "Certificate options: free App Service Managed Certificate, paid App Service Certificate, Key Vault import, or your own uploaded .pfx",
+        "The free managed certificate does not support wildcards, isn't exportable, and isn't supported in an Isolated App Service Environment; the paid App Service Certificate does support a wildcard SKU",
+        "Adding any TLS binding requires Basic tier or above; IP-based SSL (one dedicated IP per app) requires Standard tier or above, while SNI SSL works on any paid tier and allows multiple bindings; App Service defaults to TLS 1.2 minimum"
+      ],
+      "sections": [
+        {
+          "heading": "How Easy Auth works",
+          "body": "App Service's built-in authentication/authorization ('Easy Auth') runs as a platform feature on the same VM as the app, intercepting every request before your code runs — no SDK or language-specific code is required. On **Windows**, it runs as a native IIS module in-process; on **Linux and containers**, it runs as a separate, isolated container using the Ambassador pattern, passing identity information to the app via request headers instead of in-process integration. It handles authenticating with the identity provider, validating/refreshing OAuth tokens, managing the session, and can be configured to require authentication (returning 302/401/403/404 for unauthenticated requests) or allow anonymous access and defer to app code."
+        },
+        {
+          "heading": "Supported identity providers",
+          "body": "Easy Auth ships with built-in support for **Microsoft Entra ID**, **Facebook**, **Google**, **X (Twitter)**, **GitHub**, **Apple** (preview), and any generic **OpenID Connect** provider — each reachable at its own `/.auth/login/<provider>` endpoint. A built-in token store keeps ID/access/refresh tokens per authenticated session and can be disabled if not needed. Enabling built-in auth forces HTTPS redirection regardless of the app's own HTTPS-only setting."
+        },
+        {
+          "heading": "Custom domain verification",
+          "body": "Custom domains require the app to be above the Free tier. Mapping uses an **A record** for a root/apex domain (CNAME isn't valid at the root) or a **CNAME record** for a subdomain or wildcard. Verification additionally requires a **TXT record** (`asuid` for root, `asuid.<subdomain>` otherwise) containing the app's domain verification ID — this proves ownership and, while technically optional, is strongly recommended to prevent subdomain takeover. Only public DNS zones are supported."
+        },
+        {
+          "heading": "TLS/SSL certificate choices",
+          "body": "Certificate options are: the free **App Service Managed Certificate** (auto-renewing, DigiCert-issued, but **no wildcard support**, not exportable, and not supported in an Isolated App Service Environment), the paid **App Service Certificate** (Azure/GoDaddy-issued via Key Vault, **does support a wildcard SKU**, exportable), a certificate **imported from Key Vault**, or your **own uploaded .pfx**. Any certificate binding requires Basic tier or above. Binding type matters too: **SNI SSL** allows multiple bindings on any paid tier with no dedicated IP, while **IP-based SSL** grants a dedicated public IP but only one per app and requires **Standard tier or above**. App Service enforces **TLS 1.2 as the default minimum** version, configurable higher if needed."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/app-service/overview-authentication-authorization",
+        "https://learn.microsoft.com/en-us/azure/app-service/app-service-web-tutorial-custom-domain",
+        "https://learn.microsoft.com/en-us/azure/app-service/configure-ssl-certificate",
+        "https://learn.microsoft.com/en-us/azure/app-service/configure-ssl-app-service-certificate",
+        "https://learn.microsoft.com/en-us/azure/app-service/configure-ssl-bindings"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 4
+    },
+    {
+      "id": "art-compute-functions-triggers-and-bindings",
+      "chapterId": "compute",
+      "subchapterId": "functions",
+      "topic": "Triggers & bindings",
+      "title": "Azure Functions triggers and bindings: the model and the common trigger types",
+      "summary": "Explains the trigger/input-binding/output-binding model that every Azure Function is built on, and surveys the trigger types you'll be tested on, including NCRONTAB timer syntax.",
+      "keyPoints": [
+        "Every function has exactly one trigger, which defines how it's invoked; it can also have optional input bindings (read data in) and output bindings (write data out)",
+        "Bindings are declared declaratively (C# attributes, Java annotations, or a function.json file) instead of writing manual SDK connection code — though using the Azure SDK directly is always still possible",
+        "Timer triggers use NCRONTAB expressions in the format {second} {minute} {hour} {day} {month} {day-of-week}, e.g. \"0 */5 * * * *\" for every five minutes",
+        "Queue Storage and Event Hubs support trigger and output bindings but no input binding; Timer supports trigger only; Table Storage supports input/output only, no trigger",
+        "Cosmos DB triggers are powered by the change feed, exposing changed items as JSON-serializable objects",
+        "Only one instance of a timer-triggered function runs across all instances even when the function app has scaled out, enforced via a storage lock"
+      ],
+      "sections": [
+        {
+          "heading": "The trigger/binding model",
+          "body": "A trigger 'causes a function to run' and defines how it's invoked — every function must have exactly **one** trigger, which is itself essentially a special kind of input binding. Beyond the trigger, a function can declare any number of **input bindings** (data read into the function) and **output bindings** (data written out), all optional. This declarative connection to other Azure services removes the boilerplate of hand-writing SDK client code — though Functions doesn't require bindings; you can always create an Azure SDK client directly in your code instead."
+        },
+        {
+          "heading": "How bindings are declared",
+          "body": "Declaration mechanism depends on language: C# class library functions use **attributes** (e.g. `[HttpTrigger]`, `[QueueOutput]`), Java uses **annotations**, the Node.js v4 model uses objects from the `@azure/functions` module, Python v2 uses **decorators**, while Node.js v3, Python v1, and PowerShell instead use a **function.json** file placed in the function folder."
+        },
+        {
+          "heading": "Common trigger types",
+          "body": "Exam-relevant triggers include: **HTTP** (trigger + output), **Timer** (trigger only, NCRONTAB schedule), **Blob Storage** (trigger, input, and output), **Queue Storage** (trigger + output only, no input), **Cosmos DB** (trigger via change feed, plus input/output), **Event Grid** (trigger + output only), and **Event Hubs** (trigger + output only). **Table Storage**, by contrast, supports only input/output — it has no trigger."
+        },
+        {
+          "heading": "Timer trigger and NCRONTAB",
+          "body": "Timer triggers use **NCRONTAB** expressions: `{second} {minute} {hour} {day} {month} {day-of-week}` — six fields, one more than standard 5-field cron. Documented examples include ```0 */5 * * * *``` (every five minutes), ```0 0 * * * *``` (top of every hour), and ```0 30 9 * * 1-5``` (9:30 AM every weekday). The default timezone is UTC (overridable via the `WEBSITE_TIME_ZONE` app setting, not supported on Linux Flex Consumption/Consumption). If the function app has scaled to multiple instances, only a **single instance** of a given timer-triggered function executes at the scheduled time, enforced through a storage lock."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings",
+        "https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 1
+    },
+    {
+      "id": "art-compute-functions-hosting-plans-and-scaling",
+      "chapterId": "compute",
+      "subchapterId": "functions",
+      "topic": "Hosting plans & scaling",
+      "title": "Azure Functions hosting plans: Flex Consumption, Premium, and Dedicated compared",
+      "summary": "Compares the current Functions hosting plans on scale limits and cold start, and confirms which runtime versions are actually supported today.",
+      "keyPoints": [
+        "Flex Consumption is the current recommended serverless plan (GA, Linux-only), replacing the legacy Consumption plan; scales to 1,000 instances and supports VNet integration and always-ready instances",
+        "Legacy Consumption plan is being retired for Linux: v3 runtime on Linux Consumption stops running after September 30, 2026, and Linux Consumption hosting itself retires September 30, 2028",
+        "Premium plan offers always-ready and prewarmed instances (max 20 always-ready per app) to avoid cold starts, VNet connectivity, and a choice of instance sizes (EP1/EP2/EP3)",
+        "Dedicated (App Service) plan runs on fixed instances so cold start 'isn't really an issue', scaling manually or via autoscale up to plan limits (up to 100 with an App Service Environment)",
+        "Runtime version 4.x is GA and the recommended version for all languages; versions 2.x and 3.x are out of support since December 2022; version 1.x is in maintenance mode, ending support September 14, 2026",
+        "Flex Consumption only supports the 4.x+ runtime and does not support deployment slots or proxies"
+      ],
+      "sections": [
+        {
+          "heading": "Flex Consumption — the current recommendation",
+          "body": "Flex Consumption is documented as **'the recommended serverless hosting plan for Azure Functions'** and is **Linux-only** and **Generally Available**. It scales out to a maximum of **1,000 instances** (vs. legacy Consumption's 200 on Windows/100 on Linux), and unlike legacy Consumption, it supports **VNet integration**, **always-ready instances**, and Azure Files mounts. Instance sizes are 512 MB (0.25 vCPU), 2,048 MB (1 vCPU), or 4,096 MB (2 vCPU). Deployment slots are **not supported**, and there's no in-place migration to Flex Consumption — apps must be redeployed."
+        },
+        {
+          "heading": "Legacy Consumption plan is being phased out",
+          "body": "The docs explicitly call Consumption a 'legacy hosting plan' and direct new serverless function apps to Flex Consumption instead. On the retirement timeline: function apps still on the **end-of-life v3 runtime on Linux Consumption stop running after September 30, 2026**, and Linux Consumption hosting itself is retiring on **September 30, 2028**. Consumption apps scale to zero when idle, which can add latency to the first request after idle (cold start), partially mitigated by prewarmed placeholder functions."
+        },
+        {
+          "heading": "Premium and Dedicated plans",
+          "body": "The **Premium** plan (Elastic Premium, SKUs `EP1`/`EP2`/`EP3` — 1/2/4 cores, 3.5/7/14 GB) avoids cold starts using **always-ready instances** (max 20 per app, setting the plan's minimum billed instance count) plus a default of 1 **prewarmed instance** as a scale-out buffer; every Premium plan always has at least one active billed instance. Scale-out limits vary by region, ranging roughly 20–100 instances depending on OS/region. The **Dedicated (App Service)** plan runs functions on a fixed set of instances, so 'cold start isn't really an issue'; it scales manually or via autoscale, reaching up to 100 instances when paired with an App Service Environment."
+        },
+        {
+          "heading": "Runtime versions — what's actually current",
+          "body": "**Version 4.x is GA and is the recommended runtime version for functions in all languages.** **Version 1.x is GA but in maintenance mode** (limited to C# apps requiring the full .NET Framework), with support ending **September 14, 2026**. **Versions 2.x and 3.x are out of support** — their extended support ended December 13, 2022 — so existing v2/v3 apps keep running (except v3 on Linux Consumption, per the retirement date above) but receive no new features, security patches, or performance updates. The runtime version is controlled by the `FUNCTIONS_EXTENSION_VERSION` app setting (`~4` for current)."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale",
+        "https://learn.microsoft.com/en-us/azure/azure-functions/functions-premium-plan",
+        "https://learn.microsoft.com/en-us/azure/azure-functions/flex-consumption-plan",
+        "https://learn.microsoft.com/en-us/azure/azure-functions/functions-versions"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 2
+    },
+    {
+      "id": "art-compute-functions-durable-functions-patterns",
+      "chapterId": "compute",
+      "subchapterId": "functions",
+      "topic": "Durable Functions patterns",
+      "title": "Durable Functions: orchestrators, activities, entities, and the core workflow patterns",
+      "summary": "Introduces the Durable Functions building blocks and the named application patterns Microsoft documents — function chaining, fan-out/fan-in, async HTTP APIs, monitoring, and human interaction.",
+      "keyPoints": [
+        "Durable Functions extends Azure Functions with orchestrator, activity, and entity functions so you can build stateful workflows in a serverless environment, with the runtime managing state, checkpoints, retries, and recovery",
+        "Orchestrator code must be deterministic because the runtime rebuilds state via event sourcing and replay — nondeterministic code can cause failures or deadlocks",
+        "Activity functions do the actual work (I/O allowed), guarantee at-least-once execution, and should be made idempotent",
+        "Entity functions manage small pieces of state and process operations serially — only one operation runs at a time per entity instance, useful for aggregation, locks, or stateful objects",
+        "Documented patterns: function chaining, fan-out/fan-in, async HTTP APIs (built-in 202/Location polling), monitoring, and human interaction (racing an external event against a timeout)",
+        "Use Durable Functions when you need multi-step coordination, reliable state, or long-running execution across invocations; use plain Functions for simple, independent, stateless event-driven work"
+      ],
+      "sections": [
+        {
+          "heading": "Orchestrators, activities, and entities",
+          "body": "Durable Functions is 'an extension of Azure Functions that lets you build stateful workflows in a serverless environment by writing orchestrator, activity, and entity functions in code,' with the runtime managing state, checkpoints, retries, and recovery. **Orchestrator** functions coordinate workflow logic — scheduling activities, sub-orchestrations, durable timers, and waiting on external events — but must be **deterministic**, since the runtime uses event sourcing and replay to rebuild state; nondeterministic code can cause failures or deadlocks. **Activity** functions perform a single unit of work, may freely do I/O, guarantee **at-least-once** execution (so should be idempotent), and take one input/produce one output. **Entity** functions manage a small piece of state and process operations **serially** — only one operation runs at a time per entity instance — making them well suited to aggregation, distributed locks, or stateful objects like shopping carts."
+        },
+        {
+          "heading": "Function chaining and fan-out/fan-in",
+          "body": "**Function chaining** runs a sequence of functions in order, commonly passing the output of one as the input to the next — e.g. an orchestrator calling the same activity multiple times in sequence. **Fan-out/fan-in** runs multiple functions in parallel and then aggregates the results — e.g. an orchestrator that lists files, calls a copy activity for each file concurrently (`Task.WhenAll` in C#), then sums the results once all complete."
+        },
+        {
+          "heading": "Async HTTP APIs and monitoring",
+          "body": "The **async HTTP API** pattern addresses long-running operations triggered over HTTP: a client POST starts the orchestration and immediately gets a 202 response with a `Location` header pointing to a status-check URL, which the client polls until the orchestration completes — this is built into Durable Functions automatically via `CreateCheckStatusResponse`, no custom polling code required. The **monitoring** pattern is a recurring process that polls an external system until a condition is met; unlike a fixed-schedule timer trigger, a monitor waits between iterations, supports dynamic intervals, and can terminate itself once the condition is satisfied or a timeout expires."
+        },
+        {
+          "heading": "Human interaction, and when to reach for Durable Functions",
+          "body": "The **human interaction** pattern pauses a workflow to wait for input from a person — e.g. an approval step — by having the orchestrator start a durable timer and simultaneously wait for an external event, racing the two (`Task.WhenAny`) so the workflow times out gracefully if no response arrives. Overall, Durable Functions exists to add **stateful orchestration** — multi-step coordination, reliable checkpointed state, fan-out/fan-in, and human-in-the-loop timeouts — on top of Azure Functions' normal **stateless, single-purpose, event-driven** execution model; plain Functions remain the right choice for simple, independent operations that don't need cross-invocation coordination."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/durable-task/durable-functions/durable-functions-overview",
+        "https://learn.microsoft.com/en-us/azure/durable-task/common/programming-model-overview",
+        "https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-sequence",
+        "https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-fan-in-fan-out",
+        "https://learn.microsoft.com/en-us/azure/durable-task/durable-functions/durable-functions-http-features",
+        "https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-monitor",
+        "https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-human-interaction",
+        "https://learn.microsoft.com/en-us/azure/durable-task/common/durable-task-entities"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 3
+    },
+    {
+      "id": "art-storage-cosmos-db-consistency-levels",
+      "chapterId": "storage",
+      "subchapterId": "cosmos-db",
+      "topic": "Consistency levels",
+      "title": "Choosing the Right Consistency Level in Azure Cosmos DB",
+      "summary": "Explains the five Cosmos DB consistency levels, their guarantees and RU/latency trade-offs, which one is the default, and how to override it per request.",
+      "keyPoints": [
+        "Five levels from strongest to weakest: Strong, Bounded Staleness, Session, Consistent Prefix, Eventual.",
+        "Session is the default consistency level applied to new Cosmos DB accounts.",
+        "Strong gives linearizable reads but requires a global majority write quorum and is blocked by default for accounts spanning more than 5,000 miles.",
+        "Bounded Staleness bounds the read lag by K versions or T time interval, whichever comes first; best for single-region-write, multi-region accounts.",
+        "Session guarantees read-your-writes/write-follows-reads within a session via a partition-bound session token; it's the most widely used level.",
+        "Strong and Bounded Staleness use local-minority quorum reads (2 replicas), so their read RU cost is double that of Session, Consistent Prefix, and Eventual, which use single-replica reads.",
+        "The classic per-request ConsistencyLevel override can only relax (weaken) consistency below the account default, never strengthen it.",
+        "The newer ReadConsistencyStrategy (Java SDK 4.69+/.NET SDK 3.46+, preview, direct mode only) can set any strategy per read, including one stronger than the account default."
+      ],
+      "sections": [
+        {
+          "heading": "The consistency spectrum",
+          "body": "Azure Cosmos DB offers five well-defined consistency levels, ordered from strongest to weakest: Strong, Bounded Staleness, Session, Consistent Prefix, and Eventual. Each level trades off consistency against availability, latency, and throughput — moving from Strong toward Eventual increases availability and lowers latency at the cost of read freshness guarantees. Read consistency is scoped to a single read operation within a logical partition."
+        },
+        {
+          "heading": "Strong and Bounded Staleness",
+          "body": "Strong consistency is linearizable: reads always return the most recently committed write, but writes require a **global majority** quorum across all regions, which increases write latency and isn't supported for multi-region-write accounts. Bounded Staleness guarantees the replication lag between regions never exceeds a configured number of versions (K) or time interval (T) — for single-region accounts the minimum is 10 operations/5 seconds; for multi-region accounts it's 100,000 operations/300 seconds. Writes for both levels still replicate to a local majority (3 of 4 replicas) within a region."
+        },
+        {
+          "heading": "Session, Consistent Prefix, and Eventual",
+          "body": "**Session** consistency guarantees read-your-writes and write-follows-reads within a single client session, tracked via a session token that is partition-bound; if the client hasn't written to a partition, reads behave like Eventual consistency there. **Consistent Prefix** guarantees clients never see writes out of order, and multi-document transactional batches are always visible together. **Eventual** is the weakest level — a client might read older data than it read previously, with no ordering guarantee."
+        },
+        {
+          "heading": "RU cost and overriding the default",
+          "body": "Strong and Bounded Staleness perform local-minority quorum reads (2 out of 4 replicas), so for the same RU allocation their read throughput is half that of Session, Consistent Prefix, or Eventual, which read from a single replica. Write RU cost is identical across all levels. You can override consistency per client instance or per request using `ItemRequestOptions.ConsistencyLevel` in the .NET SDK, but this can only weaken the account's configured default. To strengthen consistency per-request without changing the account default, use the newer `ReadConsistencyStrategy` (preview), which supports Default, Session, Eventual, Latest Committed, and Global Strong."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels",
+        "https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-manage-consistency"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 1
+    },
+    {
+      "id": "art-storage-cosmos-db-partitioning-and-partition-keys",
+      "chapterId": "storage",
+      "subchapterId": "cosmos-db",
+      "topic": "Partitioning & partition keys",
+      "title": "Designing Partition Keys for Scale in Azure Cosmos DB",
+      "summary": "Covers the difference between logical and physical partitions, the current service limits that constrain partition key design, and how a poor choice drives up cross-partition query cost.",
+      "keyPoints": [
+        "A logical partition is the set of items sharing one partition key value; there is no limit to the number of logical partitions in a container.",
+        "Each logical partition can store up to 20 GB of data (hierarchical partition keys, up to 3 levels, can be used to exceed this).",
+        "Each physical partition (internal, Azure-managed) supports up to 10,000 RU/s and up to 50 GB of storage; since one logical partition maps to only one physical partition, 10,000 RU/s is also the effective ceiling per logical partition.",
+        "Maximum length of a partition key value is 2,048 bytes, or 101 bytes if the large-partition-key feature isn't enabled.",
+        "Partition key values are immutable once an item is created — you cannot change an item's partition key value in place; you must create a new item and delete the old one.",
+        "A good partition key has high cardinality and spreads RU consumption and storage evenly across logical (and therefore physical) partitions.",
+        "Queries that omit the partition key incur roughly 2-3 extra RU per additional physical partition that must be fanned out to (cross-partition query)."
+      ],
+      "sections": [
+        {
+          "heading": "Logical vs. physical partitions",
+          "body": "Items with the same partition key value form a logical partition, which is also the transaction scope for stored procedures, triggers, and multi-item ACID transactions. Azure Cosmos DB hashes the partition key value and uses that hash to place logical partitions onto physical partitions, which are purely an internal, system-managed construct — a container automatically grows more physical partitions as provisioned throughput or storage increases, without affecting availability."
+        },
+        {
+          "heading": "Partition key limits",
+          "body": "Current service limits: **20 GB** maximum storage per logical partition, **10,000 RU/s** maximum per physical (and therefore per logical) partition, a maximum partition key value length of **2,048 bytes** (or 101 bytes without the large-partition-key feature), a maximum item size of **2 MB**, and a maximum item `id` length of **1,023 bytes**. There is no limit on the number of distinct logical partition keys in a container."
+        },
+        {
+          "heading": "Choosing a good partition key",
+          "body": "A partition key should be immutable, have high cardinality, and spread both RU consumption and storage evenly across partitions to avoid \"hot\" physical partitions. Using the item `/id` as the partition key works well for point-read/write-heavy workloads (it guarantees uniqueness), but any query filtering on a different property becomes a cross-partition query. Low-cardinality fields (e.g., `status`, `country`) risk uneven distribution and hitting the 20 GB / 10,000 RU/s per-logical-partition ceilings."
+        },
+        {
+          "heading": "Cross-partition query cost",
+          "body": "If a container has only a handful of physical partitions (roughly 5 or fewer), omitting the partition key from a query filter adds only about 2-3 RU per extra physical partition consulted — often negligible. As a container grows beyond a few physical partitions (over 30,000 RU/s provisioned or over 100 GB stored), picking a partition key that matches common query filters becomes important to minimize this fan-out cost."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning",
+        "https://learn.microsoft.com/en-us/azure/cosmos-db/concepts-limits"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 2
+    },
+    {
+      "id": "art-storage-cosmos-db-sdk-operations-and-change-feed",
+      "chapterId": "storage",
+      "subchapterId": "cosmos-db",
+      "topic": "SDK operations & change feed",
+      "title": "Reading, Writing, and Watching Data with the Cosmos DB .NET SDK",
+      "summary": "Introduces the CosmosClient/Database/Container object model, the difference between a point read and a query, and how to consume the change feed with the change feed processor.",
+      "keyPoints": [
+        "The .NET SDK (Microsoft.Azure.Cosmos NuGet package) exposes CosmosClient (account-level), Database, and Container objects; each is a client-side reference validated server-side on first use.",
+        "A point read (Container.ReadItemAsync, requires both id and partition key) is explicitly called out as faster/cheaper than a query, which is needed when only the id is known and must search across logical partitions.",
+        "ReadManyItemsAsync retrieves several known id+partition-key pairs with better latency than an equivalent IN query.",
+        "Queries use GetItemQueryIterator (SQL text or QueryDefinition with parameters) or GetItemLinqQueryable, both returning a paged FeedIterator/FeedResponse.",
+        "The change feed processor has four components: the monitored container, the lease container (stores per-partition-range progress), a compute instance, and a delegate that processes each batch of changes.",
+        "The change feed processor guarantees at-least-once delivery; unhandled delegate exceptions cause the same batch to be retried from the last saved lease checkpoint.",
+        "Change feed is enabled by default on every container at no extra cost beyond the lease container's provisioned throughput and the RUs of each read request.",
+        "Typical change feed uses: triggering external processing on inserts/updates, real-time data movement/sync to other stores, and (in all-versions-and-deletes mode, which requires continuous backup) capturing deletes too."
+      ],
+      "sections": [
+        {
+          "heading": "The SDK object model",
+          "body": "Applications built on the .NET SDK primarily work with four resource types: the Cosmos DB account, Databases (organize containers), Containers (hold items), and Items (JSON documents). These map to the `CosmosClient`, `Database`, and `Container` .NET classes; `Database` and `Container` instances are lazy references that are validated against the service only when you actually perform an operation."
+        },
+        {
+          "heading": "Point reads vs. queries",
+          "body": "Cosmos DB documentation is explicit that a **point read** — calling `ReadItemAsync` with both the item's `id` and its partition key — is a \"quick\" operation, while a lookup using only the `id` (no partition key) requires a \"less efficient\" query that must search across multiple logical partitions. For bulk lookups of many known id/partition-key pairs, `ReadManyItemsAsync` is recommended over an `IN` query for better latency. Queries themselves run via `GetItemQueryIterator` (raw SQL or parameterized `QueryDefinition`) or `GetItemLinqQueryable`, both returning paged results through a `FeedIterator`."
+        },
+        {
+          "heading": "Change feed processor components",
+          "body": "The change feed processor library (available for .NET and Java only — Python/Node use the pull model instead) coordinates reading changes from a **monitored container** using a **lease container** for state, distributed across one or more **compute instances**, each invoking a **delegate** you supply. Instances sharing a `processorName` and lease container but each having a unique instance name automatically split the container's partition-key ranges between them and rebalance as instances are added or removed."
+        },
+        {
+          "heading": "Reliability and starting position",
+          "body": "The processor has an **at-least-once** delivery guarantee: if your delegate throws an unhandled exception, that batch is retried from the last checkpoint saved in the lease store, and the delegate should route persistently failing changes to an error queue to avoid getting stuck. By default a processor only sees changes made after it first starts; `WithStartTime` lets it start from a specific date/time or, using `DateTime.MinValue.ToUniversalTime()`, from the very beginning of the container's history — but only for latest-version mode."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-dotnet-get-started",
+        "https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-dotnet-read-item",
+        "https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-dotnet-query-items",
+        "https://learn.microsoft.com/en-us/azure/cosmos-db/change-feed",
+        "https://learn.microsoft.com/en-us/azure/cosmos-db/change-feed-processor"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 3
+    },
+    {
+      "id": "art-storage-cosmos-db-indexing-policies",
+      "chapterId": "storage",
+      "subchapterId": "cosmos-db",
+      "topic": "Indexing policies",
+      "title": "Controlling Query Performance with Cosmos DB Indexing Policies",
+      "summary": "Explains the default indexing behavior, how included/excluded paths and indexing modes work, and exactly when a composite index is required.",
+      "keyPoints": [
+        "By default, every new container indexes every property of every item automatically, using range indexes for strings and numbers.",
+        "Two supported indexing modes today: Consistent (synchronous, index freshness follows the account's consistency level) and None (indexing disabled). New containers cannot select the older Lazy mode — it's asynchronous, can return inconsistent/incomplete results, and requires a support exemption to use.",
+        "The root path /* must be either an included or an excluded path; the system properties id and _ts are always indexed automatically in Consistent mode, while _etag is excluded by default.",
+        "A query with an ORDER BY on two or more properties requires a composite index whose paths and sort order match the ORDER BY clause (or its exact reverse).",
+        "No composite indexes exist by default — you must add them explicitly, and each can optimize at most one range filter (>, <, <=, >=, !=), which must be listed last.",
+        "Service limits: maximum 8 properties per composite index and maximum 100 composite index paths per container.",
+        "Changing an indexing policy triggers an asynchronous, in-place index transformation that consumes RUs but does not affect write or read availability."
+      ],
+      "sections": [
+        {
+          "heading": "Default policy and indexing modes",
+          "body": "A newly created container's default indexing policy indexes every property automatically so you get reasonable query performance without upfront planning. You can customize this with the `indexingMode` setting: **Consistent** keeps the index synchronously up to date (index freshness follows the account's configured consistency level), while **None** disables indexing entirely (useful for pure key-value stores or to speed up bulk loads). The older **Lazy** mode still exists conceptually but new containers cannot select it, since it can produce inconsistent or incomplete query results; using it now requires a documented support exemption."
+        },
+        {
+          "heading": "Included and excluded paths",
+          "body": "A custom policy can include or exclude specific property paths to cut write RU cost and latency. The root path `/*` must always appear as either included or excluded. Conflicts are resolved by precedence: deeper/more precise paths win over shallower ones, and a scalar path (`/?`) is more precise than a wildcard (`/*`). System properties `id` and `_ts` are always indexed automatically when the mode is Consistent, while `_etag` is excluded by default unless explicitly added back."
+        },
+        {
+          "heading": "Composite indexes",
+          "body": "Composite indexes are required for any `ORDER BY` on two or more properties — the composite index's property order and ascending/descending direction must match the query's `ORDER BY` clause (the fully reversed order is also supported). They're also useful (though optional) for queries filtering on multiple properties: equality-filtered properties must come first in the composite index, and only one range filter (or aggregate like SUM/AVG) is supported per composite index, placed last. No composite indexes exist by default. Limits: a maximum of 8 properties per composite index and 100 composite index paths per container."
+        },
+        {
+          "heading": "Updating the policy safely",
+          "body": "Indexing policies can be changed at any time through the portal or an SDK, which triggers an online, in-place index transformation — no extra storage is consumed and write/read availability isn't affected, though the transformation itself consumes request units at lower priority than normal CRUD traffic. When swapping one index for another (e.g., a single-property index for a composite index), add the new index first and confirm the transformation completes before removing the old one, to avoid breaking queries that still depend on it."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/cosmos-db/index-policy",
+        "https://learn.microsoft.com/en-us/azure/cosmos-db/concepts-limits"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 4
+    },
+    {
+      "id": "art-storage-blob-storage-access-tiers-and-lifecycle-management",
+      "chapterId": "storage",
+      "subchapterId": "blob-storage",
+      "topic": "Access tiers & lifecycle management",
+      "title": "Optimizing Blob Storage Costs with Access Tiers and Lifecycle Policies",
+      "summary": "Covers the Hot/Cool/Cold/Archive tiers, their retention minimums and rehydration behavior, and how rule-based lifecycle management policies automate tier transitions and deletion.",
+      "keyPoints": [
+        "Four core online/offline tiers: Hot (frequent access, highest storage cost/lowest access cost), Cool (min. 30-day retention), Cold (min. 90-day retention, still fast retrieval), and Archive (offline, min. 180-day retention, hours-scale latency); a Smart tier can auto-move blobs between hot/cool/cold.",
+        "Moving or deleting a blob before its tier's minimum retention period triggers a prorated early deletion fee.",
+        "Archive blobs cannot be read or modified until rehydrated to an online tier; rehydration can be requested via Copy Blob or Set Blob Tier, but lifecycle management policies cannot rehydrate archived blobs.",
+        "Rehydration priority: Standard can take up to 15 hours for blobs under 10 GB; High priority can complete in under 1 hour for blobs under 10 GB, capped at 10 GiB/hour per storage account.",
+        "The archive tier is only supported on LRS, GRS, and RA-GRS accounts — not ZRS, GZRS, or RA-GZRS.",
+        "A lifecycle management policy is a JSON set of rules, each combining conditions (Creation Time, Last Modified Time, Last Access Time), actions (tier transition or delete), and filters (up to 10 prefixes and 10 blob index tag conditions per rule, ANDed together).",
+        "Policy changes can take up to 24 hours to take effect and start their first run; lifecycle management itself is free, though Set Blob Tier operations it triggers are billed at standard rates (deletes are free)."
+      ],
+      "sections": [
+        {
+          "heading": "The four access tiers",
+          "body": "**Hot** is for actively used data with the highest storage cost but lowest access cost. **Cool** and **Cold** are online tiers for infrequently accessed data with the same durability/latency as Hot but lower storage cost and higher access cost — recommended minimum retention is 30 days for Cool and 90 days for Cold on general-purpose v2 accounts. **Archive** is fully offline: lowest storage cost, highest access cost, hours-scale retrieval latency, and a 180-day minimum recommended retention. Moving or deleting a blob before its tier's minimum period elapses incurs a prorated early-deletion charge."
+        },
+        {
+          "heading": "Archive tier and rehydration",
+          "body": "A blob in the archive tier can't be read or modified — its data must first be rehydrated to Hot, Cool, or Cold, either by calling **Copy Blob** (creates a new blob, avoids early-deletion fees) or **Set Blob Tier** (changes the tier in place, but resets the last-modified time only via copy, not via tier change). Rehydration priority is Standard by default (up to 15 hours for objects under 10 GB) or High (under 1 hour for objects under 10 GB), subject to an account-wide cap of 10 GiB/hour for high-priority retrieval. The archive tier is supported only on LRS, GRS, and RA-GRS accounts, not on ZRS/GZRS/RA-GZRS."
+        },
+        {
+          "heading": "Lifecycle management policy structure",
+          "body": "A lifecycle policy is a JSON document made of rules, each defining **conditions** (based on Creation Time, Last Modified Time, or Last Access Time if access tracking is enabled), one or more **actions** (transition to a cooler tier, or delete the current version/previous version/snapshot), and optional **filters** that scope the rule to a subset of blobs by name prefix or blob index tags — up to 10 of each per rule, combined with logical AND. Lifecycle management supports block and append blobs in general-purpose v2, premium block blob, and Blob Storage accounts, and does not affect system containers like `$logs` or `$web`."
+        },
+        {
+          "heading": "Execution, limits, and gotchas",
+          "body": "Changes to a policy can take up to 24 hours before the first run starts, and a run in progress continues to completion even if the policy is later disabled or deleted. Lifecycle management can't rehydrate archived blobs back to an online tier, can't be used with encryption-scoped blobs moving to Archive, and its delete action doesn't work on immutable or already soft-deleted blobs. The feature itself is free — you're billed only for the standard Set Blob Tier operation cost of tier changes (deletes are free)."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/storage/blobs/access-tiers-overview",
+        "https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview",
+        "https://learn.microsoft.com/en-us/azure/storage/blobs/archive-rehydrate-overview"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 1
+    },
+    {
+      "id": "art-storage-blob-storage-redundancy-replication-options",
+      "chapterId": "storage",
+      "subchapterId": "blob-storage",
+      "topic": "Redundancy/replication options",
+      "title": "Picking a Storage Redundancy Option: LRS, ZRS, GRS, and GZRS",
+      "summary": "Compares Azure Storage's replication options — LRS, ZRS, GRS, GZRS, and their read-access variants — so you can choose a resiliency strategy appropriate for a given account and workload.",
+      "keyPoints": [
+        "LRS replicates synchronously within a single datacenter (11 nines durability/year); it's the cheapest option but doesn't survive a datacenter-level disaster.",
+        "ZRS replicates synchronously across 3+ availability zones in the primary region (12 nines durability/year), protecting against a datacenter loss but not a full regional disaster.",
+        "GRS replicates via LRS in the primary region, then asynchronously copies to a secondary region (also stored as LRS there); GZRS does the same but uses ZRS in the primary region. Both offer 16 nines durability/year.",
+        "Data in the secondary region is not accessible for read or write unless you enable RA-GRS/RA-GZRS (read access) or perform an account failover (full read/write, requires a manual or Microsoft-initiated failover).",
+        "RA-GRS/RA-GZRS expose a read-only secondary endpoint with an '-secondary' suffix on the account name; Azure Files does not support RA-GRS/RA-GZRS at all.",
+        "The archive tier for Blob Storage is supported only on LRS, GRS, and RA-GRS accounts — not ZRS, GZRS, or RA-GZRS.",
+        "Because secondary-region replication is asynchronous, failing over after a primary-region disaster can lose recent writes (a nonzero recovery point objective)."
+      ],
+      "sections": [
+        {
+          "heading": "Redundancy within the primary region",
+          "body": "**LRS** (Locally Redundant Storage) keeps three synchronous copies in a single physical datacenter in your chosen region, providing at least 99.999999999% (11 nines) durability per year — it protects against drive/server/rack failure but not a datacenter-wide disaster. **ZRS** (Zone-Redundant Storage) instead synchronously replicates across three or more independent availability zones in the same region, raising durability to at least 99.9999999999% (12 nines) and keeping data available for both reads and writes even if one zone goes down."
+        },
+        {
+          "heading": "Redundancy to a secondary region",
+          "body": "**GRS** (Geo-Redundant Storage) layers asynchronous replication to a geographically distant secondary region on top of LRS in the primary; **GZRS** (Geo-Zone-Redundant Storage) does the same but uses ZRS in the primary. In both cases the secondary region's copy is itself stored using LRS. Both GRS and GZRS provide at least 99.99999999999999% (16 nines) durability per year — the key difference is only how the primary-region copy is spread across datacenters/zones."
+        },
+        {
+          "heading": "Read access to the secondary and failover",
+          "body": "By default, GRS/GZRS secondary-region data isn't accessible for reads or writes unless a failover occurs. Enabling **RA-GRS** or **RA-GZRS** exposes a read-only secondary endpoint (`accountname-secondary...`) so applications can read from the secondary region even during a primary-region outage — Azure Files, however, doesn't support the RA variants at all. If the primary region becomes fully unavailable, a storage account failover promotes the secondary to primary for read/write access, but because geo-replication is asynchronous, some very recent writes could be lost (nonzero RPO)."
+        },
+        {
+          "heading": "Choosing based on account type and features",
+          "body": "Recommended account types for LRS/ZRS are standard general-purpose v2, premium block blobs, and SSD file shares; GRS/GZRS is recommended for standard general-purpose v2 accounts. A key developer-relevant caveat: the **archive access tier for Blob Storage is supported only on LRS, GRS, and RA-GRS accounts, not on ZRS, GZRS, or RA-GZRS** — so if your resiliency strategy requires ZRS/GZRS, you cannot also archive blobs in that account. Blob, Queue, and Table storage support all six redundancy options; Azure Files and managed disks support a narrower subset."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/storage/common/storage-redundancy",
+        "https://learn.microsoft.com/en-us/azure/storage/blobs/access-tiers-overview"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 2
+    },
+    {
+      "id": "art-storage-blob-storage-static-websites-metadata-and-properties",
+      "chapterId": "storage",
+      "subchapterId": "blob-storage",
+      "topic": "Static websites, metadata & properties",
+      "title": "Blob Metadata, System Properties, and Static Website Hosting",
+      "summary": "Distinguishes system properties from user-defined metadata and blob index tags, then covers how to enable and use Blob Storage's static website hosting feature.",
+      "keyPoints": [
+        "System properties (e.g., ContentType, ContentLanguage, CreatedOn, LastModified) correspond to standard HTTP headers and are managed via SetHttpHeadersAsync/GetPropertiesAsync in the .NET SDK.",
+        "User-defined metadata is one or more custom name-value pairs stored as HTTP headers via SetMetadataAsync and read back through GetPropertiesAsync().Metadata; it has no effect on how the blob behaves.",
+        "Blob index tags are similar to metadata but, unlike metadata, are automatically indexed and searchable by the blob service itself.",
+        "Static website hosting is disabled by default per storage account; enabling it creates (or reuses) a $web container and requires you to name an index document, with an optional custom 404 error document.",
+        "Files in $web are served only via anonymous read access and are case-sensitive; static websites do not support Microsoft Entra ID authentication, CORS, or custom HTTP response headers (headers require Azure CDN).",
+        "Custom domains work over plain HTTP natively; HTTPS on a custom domain requires fronting the site with Azure CDN.",
+        "Setting SetHttpHeaders on a blob clears any properties not explicitly included in the call, so existing values must be re-supplied alongside the changed ones."
+      ],
+      "sections": [
+        {
+          "heading": "System properties vs. metadata",
+          "body": "Every blob has **system properties** — some read-only, some settable — many of which map directly to standard HTTP headers (ContentType, ContentLanguage, CacheControl, etc.) and are maintained by the Azure Storage SDK for you. **User-defined metadata** is separate: arbitrary name-value pairs you attach purely for your own application's purposes, with no effect on the blob's behavior. In .NET, call `blob.SetHttpHeadersAsync(headers)` to set properties (note: it replaces all headers, so you must re-populate any you want kept from a prior `GetPropertiesAsync()` call) and `blob.SetMetadataAsync(metadata)` to set custom metadata, retrieving both via `blob.GetPropertiesAsync()`."
+        },
+        {
+          "heading": "Metadata vs. blob index tags",
+          "body": "Blob index tags provide a similar arbitrary key/value capability to metadata, but with one important distinction: **blob index tags are automatically indexed and searchable by the native blob service, while metadata is not** — querying by metadata would require a separate service such as Azure Search."
+        },
+        {
+          "heading": "Enabling static website hosting",
+          "body": "Static website hosting is off by default and is enabled per storage account (Data management > Static website in the portal). Enabling it provisions a `$web` container if one doesn't exist, and you must specify an **index document name**, with an optional custom 404/error document path. Uploading files to `$web` (via CLI, PowerShell, AzCopy, Storage Explorer, or the portal) makes them available at the site's public primary endpoint, served only through anonymous read access — file names/extensions in the URL are case-sensitive even over plain HTTP."
+        },
+        {
+          "heading": "Static website limitations",
+          "body": "The feature does not support Microsoft Entra ID authentication (only anonymous read of `$web` content), does not support CORS, and has no built-in way to configure custom HTTP response headers — for headers, or for HTTPS on a custom domain, you need to front the site with Azure Content Delivery Network. IP-based and VNet firewall rules do work with the static website endpoint. If you enable geo-redundancy with a secondary region, a secondary website endpoint is also available, though it can lag the primary due to asynchronous replication."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blob-properties-metadata",
+        "https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blob-static-website"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 3
+    },
+    {
+      "id": "art-security-auth-microsoft-entra-id-app-registrations-and",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "topic": "Microsoft Entra ID app registrations & MSAL flows",
+      "title": "MSAL Client Types: Public vs Confidential Client Apps and Their Flows",
+      "summary": "Learn which OAuth 2.0 flows belong to public client apps versus confidential client apps so you don't mix them up on exam questions about desktop, mobile, web, and daemon app registrations.",
+      "keyPoints": [
+        "Public client apps (desktop, mobile, browserless/IoT apps) always sign in a user and cannot reliably hold a secret; their flows are: authorization code with PKCE, integrated Windows authentication, resource owner password credentials (ROPC), and device code.",
+        "Confidential client apps (web apps that call a web API, web APIs that call another web API, daemon apps) can securely hold a client secret or certificate; their flows are: authorization code (web app signing in a user), client credentials (daemon/app-only), and on-behalf-of (web API calling a downstream web API).",
+        "Single-page apps (SPAs) are a separate MSAL category from public/confidential client, using MSAL.js with authorization code + PKCE (modern) or the legacy implicit grant.",
+        "ROPC is available only to public client apps, is explicitly not recommended by Microsoft, breaks MFA/Conditional Access/SSO, and is kept only for legacy scenarios like DevOps.",
+        "Daemon apps use the client credentials grant and prove their identity to Microsoft Entra ID with a secret or certificate configured on the app registration.",
+        "Web APIs calling another web API on behalf of a signed-in user use the on-behalf-of (OBO) flow, a confidential-client scenario."
+      ],
+      "sections": [
+        {
+          "heading": "App registration and MSAL basics",
+          "body": "The Microsoft identity platform is an OAuth 2.0/OpenID Connect-compliant service; you register an app in Microsoft Entra ID to get a client ID and configure redirect URIs, permissions, and credentials. Microsoft recommends the Microsoft Authentication Library (MSAL) over hand-rolled OAuth code because it adds built-in token caching, single sign-on, and Conditional Access support."
+        },
+        {
+          "heading": "Public client applications",
+          "body": "Public client apps include desktop apps, mobile apps, and apps running on browserless/IoT devices — they always sign in a user and cannot be trusted to keep a secret. Their supported flows are **authorization code with PKCE** (interactive sign-in), **integrated Windows authentication** (silent sign-in on a domain/Entra-joined Windows machine), the **device code flow** (sign-in on a second device when the app itself has no browser), and the legacy **resource owner password (ROPC)** flow."
+        },
+        {
+          "heading": "Confidential client applications",
+          "body": "Confidential client apps include web apps that call a web API, web APIs that call another web API, and daemon apps (even console/Linux-daemon style) — all are considered hard for an attacker to access and so can hold a secret or certificate at configuration time. A web app that signs in users and calls an API uses **authorization code**; a daemon with no signed-in user uses **client credentials**; a web API calling a downstream API on behalf of a user uses **on-behalf-of (OBO)**."
+        },
+        {
+          "heading": "SPA is its own category",
+          "body": "Single-page apps are documented as a third category alongside public and confidential client apps. MSAL.js is the only Microsoft Authentication Library supporting SPAs, using authorization code with PKCE in MSAL.js 2.x (implicit grant was the older MSAL.js 1.x approach)."
+        },
+        {
+          "heading": "Scenario-to-flow cheat sheet",
+          "body": "```\nSPA                       -> auth code + PKCE (or legacy implicit)          [MSAL.js]\nDesktop / Mobile app      -> auth code + PKCE (interactive)                 [public client]\nDesktop, Windows-joined   -> integrated Windows authentication              [public client]\nBrowserless / IoT device  -> device code flow                              [public client]\nDesktop/mobile (legacy)   -> ROPC (username/password) - not recommended     [public client]\nWeb app signs in user     -> authorization code                            [confidential client]\nDaemon / service app      -> client credentials                            [confidential client]\nWeb API calls another API -> on-behalf-of (OBO)                            [confidential client]\n```"
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview",
+        "https://learn.microsoft.com/en-us/entra/identity-platform/authentication-flows-app-scenarios"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 1
+    },
+    {
+      "id": "art-security-auth-shared-access-signatures",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "topic": "Shared Access Signatures",
+      "title": "Shared Access Signatures: Service, Account, and User Delegation SAS",
+      "summary": "Understand the three SAS types, how each is authorized, and when a stored access policy applies so you can pick the right delegated-access model for Azure Storage.",
+      "keyPoints": [
+        "Azure Storage supports three SAS types: user delegation SAS, service SAS, and account SAS.",
+        "User delegation SAS is signed with a user delegation key obtained via Microsoft Entra credentials — Microsoft recommends it whenever possible for superior security.",
+        "Service SAS and account SAS are both signed with the storage account key (Shared Key); service SAS scopes to one storage service (Blob, Queue, Table, or Files), account SAS can scope to one or more services and also grants service-level operations service/account SAS can't otherwise reach.",
+        "A stored access policy is defined on a resource container (blob container, table, queue, or file share) and lets a service SAS inherit its start time, expiry time, and permissions — enabling revocation without regenerating account keys.",
+        "Stored access policies apply only to service SAS — a user delegation SAS or an account SAS must always be an ad hoc SAS.",
+        "There is a limit of five stored access policies per container.",
+        "SAS generation isn't audited by Azure Storage — anyone able to generate a SAS (via account key or an Azure role) can do so without the storage account owner's knowledge."
+      ],
+      "sections": [
+        {
+          "heading": "The three SAS types",
+          "body": "A **user delegation SAS** is secured with Microsoft Entra credentials and supports Blob (incl. Data Lake), Queue, Table, and Azure Files. A **service SAS** delegates access to a single storage service and is secured with the account key. An **account SAS** can delegate access across one or more services and additionally exposes service-level operations (e.g., Get/Set Service Properties) and read/write/delete operations not available through a service SAS."
+        },
+        {
+          "heading": "How each is signed and authorized",
+          "body": "```\nUser delegation SAS -> Microsoft Entra ID (user delegation key)\nService SAS         -> Shared Key (storage account key)\nAccount SAS         -> Shared Key (storage account key)\n```\nTo obtain a user delegation key, the caller's Microsoft Entra security principal must be assigned a role that includes the `Microsoft.Storage/storageAccounts/blobServices/generateUserDelegationKey` action."
+        },
+        {
+          "heading": "Ad hoc SAS vs stored access policy",
+          "body": "An **ad hoc SAS** has its start time, expiry time, and permissions encoded directly in the SAS URI — any SAS type can be ad hoc. A **service SAS with a stored access policy** instead inherits those constraints from a policy defined on the container, so you can revoke or update permissions for many issued SAS tokens by changing the policy, without rotating the account key. Account SAS and user delegation SAS cannot use a stored access policy — they must be ad hoc."
+        },
+        {
+          "heading": "Best practices",
+          "body": "Always use HTTPS to distribute a SAS, prefer user delegation SAS when possible, grant least-privilege permissions and near-term expirations on ad hoc SAS tokens, set a start time roughly 15 minutes in the past to tolerate clock skew, and configure a SAS expiration policy at the storage-account level to warn on overly long validity windows."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 2
+    },
+    {
+      "id": "art-security-auth-microsoft-graph",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "topic": "Microsoft Graph",
+      "title": "Microsoft Graph: Unified API, Delegated vs Application Permissions, and Consent",
+      "summary": "See how Microsoft Graph exposes a single endpoint over Microsoft 365/Entra ID data and how delegated vs application permissions determine what an app can access and who must consent.",
+      "keyPoints": [
+        "Microsoft Graph exposes a single REST endpoint (`https://graph.microsoft.com`) over Microsoft 365, Windows, and Enterprise Mobility + Security (including Microsoft Entra) data.",
+        "Graph supports two access scenarios: delegated access (app acts on behalf of a signed-in user) and app-only access (app acts with its own identity, no user present).",
+        "Delegated permissions (also called scopes) constrain the app to what the signed-in user could already do themselves; they can be user-consented or require admin consent depending on tenant app-consent policy.",
+        "Application permissions (also called app roles) let the app access any data the permission covers with no signed-in user; only a Privileged Role Administrator or Global Administrator can consent to them.",
+        "Permission names follow the pattern {resource}.{operation}.{constraint}, e.g. User.Read, Application.ReadWrite.All, Group.Create.",
+        "Best practice is the principle of least privilege — request the minimum permission (e.g., User.Read instead of User.ReadWrite) needed for the operation.",
+        "Apps call Graph either via language-specific SDKs (GraphServiceClient in C#, Go, Java, JavaScript, PHP, PowerShell, Python) or directly over REST."
+      ],
+      "sections": [
+        {
+          "heading": "What Microsoft Graph is",
+          "body": "Microsoft Graph is the gateway to data and intelligence across Microsoft cloud services — Microsoft 365 core services (Calendar, Mail, OneDrive, Teams, SharePoint, etc.), Enterprise Mobility + Security services (including Microsoft Entra and Intune), Windows services, and more — all reachable through one API endpoint and secured so only authorized callers can access the data."
+        },
+        {
+          "heading": "Delegated vs application permissions",
+          "body": "In **delegated access**, the app calls Graph on behalf of a signed-in user and is limited to what that user can already access — for example, a `Files.Read.All` delegated permission only lets the app read files the signed-in user can already reach. In **app-only access**, the app calls Graph with its own identity and no user context; `Files.Read.All` as an application permission lets the app read any file in the organization."
+        },
+        {
+          "heading": "Consent",
+          "body": "For delegated permissions, users can consent for their own data, and admins can consent on behalf of all users (subject to the tenant's app consent policies, which can restrict user consent even when admin consent isn't strictly required). For application permissions, only an admin can consent — user consent isn't possible."
+        },
+        {
+          "heading": "Calling Graph: SDK or REST",
+          "body": "Common Graph requests can be made directly over REST (e.g. `GET https://graph.microsoft.com/v1.0/me`) or via a Graph SDK, such as instantiating a `GraphServiceClient` in .NET/Java/etc. and calling methods like `graphClient.Groups[\"{group-id}\"].Members.GetAsync()`. The SDKs handle serialization and pair with an auth provider (typically MSAL) that supplies the access token."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/graph/overview",
+        "https://learn.microsoft.com/en-us/graph/permissions-overview"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 3
+    },
+    {
+      "id": "art-security-secure-solutions-key-vault",
+      "chapterId": "security",
+      "subchapterId": "secure-solutions",
+      "topic": "Key Vault",
+      "title": "Azure Key Vault: Keys, Secrets, Certificates, and Choosing RBAC over Access Policies",
+      "summary": "Know what Key Vault stores, why Azure RBAC is now the recommended (and default) access model over legacy access policies, and the SecretClient/CertificateClient gotcha for getting a certificate's private key.",
+      "keyPoints": [
+        "Key Vault solves three problems: secrets management, key management, and certificate management, and offers Standard (software-protected, FIPS 140 Level 1) and Premium (HSM-protected, FIPS 140-3 Level 3) tiers.",
+        "Authentication to Key Vault is always via Microsoft Entra ID; authorization can be via Azure RBAC or the legacy Key Vault access policy model.",
+        "Azure RBAC operates on both the control plane and data plane and is the Microsoft-recommended authorization system for Key Vault's data plane; access policy operates on the data plane only.",
+        "Starting with API version 2026-02-01, Azure RBAC is the default access control model for newly created vaults, matching the Azure portal experience.",
+        "With the access policy model, anyone with Contributor, Key Vault Contributor, or any role including Microsoft.KeyVault/vaults/write can grant themselves data-plane access — a risk RBAC avoids by requiring Owner/User Access Administrator to manage permissions.",
+        "The .NET SDK exposes separate clients — SecretClient, KeyClient, CertificateClient — each scoped to one object type in the vault.",
+        "Key Vault stores a certificate's public key as a managed key, but stores the full key pair (including the private key) as a secret if the certificate was created or imported as exportable; retrieving the private key means reading it as a secret (or using CertificateClient.DownloadCertificate, which does this internally) rather than a plain certificate GET."
+      ],
+      "sections": [
+        {
+          "heading": "What Key Vault stores",
+          "body": "Key Vault centralizes secrets (tokens, passwords, API keys, connection strings), encryption keys, and TLS/SSL certificates, letting applications reference them by URI instead of embedding sensitive values in code or config."
+        },
+        {
+          "heading": "Access control: Azure RBAC vs access policy",
+          "body": "Azure RBAC is built on Azure Resource Manager, spans the control and data planes, and is now both the recommended and (as of API version 2026-02-01) default authorization model for new vaults. It centralizes access management, requires Owner/User Access Administrator rights to grant permissions, and integrates with Privileged Identity Management for time-limited elevated access. The access policy model is a legacy, Key Vault-native, data-plane-only system where individual permissions are assigned per security principal directly on the vault."
+        },
+        {
+          "heading": "SDK clients: SecretClient, KeyClient, CertificateClient",
+          "body": "Each object type has its own client in `Azure.Security.KeyVault.*`: `SecretClient` for secrets, `KeyClient` for keys, and `CertificateClient` for certificate lifecycle operations (create, list, update, delete, manage issuers/policies). `CertificateClient` is authenticated the same way as other Key Vault clients, typically with `DefaultAzureCredential`, and Microsoft recommends using a managed identity for production authentication."
+        },
+        {
+          "heading": "Getting a certificate's private key (the PFX gotcha)",
+          "body": "Key Vault keeps a certificate's private key material as a **secret**, not merely as part of the certificate object — this only applies if the certificate was created or imported with an exportable policy. To download the full key pair (e.g., as a PFX) you retrieve it as a secret (via `SecretClient`, or via `CertificateClient.DownloadCertificate`/`DownloadCertificateAsync`, which wraps this for you). Microsoft's own guidance cautions that keeping private-key operations (decrypt, sign, unwrap) inside Key Vault is preferred over exporting the key locally."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/key-vault/general/overview",
+        "https://learn.microsoft.com/en-us/azure/key-vault/general/rbac-access-policy",
+        "https://learn.microsoft.com/en-us/dotnet/api/overview/azure/security.keyvault.certificates-readme?view=azure-dotnet",
+        "https://learn.microsoft.com/en-us/samples/azure/azure-sdk-for-net/get-certificate-private-key/"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 1
+    },
+    {
+      "id": "art-security-secure-solutions-managed-identities",
+      "chapterId": "security",
+      "subchapterId": "secure-solutions",
+      "topic": "Managed Identities",
+      "title": "Managed Identities: System-Assigned vs User-Assigned, and Living with the DefaultAzureCredential Pattern",
+      "summary": "Learn the practical differences between system-assigned and user-assigned managed identities, how DefaultAzureCredential removes secrets from your code, and the propagation-delay and cross-tenant gotchas that show up on the exam and in production.",
+      "keyPoints": [
+        "A managed identity is a Microsoft Entra identity automatically tied to an Azure compute resource (VM, VMSS, Service Fabric, AKS, or any supported App hosting platform), removing the need to manage credentials in code.",
+        "System-assigned identity: created as part of the resource, shares its lifecycle (deleted when the resource is deleted), and cannot be shared across resources.",
+        "User-assigned identity: created as a standalone Azure resource with an independent lifecycle, and can be assigned to multiple Azure resources at once — Microsoft calls this the recommended type for services needing a shared/pre-provisioned identity.",
+        "Code retrieves a token for a managed identity using the Azure Identity SDK's DefaultAzureCredential (or MSAL), which works unmodified locally (falling back to a developer credential) and in Azure (using ManagedIdentityCredential).",
+        "You must still explicitly authorize the managed identity against the target resource (e.g., an RBAC role assignment on a Key Vault or storage account) — a valid token alone won't grant access.",
+        "For App Service/Functions, the back-end token cache is keyed per resource URI and cached for around 24 hours; changes to a managed identity's group or role membership can take up to 24 hours to take effect, and there is no way to force an early refresh.",
+        "Managed identities don't support cross-directory/tenant scenarios — moving an app's subscription to another tenant does not automatically re-create the managed identity, and downstream resources need their access updated to the new identity."
+      ],
+      "sections": [
+        {
+          "heading": "System-assigned vs user-assigned",
+          "body": "System-assigned managed identities are tied one-to-one to a resource: enabling one creates a service principal whose lifecycle matches that resource, and it can't be reused elsewhere. User-assigned managed identities are standalone resources you create independently and can attach to many resources — recommended when multiple compute resources need to share one identity, or when you need to pre-authorize access before provisioning the compute resource itself."
+        },
+        {
+          "heading": "The DefaultAzureCredential pattern",
+          "body": "Application code uses `DefaultAzureCredential` from the Azure Identity library (or MSAL) to acquire a Microsoft Entra token without ever handling a secret. Locally it falls back through credential sources like environment variables, Visual Studio, or shared token cache; when running in Azure with a managed identity assigned, it automatically uses `ManagedIdentityCredential` against the platform's local token endpoint (`IDENTITY_ENDPOINT` / `IDENTITY_HEADER` on App Service and Functions)."
+        },
+        {
+          "heading": "Services that support managed identities",
+          "body": "Managed identities can authenticate to any resource that supports Microsoft Entra authentication, including Azure Key Vault, Azure SQL Database, and Azure Storage — but the target resource must still be explicitly configured (typically via an RBAC role assignment) to allow that identity's access; otherwise the service rejects the request even with a valid token."
+        },
+        {
+          "heading": "Gotchas: propagation delay and tenant moves",
+          "body": "App Service documentation explicitly warns that its managed-identity token back end caches per resource URI for about 24 hours, so role/group membership changes may take up to 24 hours to take effect, with no way to force a refresh before the cached token expires — plan around this rather than expecting instant propagation after a role assignment. Separately, because managed identities don't support cross-directory scenarios, moving a subscription to a different tenant does not automatically re-create the managed identities, and any downstream resource access policies must be updated to the new identity."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview",
+        "https://learn.microsoft.com/en-us/azure/app-service/overview-managed-identity"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 2
+    },
+    {
+      "id": "art-security-secure-solutions-app-configuration",
+      "chapterId": "security",
+      "subchapterId": "secure-solutions",
+      "topic": "App Configuration",
+      "title": "Azure App Configuration: Centralized Settings, Feature Flags, and Key Vault References",
+      "summary": "Understand what Azure App Configuration centralizes versus what belongs in Key Vault, and how a Key Vault reference lets App Configuration point at a secret without ever storing it.",
+      "keyPoints": [
+        "Azure App Configuration centrally manages application settings and feature flags, following the Twelve-Factor App principle of separating configuration from code.",
+        "It complements Azure Key Vault rather than replacing it: App Configuration is for general configuration data, Key Vault remains the store for secrets.",
+        "Benefits include dynamically changing settings without redeploying/restarting an app, point-in-time replay of settings, labeling, a dedicated feature-flag UI, and enhanced security through Azure managed identities.",
+        "A Key Vault reference is a special App Configuration key whose stored value is a URI pointing at a Key Vault secret — not the secret value itself.",
+        "App Configuration and Key Vault do not communicate directly with each other; your application authenticates to both separately, and the App Configuration client provider is what recognizes a Key Vault reference and fetches the real value from Key Vault.",
+        "Client libraries/providers exist for .NET, ASP.NET Core, .NET Framework, Java Spring, JavaScript/Node.js, Python, and Go, plus a REST API for anything else.",
+        "DefaultAzureCredential (backed by a managed identity in Azure) is the recommended way to authenticate to both App Configuration and the referenced Key Vault from the same code."
+      ],
+      "sections": [
+        {
+          "heading": "What App Configuration provides",
+          "body": "App Configuration is a fully managed service for centralizing configuration and feature flags across distributed components — microservices, serverless apps, or continuous deployment pipelines — so settings don't have to be duplicated or hard-coded per instance. It supports flexible key representations, labels, point-in-time replay, and a dedicated feature-flag management UI."
+        },
+        {
+          "heading": "App Configuration vs Key Vault",
+          "body": "Microsoft documentation is explicit that App Configuration \"complements\" Key Vault: use App Configuration for general settings (connection endpoints, feature flags, non-sensitive values) and keep secrets such as connection strings, API keys, or certificates in Key Vault, even when your app resolves them through App Configuration."
+        },
+        {
+          "heading": "Key Vault references",
+          "body": "When you create a Key Vault reference in App Configuration, the value App Configuration stores is a URI pointing to the secret in Key Vault — never the secret or credential itself. The client provider recognizes that key as a Key Vault reference and retrieves the actual value from Key Vault at read time, the same way it reads any other App Configuration key from the application's perspective."
+        },
+        {
+          "heading": "Client integration pattern",
+          "body": "Because App Configuration and Key Vault never talk to each other directly, your app must authenticate to both. A typical ASP.NET Core setup connects to App Configuration and separately configures Key Vault access in the same call:\n```csharp\nbuilder.Configuration.AddAzureAppConfiguration(options =>\n{\n    options.Connect(new Uri(endpoint), new DefaultAzureCredential());\n    options.ConfigureKeyVault(kv =>\n    {\n        kv.SetCredential(new DefaultAzureCredential());\n    });\n});\n```\nIn Azure, `DefaultAzureCredential` resolves to the app's managed identity for both services — you just need to separately grant that identity access to Key Vault (e.g., via RBAC or access policy)."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-app-configuration/overview",
+        "https://learn.microsoft.com/en-us/azure/azure-app-configuration/use-key-vault-references-dotnet-core"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 3
+    },
+    {
+      "id": "art-monitoring-app-insights-instrumentation",
+      "chapterId": "monitoring",
+      "subchapterId": "app-insights",
+      "topic": "Instrumentation",
+      "title": "Instrumenting Apps for Application Insights: Connection Strings, Auto-Instrumentation, and Sampling",
+      "summary": "Covers how to wire an app up to Application Insights today - connection strings, choosing between autoinstrumentation and the OpenTelemetry Distro, setting cloud role name/instance, and configuring sampling.",
+      "keyPoints": [
+        "Use the connection string (not a bare instrumentation key) to point your app at an Application Insights resource - it's a semicolon-separated key-value string (max 4,096 chars) that wraps the instrumentation key and adds endpoint/authentication options.",
+        "For code-based server apps (ASP.NET Core, .NET, Java, Node.js, Python, AKS), the recommended setup is the Azure Monitor OpenTelemetry Distro; browser apps use the separate Application Insights JavaScript SDK, which does NOT use OpenTelemetry.",
+        "Autoinstrumentation (a portal toggle, e.g. for App Service or Azure Functions) requires no code changes and is enabled by default on many platforms; switch to the OpenTelemetry Distro for more configuration/extensibility, or when autoinstrumentation isn't supported (e.g. multi-container/sidecar App Service deployments).",
+        "Cloud Role Name comes from the OpenTelemetry resource attributes service.namespace + service.name (falls back to service.name alone if namespace isn't set); Cloud Role Instance comes from service.instance.id.",
+        "Sampling in the OpenTelemetry-based distro supports two strategies: fixed-rate/fixed-percentage (e.g. OTEL_TRACES_SAMPLER=microsoft.fixed_percentage, ratio 0.0-1.0) and rate-limited (microsoft.rate_limited, max traces/sec) - defaults vary by language/SDK version.",
+        "Sampling decisions apply only to traces (spans); metrics are never sampled; logs belonging to unsampled traces are dropped by default unless trace-based log sampling is explicitly disabled.",
+        "Live Metrics requires Application Insights' own custom sampler for compatibility, which is why the distro ships a built-in sampler rather than relying solely on generic OpenTelemetry samplers."
+      ],
+      "sections": [
+        {
+          "heading": "Connection strings",
+          "body": "A connection string is the current, recommended way to tell an SDK where to send telemetry. It's a list of `key=value` pairs (e.g. `InstrumentationKey=...;IngestionEndpoint=...`) and can override individual service endpoints (ingestion, live metrics, profiler, snapshot debugger) or an entire endpoint suffix for sovereign clouds. The instrumentation key it contains is not a secret/security token by itself - connection strings add real security value mainly by enabling Microsoft Entra ID-authenticated ingestion."
+        },
+        {
+          "heading": "Choosing an instrumentation approach",
+          "body": "Entry points differ by hosting model: web apps and VMs use the **Azure Monitor OpenTelemetry Distro** with a connection string; Azure Functions enable OpenTelemetry via `host.json` (`\"telemetryMode\": \"OpenTelemetry\"`); browser telemetry uses the JavaScript SDK (not OpenTelemetry). Autoinstrumentation is available as a no-code toggle on select platforms (App Service, Azure Functions, AKS in preview) and is often on by default - move to code-based OpenTelemetry Distro instrumentation when you need custom configuration or when autoinstrumentation isn't supported for your deployment shape."
+        },
+        {
+          "heading": "Cloud role name and cloud role instance",
+          "body": "Set these through standard OpenTelemetry resource attributes: ```csharp\nvar resourceAttributes = new Dictionary<string, object> {\n    { \"service.name\", \"my-service\" },\n    { \"service.namespace\", \"my-namespace\" },\n    { \"service.instance.id\", \"my-instance\" }};\n``` Cloud Role Name uses `service.namespace` + `service.name` (falling back to `service.name` alone if namespace isn't set); Cloud Role Instance uses `service.instance.id`. The role name is what shows under each node in the Application Map. If unset, Java defaults Cloud Role Name to the Application Insights resource name and Cloud Role Instance to the machine name."
+        },
+        {
+          "heading": "Sampling",
+          "body": "Sampling controls ingestion volume and cost. The distro's two strategies are **fixed-rate/fixed-percentage** sampling (send a fixed fraction of traces, e.g. `0.1` ≈ 10%) and **rate-limited** sampling (cap traces per second, e.g. `1.5` traces/sec). Configure via environment variables (`OTEL_TRACES_SAMPLER` = `microsoft.fixed_percentage` or `microsoft.rate_limited`, with `OTEL_TRACES_SAMPLER_ARG`) or in code (`o.SamplingRatio` / `o.TracesPerSecond`). Metrics are never sampled - Microsoft's guidance is to alert on metrics for reliable signals, since sampling only affects traces (and, by default, logs tied to unsampled traces)."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/connection-strings",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-configuration",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-sampling",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/codeless-overview"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 1
+    },
+    {
+      "id": "art-monitoring-app-insights-metrics-logs-and-kusto-queries",
+      "chapterId": "monitoring",
+      "subchapterId": "app-insights",
+      "topic": "Metrics, logs & Kusto queries",
+      "title": "Application Insights Telemetry Types: Standard vs Log-Based Metrics and Querying with KQL",
+      "summary": "Explains the difference between fast preaggregated standard metrics and flexible-but-sampling-sensitive log-based metrics, the core telemetry tables, and how KQL is used to query them.",
+      "keyPoints": [
+        "Application Insights supports three metric types: standard (preaggregated), log-based, and custom.",
+        "Standard metrics are preaggregated at collection time into a dedicated time-series store with fixed 1-minute granularity; they are NOT affected by sampling and query fast - best for near-real-time alerting and dashboards.",
+        "Log-based metrics are a query-time concept: they're computed from raw log data via Kusto queries at query time (no preaggregation), which preserves all log properties as filterable/splittable dimensions but means sampling and telemetry filtering DO reduce their accuracy.",
+        "Core telemetry stored as Log Analytics tables includes: requests, dependencies, exceptions, traces, pageViews, customEvents, customMetrics, availabilityResults, browserTimings, and performanceCounters.",
+        "Custom metrics are stored in both the metrics store (no dimensions by default; dimensions are a billed preview option) and in full-dimension form in Log Analytics logs.",
+        "Azure Monitor Logs (including Application Insights logs) use KQL (Kusto Query Language) - the same language as Azure Data Explorer, though a handful of statements/functions (e.g. cluster(), Python plugin) aren't supported in Azure Monitor.",
+        "Log Analytics in the Azure portal is the primary tool to write and interactively test KQL queries, which can then feed log search alert rules, workbooks, and dashboards."
+      ],
+      "sections": [
+        {
+          "heading": "Standard, log-based, and custom metrics compared",
+          "body": "Standard (platform) metrics are automatically collected and preaggregated during runtime into a specialized time-series store - high accuracy (unaffected by sampling), fast queries, but only key dimensions. Log-based metrics are derived on the fly from stored log/event data using KQL, so they support arbitrary telemetry-field filtering and splitting, but their accuracy is reduced by any sampling or filtering applied upstream, and queries are slower since they scan log data rather than a preaggregated store. Custom metrics are user-defined via the SDK/OpenTelemetry API and are stored in both the metrics store and Log Analytics."
+        },
+        {
+          "heading": "Why the distinction matters for alerting",
+          "body": "Because log-based metrics can be skewed by sampling, use standard/pre-aggregated metrics when you need reliable near-real-time alerting on volume-sensitive signals (e.g. failed request counts), and reserve log-based metrics for deep diagnostics where you need to slice by arbitrary dimensions rather than raw accuracy."
+        },
+        {
+          "heading": "Core telemetry types",
+          "body": "The telemetry Application Insights collects and exposes as Log Analytics tables/`itemType` values includes **requests**, **dependencies** (outbound calls to databases/APIs/external services), **exceptions**, **traces** (application logs), **pageViews** and **browserTimings** (client-side, via the JS SDK), **customEvents**/**customMetrics** (manual instrumentation, e.g. `TelemetryClient.TrackEvent()`), and **availabilityResults** (from availability tests)."
+        },
+        {
+          "heading": "Querying with KQL",
+          "body": "Azure Monitor Logs is built on Azure Data Explorer and uses the same KQL. A typical log-based metric query looks like: ```kusto\nrequests\n| where success == 'False'\n| summarize ['requests/failed_sum'] = sum(itemCount) by bin(timestamp, 15m)\n| render barchart\n``` Log Analytics in the Azure portal is where you author and test these queries before reusing them in log search alert rules, workbooks, or dashboards."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/metrics-overview",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/api-custom-events-metrics",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/analyze-metrics",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-query-overview"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 2
+    },
+    {
+      "id": "art-monitoring-app-insights-availability-tests-and-alerts",
+      "chapterId": "monitoring",
+      "subchapterId": "app-insights",
+      "topic": "Availability tests & alerts",
+      "title": "Availability Tests and Alert Rules: Standard Tests, the Retiring URL Ping Test, and Action Groups",
+      "summary": "Explains which availability test type to use now that URL ping tests are being retired, and how Azure Monitor alert rules and action groups turn failures into notifications.",
+      "keyPoints": [
+        "Standard tests are the current recommended availability test type - a single-request test (like the old URL ping test) that adds TLS/SSL certificate validation, proactive certificate-lifetime checks, custom HTTP verb, custom headers, and custom request body.",
+        "URL ping tests are deprecated and will be retired on September 30, 2026 - existing URL ping tests will be removed from Application Insights resources after that date; Microsoft publishes a PowerShell-based migration path from URL ping tests to Standard tests.",
+        "Custom availability tests built with the TrackAvailability() API are now documented only as archived 'Classic API' guidance for existing implementations - current guidance is to use Standard tests where possible.",
+        "You can create up to 100 availability tests per Application Insights resource; a minimum of 5 test locations is recommended so you can distinguish app problems from regional network issues.",
+        "Availability alerts are enabled by default and are near-real-time and state-based: you get one email when the endpoint goes down and another when it recovers, not a repeated alert every evaluation cycle.",
+        "The recommended alert location threshold is (number of test locations - 2), with a minimum of 5 locations - e.g. 3-of-5 locations reporting failure before alerting.",
+        "Azure Monitor alert types include metric alerts, log search alerts, simple log search alerts, activity log alerts, smart detection alerts, and Prometheus alerts; an alert rule combines a target resource, a signal, and a condition, and firing it triggers an action group.",
+        "Action groups can notify via email/SMS/push, or trigger automation runbooks, Azure Functions, Logic Apps, ITSM incidents, event hubs, or webhooks; alerts can be stateful (fire once until the condition resolves) or stateless (fire every time the condition is met, as with all activity log alerts)."
+      ],
+      "sections": [
+        {
+          "heading": "Standard tests vs the deprecated URL ping test",
+          "body": "A Standard test sends a single HTTP request, just like a URL ping test, but additionally validates the TLS/SSL certificate (including a proactive check ahead of certificate expiry), and lets you set the HTTP verb, custom headers, and a request body. URL ping tests are deprecated and retire on **September 30, 2026** - after that date they're removed from Application Insights resources, so any team still relying on them needs to migrate before then."
+        },
+        {
+          "heading": "TrackAvailability(): archived Classic API guidance",
+          "body": "Custom availability tests built by calling `TrackAvailability()` directly are now documented only as archived 'Classic API' material intended for teams that already have such an implementation. Current Microsoft guidance is to use Standard tests for availability monitoring going forward rather than building custom TrackAvailability()-based tests."
+        },
+        {
+          "heading": "Configuring availability alerts",
+          "body": "Alerts are automatically enabled when you create an availability test, but you must open the associated alert rule and set severity, description, and an action group to actually receive notifications through your configured channels (otherwise you only get in-portal notifications). These automatic alerts are near-real-time and state based - a single alert fires when the site is detected down, and a resolved notification fires once it's back, rather than repeating every evaluation interval. The recommended alert location threshold is **(number of test locations - 2)**, with a minimum of 5 locations."
+        },
+        {
+          "heading": "Alert rules and action groups",
+          "body": "An Azure Monitor **alert rule** = a monitored resource + a signal/condition; when the condition is met, the alert fires and triggers an **action group** - which can send email/SMS/push notifications or invoke automation runbooks, Azure Functions, Logic Apps, ITSM tools, event hubs, or webhooks. Alert types include metric alerts (evaluate resource/custom/Application Insights metrics, support dynamic thresholds), log search alerts (KQL query evaluated on a schedule), simple log search alerts (evaluate each row individually for near-real-time scale), activity log alerts (fire on management-plane events, always stateless), smart detection alerts (Application Insights anomaly detection), and Prometheus alerts (PromQL-based). Alerts can be stateful - e.g. a metric alert resolves only after 3 consecutive checks don't meet the condition - or stateless, firing every time the condition is met."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/availability",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/alerts-overview"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 3
+    },
+    {
+      "id": "art-integration-api-management-apim-fundamentals",
+      "chapterId": "integration",
+      "subchapterId": "api-management",
+      "topic": "APIM fundamentals",
+      "title": "APIM Building Blocks: Gateway, Products, Subscriptions, and Tiers",
+      "summary": "Learn how Azure API Management's gateway, products, and subscriptions fit together, and which pricing tier actually supports the self-hosted gateway.",
+      "keyPoints": [
+        "APIM has three components: the API gateway (data plane), the management plane (control plane), and the developer portal",
+        "Classic tiers are Developer, Basic, Standard, Premium; V2 tiers are Basic v2, Standard v2, Premium v2; Consumption is a serverless, pay-per-execution tier",
+        "Products bundle one or more APIs and are either open (no subscription needed) or protected (subscription key required)",
+        "A subscription can be scoped to a product, to all APIs, or to a single API; every instance also has a built-in all-access subscription",
+        "The subscription key is sent as the Ocp-Apim-Subscription-Key header or the subscription-key query parameter",
+        "The self-hosted gateway (containerized gateway) applies to the Developer and Premium tiers, not just Premium",
+        "API versions use a path, header, or query-string scheme and are grouped in a version set; versions are distinct from revisions"
+      ],
+      "sections": [
+        {
+          "heading": "Gateway, management plane, developer portal",
+          "body": "The **API gateway** (data plane) sits in front of backend services: it verifies API keys, JWTs, and certificates, enforces quotas and rate limits, applies policies, optionally caches responses, and emits logs/metrics. The **management plane** is what API providers use (Azure portal, CLI, PowerShell, REST API, VS Code extension) to configure the service, import API schemas, package APIs into products, and manage users. The **developer portal** is an automatically generated, customizable site where API consumers discover APIs, try them via an interactive console, and subscribe to get keys."
+        },
+        {
+          "heading": "Pricing tiers",
+          "body": "Tiers are grouped into three families: **Classic** (Developer, Basic, Standard, Premium - Premium adds private backend access, multi-region deployment, and availability zones; Developer is for non-production use only), **V2** (Basic v2 for dev/test, Standard v2 and Premium v2 for production, both supporting VNet integration, with Premium v2 also supporting VNet injection), and **Consumption**, a serverless gateway that scales on demand and bills per execution."
+        },
+        {
+          "heading": "Products and subscriptions",
+          "body": "A **product** is how APIs are exposed to consumers; it can be *open* (no subscription required, so it won't even show on the developer portal's Products page) or *protected* (subscription key required). Subscription approval can be automatic or require publisher approval. A subscription's scope can be a product, all APIs, or a single API - API-scoped, all-APIs, and the built-in all-access subscriptions bypass any policies configured at product scope. Regenerate keys using the paired primary/secondary key model to rotate credentials with minimal disruption."
+        },
+        {
+          "heading": "Self-hosted gateway tier availability",
+          "body": "The self-hosted gateway is an optional, Linux-container version of the managed gateway that you deploy into your own environment (on-premises, another cloud, Kubernetes, or Azure Arc-enabled Kubernetes) to reduce latency and meet compliance needs. According to Microsoft's official self-hosted-gateway-overview page, it **applies to the Developer and Premium tiers** - it is available for non-production evaluation on Developer and for production use on Premium, not exclusively Premium as is sometimes assumed. It \"fails static\" during Azure connectivity loss, continuing to serve traffic from its last known (or backed-up) configuration."
+        },
+        {
+          "heading": "Versioning vs. revisions",
+          "body": "Versions let you publish multiple, independently evolvable copies of an API (each can have different operations and policies) using a **path**, **header**, or **query-string** versioning scheme; versions belonging to the same logical API are grouped into a **version set**. Adding a version to a previously non-versioned API auto-creates an `Original` version so existing callers are unaffected. Versions are distinct from **revisions**: revisions are for non-breaking changes to the same version, while versions are for breaking changes - a revision can later be promoted into a formal version."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/api-management/api-management-key-concepts",
+        "https://learn.microsoft.com/en-us/azure/api-management/api-management-subscriptions",
+        "https://learn.microsoft.com/en-us/azure/api-management/self-hosted-gateway-overview",
+        "https://learn.microsoft.com/en-us/azure/api-management/api-management-versions"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 1
+    },
+    {
+      "id": "art-integration-api-management-policies-and-scopes",
+      "chapterId": "integration",
+      "subchapterId": "api-management",
+      "topic": "Policies & scopes",
+      "title": "APIM Policies: Inbound/Backend/Outbound/On-Error and What Managed Identity Auth Can't Do",
+      "summary": "Understand the policy XML pipeline, the five policy scopes, and the precise (limited) behavior of the authentication-managed-identity policy.",
+      "keyPoints": [
+        "Policy XML has four sections executed in order: inbound, backend, outbound, on-error",
+        "If any error occurs in inbound/backend/outbound, remaining steps there are skipped and execution jumps straight to on-error, where context.LastError is available",
+        "Policy scopes, broadest to narrowest: global, workspace, product, API, operation",
+        "The <base/> element controls whether and where a scope inherits policies from the parent scope",
+        "rate-limit-by-key limits calls per a computed key (not available on Consumption tier); rate-limit/quota policies work per subscription and require a subscription key",
+        "authentication-managed-identity fetches a Microsoft Entra ID token via the APIM instance's managed identity and sets it as a Bearer Authorization header - it authenticates APIM to a backend; it does not retrieve a TLS/client certificate from Key Vault",
+        "cache-lookup and cache-store implement response caching in the inbound/outbound sections respectively"
+      ],
+      "sections": [
+        {
+          "heading": "Policy XML structure",
+          "body": "A policy definition is XML wrapped in a `<policies>` element with four child sections: `<inbound>` (statements applied to the request), `<backend>` (applied right before forwarding to the backend), `<outbound>` (applied to the response), and `<on-error>` (run only if an error occurred). If an error happens during inbound, backend, or outbound processing, any remaining statements in that section are skipped and execution jumps to on-error, where you can inspect `context.LastError` and use `set-body` to customize the error response."
+        },
+        {
+          "heading": "Scopes and the base element",
+          "body": "Policies can be defined at five scopes, from broadest to narrowest: **global** (all APIs), **workspace**, **product**, **API**, and **operation**. When policies are defined at more than one scope, the `<base/>` element controls inheritance and evaluation order within each section - placing `<base/>` first inherits the parent scope's policies before the current scope's statements run; omitting it discards the parent's policies entirely for that section. Note that policies configured at product scope are not applied to requests made with an API-scoped, all-APIs-scoped, or the built-in all-access subscription key."
+        },
+        {
+          "heading": "Rate limiting and quota policies",
+          "body": "**Limit call rate by subscription** (`rate-limit`) and **set usage quota by subscription** (`quota`) require a subscription key and are available on all gateway types including Consumption. **Limit call rate by key** (`rate-limit-by-key`) and **set usage quota by key** (`quota-by-key`) throttle per an arbitrary calculated key instead, but are *not* available on the Consumption tier. **Limit concurrency** caps how many requests can execute an enclosed policy block at once, and is available across all gateway types."
+        },
+        {
+          "heading": "Authentication policies - what managed identity can and can't do",
+          "body": "The `authentication-managed-identity` policy uses APIM's system-assigned or a specified user-assigned managed identity to obtain an Entra ID access token for a target `resource` (e.g., `https://vault.azure.net`, `https://storage.azure.com`, `https://servicebus.azure.net`), caches it until expiry, and sets it in the `Authorization: Bearer` header sent to the backend. Its scope is inbound-section authentication to a backend API - it does **not** fetch a TLS/client certificate from Key Vault or configure mutual TLS; that's a separate certificate-management concern. Token forwarding to the correct backend is the caller's responsibility; APIM doesn't validate which backend receives the token."
+        },
+        {
+          "heading": "Caching policies",
+          "body": "`cache-lookup` (used in inbound) checks for a valid cached response and returns it if present, avoiding a backend call; `cache-store` (used in outbound) caches the response per the specified cache-control configuration. Both are supported across all gateway types (classic, V2, consumption, self-hosted, workspace), alongside key/value cache policies (`cache-lookup-value`, `cache-store-value`, `cache-remove-value`) for storing arbitrary items."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/api-management/api-management-howto-policies",
+        "https://learn.microsoft.com/en-us/azure/api-management/api-management-policies",
+        "https://learn.microsoft.com/en-us/azure/api-management/authentication-managed-identity-policy"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 2
+    },
+    {
+      "id": "art-integration-events-event-grid",
+      "chapterId": "integration",
+      "subchapterId": "events",
+      "topic": "Event Grid",
+      "title": "Event Grid: Push/Pull Delivery, CloudEvents Schema, and Filtering",
+      "summary": "Understand Event Grid's pub/sub model for discrete events - schema, topics/subscriptions, filtering, and delivery guarantees.",
+      "keyPoints": [
+        "Event Grid is a fully managed publish-subscribe service for discrete event notifications, using CloudEvents 1.0 (JSON over HTTP) as its preferred schema, plus a proprietary Event Grid schema for some system publishers",
+        "Maximum event size is 1 MB; events over 64 KB are billed in 64-KB increments",
+        "Supports both push delivery (Event Grid sends events to a configured endpoint) and pull delivery (subscribers connect and read, supported for namespace topics)",
+        "Three kinds of topics: custom topics (your own apps), system topics (built-in, e.g. Storage/Event Hubs/Service Bus), and partner topics (external SaaS/ERP)",
+        "Event subscriptions define the handler/destination and can filter by event type or subject; subscriptions can be given an expiration date",
+        "Push delivery retries failed webhook deliveries for up to 24 hours with exponential backoff until a 200 OK is returned",
+        "Common handlers include webhooks, Azure Functions, Event Hubs, Storage Queues, Service Bus, and Logic Apps"
+      ],
+      "sections": [
+        {
+          "heading": "Push vs. pull delivery",
+          "body": "With **push delivery**, you define a destination on an event subscription and Event Grid sends events to it (webhook or Azure service). With **pull delivery** (available for namespace topics), subscriber applications connect to Event Grid to read events on their own schedule, and can release an already-read event back to the broker for later redelivery. Choose pull delivery when you need full control over consumption timing, need private link connectivity, or can't expose a public endpoint; choose push delivery to avoid polling or when your app can't make outbound calls but can receive events on a public endpoint."
+        },
+        {
+          "heading": "Event schema",
+          "body": "Event Grid's preferred format is the CNCF **CloudEvents 1.0** specification using the HTTP protocol binding and JSON format (structured content mode; binary mode is not supported). It also supports a proprietary **Event Grid schema** used by some system-event publishers. The maximum allowed event size is **1 MB**, and events larger than 64 KB are charged in 64-KB increments. When publishing to a custom topic, events must always be sent as an array (a batch of one is fine for low-throughput cases)."
+        },
+        {
+          "heading": "Topics and event subscriptions",
+          "body": "A **topic** holds published events. **Custom topics** expose their own endpoint for your applications; **system topics** are built-in topics provided by Azure services like Storage, Event Hubs, and Service Bus; **partner topics** surface events from an external SaaS/ERP partner via the Partner Events feature. An **event subscription** tells Event Grid which events on a topic you want and where to send them (a webhook or Azure service resource); subscriptions can be given an expiration time so short-lived test subscriptions clean themselves up automatically."
+        },
+        {
+          "heading": "Filtering and handlers",
+          "body": "Event subscriptions can filter delivered events by event type or by event subject (advanced filters go further, matching on arbitrary event properties). Supported push-delivery handlers include webhooks and Azure services such as Azure Functions, Event Hubs, Storage Queues, Service Bus, and Logic Apps; the delivery-guarantee mechanism depends on the handler type - for HTTP webhooks, Event Grid retries until it gets a 200 OK; for Storage Queues, it retries until the message push into the queue succeeds."
+        },
+        {
+          "heading": "Reliability",
+          "body": "If Event Grid can't confirm a subscriber's endpoint received an event via push delivery, it redelivers the event using a retry policy with exponential backoff for up to **24 hours**. This makes Event Grid well suited to reactive, event-driven, serverless architectures where occasional at-least-once delivery and eventual consistency are acceptable."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/event-grid/overview",
+        "https://learn.microsoft.com/en-us/azure/event-grid/concepts"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 1
+    },
+    {
+      "id": "art-integration-events-event-hubs",
+      "chapterId": "integration",
+      "subchapterId": "events",
+      "topic": "Event Hubs",
+      "title": "Event Hubs: Partitions, Consumer Groups, Capture, and Retention Limits by Tier",
+      "summary": "Learn how Event Hubs scales high-throughput streaming with partitions, consumer groups, throughput/processing/capacity units, and exactly how long each tier retains data.",
+      "keyPoints": [
+        "Event Hubs is a fully managed, Kafka-compatible, big-data streaming/ingestion platform supporting AMQP 1.0, Kafka, and HTTPS",
+        "Core components: namespace, event hub (partitioned append-only log), partitions (scale unit for parallelism), and consumer groups (independent views of the stream for different consumer applications)",
+        "Standard/Basic tiers scale via throughput units (TUs); Premium scales via processing units (PUs); Dedicated scales via capacity units (CUs)",
+        "Confirmed retention limits by tier: Basic = 1 day, Standard = 7 days, Premium = 90 days, Dedicated = 90 days",
+        "Consumer groups per event hub by tier: Basic = 1, Standard = 20, Premium = 100 (max 200 per PU at namespace level), Dedicated = 1,000 (no limit per CU)",
+        "Max published event size by tier: Basic 256 KB, Standard/Premium 1 MB, Dedicated 20 MB",
+        "Capture automatically writes streaming data to Blob Storage or Data Lake Storage in Avro format on a time/size window, without consuming TU/PU egress quota; it's included free in Premium/Dedicated, priced separately (hourly) in Standard, and not available (N/A) in Basic"
+      ],
+      "sections": [
+        {
+          "heading": "Core components",
+          "body": "A **namespace** is a management container for one or more event hubs, handling streaming capacity, network security, and geo-DR. An **event hub** (or Kafka topic) is an append-only distributed log split into **partitions** - ordered, independently consumed sequences of events that scale throughput (more partitions = more parallel consumers, like more lanes on a freeway). A **consumer group** is a logical view of the event hub that lets multiple independent consumer applications each read the full stream and track their own offset/checkpoint position."
+        },
+        {
+          "heading": "Scaling: throughput units, processing units, capacity units",
+          "body": "In the **Basic/Standard** tiers you provision **throughput units (TUs)**; in **Premium** you provision **processing units (PUs)**; in **Dedicated** you get **capacity units (CUs)** for a single-tenant cluster. Per-tier throughput per unit for Basic/Standard is 1 MB/sec or 1,000 events/sec ingress, 2 MB/sec or 4,096 events/sec egress; Premium and Dedicated have no fixed per-unit limit (bounded instead by partitions, storage, and resource allocation)."
+        },
+        {
+          "heading": "Data retention and storage by tier",
+          "body": "Per the official Event Hubs quotas page, the **maximum retention period** is: **Basic = 1 day**, **Standard = 7 days**, **Premium = 90 days**, **Dedicated = 90 days**. Underlying event storage for retention is 84 GB per TU (Basic/Standard), 1 TB per PU (Premium), and 10 TB per CU (Dedicated). Consumer groups per event hub also scale by tier: Basic allows only 1, Standard 20, Premium 100 (capped at 200 per PU namespace-wide), and Dedicated 1,000 per event hub with no per-CU limit."
+        },
+        {
+          "heading": "Capture feature",
+          "body": "Event Hubs **Capture** automatically writes streaming data to an Azure Blob Storage or Data Lake Storage account in **Apache Avro** format, without requiring you to write any capture code. You configure a capture window using a minimum time interval and size threshold; whichever condition (time or size) is met first triggers the write - a \"first wins\" policy. Capture reads directly from Event Hubs' internal storage, so it bypasses TU/PU egress quotas entirely, preserving egress budget for real-time readers like Stream Analytics or Spark. Billing-wise, Capture is **included** in Premium and Dedicated, **priced separately per throughput-unit-hour** in Standard, and **not available (N/A)** in Basic."
+        },
+        {
+          "heading": "When to choose Event Hubs",
+          "body": "Event Hubs is the right choice for high-throughput, time-ordered event streaming - telemetry, application logs, clickstreams, financial transaction streams - where the data model is an ordered stream rather than discrete events (Event Grid) or high-value transactional messages (Service Bus). It supports pub/sub via consumer groups but has no built-in dead-lettering, duplicate detection, or transactions - those are Service Bus strengths."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about",
+        "https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-capture-overview",
+        "https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas",
+        "https://learn.microsoft.com/en-us/azure/service-bus-messaging/compare-messaging-services"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 2
+    },
+    {
+      "id": "art-integration-messages-service-bus",
+      "chapterId": "integration",
+      "subchapterId": "messages",
+      "topic": "Service Bus",
+      "title": "Service Bus: Queues vs. Topics, Sessions, Duplicate Detection, and Dead-Lettering",
+      "summary": "Master Service Bus's enterprise messaging features - pub/sub topics, FIFO sessions, duplicate detection, and the difference between automatic and application-driven dead-lettering.",
+      "keyPoints": [
+        "Service Bus queues are point-to-point; topics/subscriptions provide 1:n publish-subscribe, with each subscription optionally filtered by rules/actions",
+        "Message sessions provide FIFO ordering and let you implement stateful, multiplexed workflows and request-response patterns",
+        "Duplicate detection (sender-side, based on message ID within a configurable time window) removes doubt when a send's outcome is uncertain",
+        "Dead-lettering is automatic in specific cases (TTL expiration, exceeding the max delivery count - default 10, or exceeding 4 forwarding hops) and can also be triggered explicitly by application code (DeadLetterMessageAsync)",
+        "Every queue and subscription has its own dead-letter sub-queue (DLQ) automatically - it doesn't need to be created and has no automatic cleanup",
+        "There's also a separate transfer dead-letter queue (TDLQ) for messages that fail during auto-forwarding or send-via",
+        "Choose Service Bus over Queue Storage when you need FIFO ordering, duplicate detection, transactions, sessions, pub/sub, or larger messages (up to 100 MB on Premium)"
+      ],
+      "sections": [
+        {
+          "heading": "Queues vs. topics and subscriptions",
+          "body": "**Queues** support point-to-point communication with competing consumers safely obtaining exclusive ownership of messages. **Topics** enable publish-subscribe: a topic can have multiple independent, durable **subscriptions**, each of which behaves like a queue from the receiver's side. A subscription can define **rules** with a filter (a SQL-like condition selecting which messages get copied into it) and an optional **action** that annotates message metadata as it passes through."
+        },
+        {
+          "heading": "Sessions and transactions",
+          "body": "**Message sessions** provide a first-in-first-out (FIFO) guarantee and let you implement high-scale coordination of workflows or request-response patterns by grouping related messages under a session ID; consuming nodes compete for whole sessions rather than individual messages. Service Bus also supports **transactions** that group multiple operations (e.g., receive from one queue, send to others, complete the original) into a single atomic scope against entities within the same namespace."
+        },
+        {
+          "heading": "Duplicate detection",
+          "body": "If a client can't be sure whether a send succeeded (e.g., after a timeout), **duplicate detection** lets it safely resend the same message: Service Bus discards duplicate copies based on the message ID within a configurable detection time window. This is a Service Bus-only capability - Queue Storage has no equivalent."
+        },
+        {
+          "heading": "Dead-lettering: automatic vs. explicit",
+          "body": "The **dead-letter queue (DLQ)** is a secondary sub-queue that exists automatically for every queue and subscription - you don't create or delete it independently, and there's no automatic cleanup of its contents. Messages land there **automatically** when: the message's TTL expires (reason `TTLExpiredException`), delivery is attempted more than the **max delivery count** (default 10, reason `MaxDeliveryCountExceeded`), or (in auto-forward chains) more than 4 forwarding hops occur (`MaxTransferHopCountExceeded`). Applications can also **explicitly** dead-letter a message they can't process by calling `ServiceBusReceiver.DeadLetterMessageAsync`. A related but distinct **transfer dead-letter queue (TDLQ)** holds messages that fail during auto-forwarding or send-via because the destination is disabled, deleted, or over its size limit."
+        },
+        {
+          "heading": "Service Bus vs. Queue Storage",
+          "body": "Prefer Service Bus when you need guaranteed FIFO ordering (via sessions), automatic duplicate detection, transactional sends/receives, role-based per-sender/receiver permissions, publish-subscribe fan-out, or messages larger than 64 KB (up to 256 KB/1 MB/100 MB depending on tier). Prefer Queue Storage when your queue must exceed 80 GB, you want built-in server-side transaction logs, or you just need simple, high-capacity asynchronous decoupling without the advanced messaging feature set."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview",
+        "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dead-letter-queues",
+        "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-azure-and-service-bus-queues-compared-contrasted",
+        "https://learn.microsoft.com/en-us/azure/service-bus-messaging/compare-messaging-services"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 1
+    },
+    {
+      "id": "art-integration-messages-queue-storage",
+      "chapterId": "integration",
+      "subchapterId": "messages",
+      "topic": "Queue Storage",
+      "title": "Queue Storage: Visibility Timeout, TTL, and When Simplicity Beats Service Bus",
+      "summary": "Learn Azure Queue Storage's simple message model - visibility timeout, TTL, dequeue count - and when its simplicity and scale beat Service Bus's advanced features.",
+      "keyPoints": [
+        "Queue Storage is part of an Azure Storage account: messages up to 64 KB, a queue can hold millions of messages up to the storage account's capacity limit",
+        "Get Messages retrieves up to a maximum of 32 messages per call (default is 1 if not specified)",
+        "Default visibility timeout is 30 seconds; it must be at least 1 second and cannot exceed 7 days",
+        "Default message TTL is 7 days; since REST API version 2017-07-29, TTL can be set to any positive value or -1 to never expire",
+        "DequeueCount increments every time a message is retrieved - applications use it to detect and route 'poison' messages manually since Queue Storage has no automatic dead-lettering",
+        "Delivery guarantee is at-least-once with no ordering guarantee (a crashed worker can let a visibility timeout expire and the message can be picked up out of order)",
+        "Consider Queue Storage when you need >80 GB of queued messages, need server-side transaction logs, or just need simple, low-cost asynchronous decoupling"
+      ],
+      "sections": [
+        {
+          "heading": "Basic queue model",
+          "body": "Azure Queue Storage is accessed via `https://<account>.queue.core.windows.net/<queue>` using authenticated HTTP/HTTPS calls. A **message** can be any content up to **64 KB** (48 KB if Base64-encoded); a single **queue** may hold millions of messages, up to the overall capacity of the storage account. It's a straightforward Web-Queue-Worker style backlog mechanism, not a full messaging broker."
+        },
+        {
+          "heading": "Visibility timeout and message lifecycle",
+          "body": "When a consumer calls **Get Messages**, it can retrieve up to a maximum of **32 messages** per call (default 1), and each returned message becomes invisible to other consumers for the **visibility timeout** duration - default **30 seconds**, must be ≥1 second and cannot exceed **7 days**. The consumer must delete the message (using its `MessageId` and `PopReceipt`) before the timeout elapses, or the message reappears in the queue for another consumer to pick up - this is why Queue Storage offers no ordering guarantee."
+        },
+        {
+          "heading": "Message TTL and poison-message handling",
+          "body": "Messages have a **time-to-live**; the default is 7 days, but for REST API version 2017-07-29 or later you can set any positive TTL value or **-1** to mean the message never expires. Because Queue Storage has no built-in dead-lettering, applications detect **poison messages** manually by inspecting the `DequeueCount` property (incremented each time the message is retrieved) and moving messages past an application-defined threshold to their own dead-letter queue."
+        },
+        {
+          "heading": "When Queue Storage beats Service Bus",
+          "body": "Favor Queue Storage when your application must store more than 80 GB of messages in a single queue, you want to track fine-grained per-message processing progress via in-place message updates, or you need detailed server-side transaction logs of all queue operations for auditing/debugging. It's also simpler and typically cheaper when you don't need Service Bus's FIFO sessions, duplicate detection, transactions, or pub/sub topics."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/storage/queues/storage-queues-introduction",
+        "https://learn.microsoft.com/en-us/rest/api/storageservices/get-messages",
+        "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-azure-and-service-bus-queues-compared-contrasted"
+      ],
+      "verifiedAt": "2026-07-15",
+      "auditStatus": "verified",
+      "order": 2
+    }
+  ]
+}

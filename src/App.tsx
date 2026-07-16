@@ -11,36 +11,32 @@ import {
   Filter,
   Layers,
   ListChecks,
-  Meh,
   RotateCcw,
   SearchCheck,
-  Shuffle,
   Moon,
-  Sparkles,
   Sun,
   X
 } from 'lucide-react';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
+  type Article,
   type Chapter,
   type ChapterId,
-  type Flashcard,
   type Question,
   type Subchapter,
   content,
   getActiveCoverageBySubchapter,
-  getFlashcardsForChapter,
-  getFlashcardsForSubchapter,
+  getArticlesForChapter,
+  getArticlesForSubchapter,
   getOfficialSubchapterCount,
   getQuestionsForChapter,
   getQuestionsForSubchapter,
   getWeightedMockQuestions,
   importedExamQuestionCount,
-  importedFlashcardCount,
   importedVerifiedCount,
   sourceQuizBank,
-  verifiedFlashcards,
+  verifiedArticles,
   verifiedQuestions
 } from './domain/content';
 import {
@@ -51,20 +47,16 @@ import {
   toggleAnswer
 } from './domain/scoring';
 import {
-  type FlashcardRating,
   type StoredProgress,
   chapterProgress,
-  isDue,
-  isLeech,
-  isMastered,
-  rateFlashcard,
+  isArticleRead,
+  markArticleRead,
   readProgress,
   recordExamAttempt,
-  resetFlashcardRatings,
   writeProgress
 } from './domain/progress';
 
-type View = 'dashboard' | 'flashcards' | 'exam' | 'audit';
+type View = 'dashboard' | 'articles' | 'exam' | 'audit';
 type ThemeMode = 'day' | 'night';
 
 type StudyTarget = {
@@ -79,10 +71,6 @@ const defaultTarget: StudyTarget = {
 
 function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
-}
-
-function shuffleItems<T>(items: T[]) {
-  return [...items].sort(() => Math.random() - 0.5);
 }
 
 function getSubchapterTitle(chapter: Chapter, subchapterId: string) {
@@ -151,11 +139,11 @@ export function App() {
             Dashboard
           </NavButton>
           <NavButton
-            active={view === 'flashcards'}
+            active={view === 'articles'}
             icon={<Layers />}
-            onClick={() => setView('flashcards')}
+            onClick={() => setView('articles')}
           >
-            Fiszki
+            Artykuły
           </NavButton>
           <NavButton
             active={view === 'exam'}
@@ -218,8 +206,8 @@ export function App() {
         {view === 'dashboard' ? (
           <Dashboard progress={progress} onSelectTarget={setTarget} onViewChange={setView} />
         ) : null}
-        {view === 'flashcards' ? (
-          <FlashcardsView
+        {view === 'articles' ? (
+          <ArticlesView
             target={target}
             chapter={selectedChapter}
             subchapter={selectedSubchapter}
@@ -249,8 +237,8 @@ function Header() {
         <span className="eyebrow">Microsoft Azure Developer Associate</span>
         <h1>AZ-204 study cockpit</h1>
         <p>
-          Fiszki i egzaminy według oficjalnych skills measured. Treści aktywne mają status verified
-          i linki do Microsoft Learn.
+          Artykuły i egzaminy według oficjalnych skills measured. Treści aktywne mają status
+          verified i linki do Microsoft Learn.
         </p>
       </div>
       <div className="retirement-banner" role="note">
@@ -299,12 +287,12 @@ function StudyFilters({
   const chapterOptions = content.chapters.map((chapter) => ({
     value: chapter.id,
     label: chapter.title,
-    meta: `${chapter.weight} · ${getQuestionsForChapter(chapter.id).length} pytań · ${getFlashcardsForChapter(chapter.id).length} fiszek`
+    meta: `${chapter.weight} · ${getQuestionsForChapter(chapter.id).length} pytań · ${getArticlesForChapter(chapter.id).length} artykułów`
   }));
   const subchapterOptions = selectedChapter.subchapters.map((subchapter) => ({
     value: subchapter.id,
     label: subchapter.title,
-    meta: `${getQuestionsForSubchapter(selectedChapter.id, subchapter.id).length} pytań · ${getFlashcardsForSubchapter(selectedChapter.id, subchapter.id).length} fiszek`
+    meta: `${getQuestionsForSubchapter(selectedChapter.id, subchapter.id).length} pytań · ${getArticlesForSubchapter(selectedChapter.id, subchapter.id).length} artykułów`
   }));
 
   return (
@@ -513,9 +501,9 @@ function Dashboard({
   const officialSubchapters = getOfficialSubchapterCount();
   const coverage = getActiveCoverageBySubchapter();
   const verifiedCoverage = coverage.filter(
-    (item) => item.questions > 0 && item.flashcards > 0
+    (item) => item.questions > 0 && item.articles > 0
   ).length;
-  const knownCards = Object.values(progress.flashcards).filter((state) => isMastered(state)).length;
+  const readArticles = Object.keys(progress.articles).length;
   const attempts = Object.values(progress.examAttempts);
   const bestScore = attempts.reduce((best, attempt) => Math.max(best, attempt.bestScore), 0);
 
@@ -536,9 +524,9 @@ function Dashboard({
         />
         <MetricCard
           icon={<Layers />}
-          label="Known flashcards"
-          value={knownCards}
-          detail={`${verifiedFlashcards.length} fiszek`}
+          label="Articles read"
+          value={readArticles}
+          detail={`${verifiedArticles.length} artykułów`}
         />
         <MetricCard
           icon={<SearchCheck />}
@@ -561,9 +549,9 @@ function Dashboard({
 
         <div className="chapter-grid">
           {content.chapters.map((chapter) => {
-            const cardIds = getFlashcardsForChapter(chapter.id).map((card) => card.id);
+            const articleIds = getArticlesForChapter(chapter.id).map((article) => article.id);
             const questionIds = getQuestionsForChapter(chapter.id).map((question) => question.id);
-            const stats = chapterProgress(progress, chapter.id, cardIds, questionIds);
+            const stats = chapterProgress(progress, chapter.id, articleIds, questionIds);
             return (
               <article key={chapter.id} className="chapter-card">
                 <div className="chapter-card-top">
@@ -573,7 +561,7 @@ function Dashboard({
                 <p>{chapter.summary}</p>
                 <div className="chapter-stat-row">
                   <span>
-                    {stats.knownCards}/{stats.totalCards} fiszek
+                    {stats.readArticles}/{stats.totalArticles} artykułów
                   </span>
                   <span>{stats.totalQuestions} pytań</span>
                   <span>best {stats.bestExamScore}%</span>
@@ -585,7 +573,7 @@ function Dashboard({
                       type="button"
                       onClick={() => {
                         onSelectTarget({ chapterId: chapter.id, subchapterId: subchapter.id });
-                        onViewChange('flashcards');
+                        onViewChange('articles');
                       }}
                     >
                       <span>{subchapter.title}</span>
@@ -605,7 +593,7 @@ function Dashboard({
           <h2>Najlepszy wynik: {bestScore}%</h2>
           <p>
             Tryb mock exam używa pytań oryginalnych oraz zaimportowanego banku z mapowaniem
-            Microsoft Learn. Pytania opisowe/kodowe są dostępne jako fiszki.
+            Microsoft Learn.
           </p>
         </div>
         <button className="primary-action" type="button" onClick={() => onViewChange('exam')}>
@@ -638,7 +626,7 @@ function MetricCard({
   );
 }
 
-function FlashcardsView({
+function ArticlesView({
   target,
   chapter,
   subchapter,
@@ -651,98 +639,31 @@ function FlashcardsView({
   progress: StoredProgress;
   onProgressChange: (progress: StoredProgress) => void;
 }) {
-  // Cards marked "again" resurface this many slots later in the session queue.
-  const REQUEUE_GAP = 4;
-
-  const [deck, setDeck] = useState<Flashcard[]>(() =>
-    getFlashcardsForSubchapter(target.chapterId, target.subchapterId)
+  const articles = useMemo(
+    () => getArticlesForSubchapter(target.chapterId, target.subchapterId),
+    [target.chapterId, target.subchapterId]
   );
-  const [queue, setQueue] = useState<string[]>(() =>
-    deck.filter((item) => isDue(progress.flashcards[item.id])).map((item) => item.id)
-  );
-  const [position, setPosition] = useState(0);
-  const [flipped, setFlipped] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
-    const nextDeck = getFlashcardsForSubchapter(target.chapterId, target.subchapterId);
-    setDeck(nextDeck);
-    setQueue(nextDeck.filter((item) => isDue(progress.flashcards[item.id])).map((item) => item.id));
-    setPosition(0);
-    setFlipped(false);
+    setSelectedId(null);
   }, [target.chapterId, target.subchapterId]);
 
-  useEffect(() => {
-    setPosition((current) => Math.min(current, Math.max(queue.length - 1, 0)));
-  }, [queue.length]);
+  const readCount = articles.filter((article) =>
+    isArticleRead(progress.articles[article.id])
+  ).length;
+  const selectedIndex = articles.findIndex((article) => article.id === selectedId);
+  const selected = selectedIndex >= 0 ? articles[selectedIndex] : null;
 
-  const cardsById = useMemo(() => new Map(deck.map((item) => [item.id, item])), [deck]);
-  const card = cardsById.get(queue[position]);
-  const cardState = card ? progress.flashcards[card.id] : undefined;
-  const masteredCount = deck.filter((item) => isMastered(progress.flashcards[item.id])).length;
-  const hasAnyProgress = deck.some((item) => progress.flashcards[item.id]);
-
-  function move(delta: number) {
-    setPosition((current) => Math.min(Math.max(current + delta, 0), Math.max(queue.length - 1, 0)));
-    setFlipped(false);
-  }
-
-  function rate(rating: FlashcardRating) {
-    if (!card) return;
-    onProgressChange(rateFlashcard(progress, card.id, rating));
-    setFlipped(false);
-    setQueue((current) => {
-      const next = [...current];
-      next.splice(position, 1);
-      if (rating === 'again') {
-        const insertAt = Math.min(position + REQUEUE_GAP, next.length);
-        next.splice(insertAt, 0, card.id);
-      }
-      return next;
-    });
-  }
-
-  function resetDeck() {
-    const ids = deck.map((item) => item.id);
-    onProgressChange(resetFlashcardRatings(progress, ids));
-    setQueue(shuffleItems(ids));
-    setPosition(0);
-    setFlipped(false);
-  }
-
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.ctrlKey || event.metaKey || event.altKey || !card) return;
-      switch (event.key) {
-        case ' ':
-        case 'Enter':
-          event.preventDefault();
-          setFlipped((value) => !value);
-          break;
-        case '1':
-          rate('again');
-          break;
-        case '2':
-          rate('hard');
-          break;
-        case '3':
-          rate('good');
-          break;
-        case '4':
-          rate('easy');
-          break;
-        case 'ArrowLeft':
-          move(-1);
-          break;
-        case 'ArrowRight':
-          move(1);
-          break;
-        default:
-          return;
-      }
+  function toggleRead(articleId: string) {
+    if (isArticleRead(progress.articles[articleId])) {
+      const nextArticles = { ...progress.articles };
+      delete nextArticles[articleId];
+      onProgressChange({ ...progress, articles: nextArticles });
+    } else {
+      onProgressChange(markArticleRead(progress, articleId));
     }
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  });
+  }
 
   return (
     <div className="stack">
@@ -752,119 +673,134 @@ function FlashcardsView({
           <h2>{subchapter.title}</h2>
           <p>{subchapter.studyNotes}</p>
         </div>
-        <div className="button-row">
-          <button
-            className="icon-button"
-            type="button"
-            title="Shuffle fiszki"
-            onClick={() => setQueue((current) => shuffleItems(current))}
-          >
-            <Shuffle aria-hidden="true" />
-          </button>
-          <button
-            className="icon-button"
-            type="button"
-            title="Zresetuj postęp i przejrzyj wszystkie fiszki ponownie"
-            onClick={resetDeck}
-            disabled={!hasAnyProgress}
-          >
-            <RotateCcw aria-hidden="true" />
-          </button>
-          <span className="status-pill">
-            {masteredCount}/{deck.length} opanowane
-          </span>
-          <span className="status-pill">{queue.length} do przejrzenia dziś</span>
-        </div>
+        <span className="status-pill">
+          {readCount}/{articles.length} przeczytane
+        </span>
       </section>
 
-      {card ? (
-        <section className={cx('flashcard-stage', flipped && 'is-flipped')}>
-          {isLeech(cardState) ? (
-            <div className="leech-badge">
-              <AlertTriangle aria-hidden="true" />
-              Trudna karta — „nie znam” {cardState?.lapses}&times;. Przeczytaj uważnie źródło
-              Microsoft Learn poniżej.
-            </div>
-          ) : null}
-          <button
-            className="flashcard"
-            type="button"
-            onClick={() => setFlipped((value) => !value)}
-            aria-pressed={flipped}
-          >
-            <span className="flashcard-face flashcard-front">
-              <span className="mini-label">Prompt</span>
-              <TextBlock text={card.front} featured />
-              <span className="tap-hint">Kliknij kartę lub spację, aby odwrócić</span>
-            </span>
-            <span className="flashcard-face flashcard-back">
-              <span className="mini-label">Answer</span>
-              <TextBlock text={card.back} />
-              <ul>
-                {card.keyPoints.map((point) => (
-                  <li key={point}>{point}</li>
-                ))}
-              </ul>
-            </span>
-          </button>
-          <div className="card-controls">
-            <button
-              className="secondary-action"
-              type="button"
-              onClick={() => move(-1)}
-              disabled={position === 0}
-            >
-              <ChevronLeft aria-hidden="true" />
-              Poprzednia
-            </button>
-            <span>
-              {position + 1} / {queue.length}
-            </span>
-            <button
-              className="secondary-action"
-              type="button"
-              onClick={() => move(1)}
-              disabled={position === queue.length - 1}
-            >
-              Następna
-              <ChevronRight aria-hidden="true" />
-            </button>
-          </div>
-          <div className="card-controls rating-controls">
-            <button className="danger-action" type="button" onClick={() => rate('again')}>
-              <RotateCcw aria-hidden="true" />
-              Nie znam
-            </button>
-            <button className="secondary-action" type="button" onClick={() => rate('hard')}>
-              <Meh aria-hidden="true" />
-              Trudne
-            </button>
-            <button className="success-action" type="button" onClick={() => rate('good')}>
-              <Check aria-hidden="true" />
-              Znam
-            </button>
-            <button className="primary-action" type="button" onClick={() => rate('easy')}>
-              <Sparkles aria-hidden="true" />
-              Łatwe
-            </button>
-          </div>
-          <span className="shortcut-hint">
-            Skróty: spacja/Enter — odwróć, 1–4 — ocena, ←/→ — nawigacja
-          </span>
-          <SourceLinks urls={card.sourceUrls} />
-        </section>
-      ) : deck.length > 0 ? (
-        <EmptyState
-          title="Nic więcej dziś"
-          body="Wszystkie fiszki w tym podrozdziale są zaplanowane na później. Kliknij ikonę resetu obok „shuffle”, aby przejrzeć je od nowa już teraz."
+      {selected ? (
+        <ArticleDetail
+          article={selected}
+          isRead={isArticleRead(progress.articles[selected.id])}
+          onToggleRead={() => toggleRead(selected.id)}
+          onBack={() => setSelectedId(null)}
+          onPrev={
+            selectedIndex > 0 ? () => setSelectedId(articles[selectedIndex - 1].id) : undefined
+          }
+          onNext={
+            selectedIndex < articles.length - 1
+              ? () => setSelectedId(articles[selectedIndex + 1].id)
+              : undefined
+          }
+          position={selectedIndex + 1}
+          total={articles.length}
         />
+      ) : articles.length > 0 ? (
+        <section className="panel">
+          <div className="audit-list">
+            {articles.map((article) => {
+              const read = isArticleRead(progress.articles[article.id]);
+              return (
+                <button
+                  key={article.id}
+                  type="button"
+                  className="audit-item article-row"
+                  onClick={() => setSelectedId(article.id)}
+                >
+                  <div>
+                    <strong>{article.title}</strong>
+                    <span>{article.summary}</span>
+                  </div>
+                  <div>
+                    <span className={cx('status-pill', read && 'verified')}>
+                      {read ? 'Przeczytane' : 'Nieprzeczytane'}
+                    </span>
+                    <ChevronRight aria-hidden="true" />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
       ) : (
         <EmptyState
-          title="Brak fiszek"
-          body="Ten podrozdział nie ma jeszcze zweryfikowanych fiszek."
+          title="Brak artykułów"
+          body="Ten podrozdział nie ma jeszcze zweryfikowanych artykułów."
         />
       )}
     </div>
+  );
+}
+
+function ArticleDetail({
+  article,
+  isRead,
+  onToggleRead,
+  onBack,
+  onPrev,
+  onNext,
+  position,
+  total
+}: {
+  article: Article;
+  isRead: boolean;
+  onToggleRead: () => void;
+  onBack: () => void;
+  onPrev?: () => void;
+  onNext?: () => void;
+  position: number;
+  total: number;
+}) {
+  return (
+    <section className="panel article-detail">
+      <div className="card-controls">
+        <button className="secondary-action" type="button" onClick={onBack}>
+          <ChevronLeft aria-hidden="true" />
+          Lista artykułów
+        </button>
+        <span>
+          {position} / {total}
+        </span>
+      </div>
+
+      <span className="mini-label">{article.topic}</span>
+      <h2>{article.title}</h2>
+      <p>{article.summary}</p>
+
+      <ul>
+        {article.keyPoints.map((point) => (
+          <li key={point}>{point}</li>
+        ))}
+      </ul>
+
+      {article.sections.map((section) => (
+        <div key={section.heading} className="article-section">
+          <h3>{section.heading}</h3>
+          <TextBlock text={section.body} />
+        </div>
+      ))}
+
+      <SourceLinks urls={article.sourceUrls} />
+
+      <div className="card-controls">
+        <button className="secondary-action" type="button" onClick={onPrev} disabled={!onPrev}>
+          <ChevronLeft aria-hidden="true" />
+          Poprzedni
+        </button>
+        <button
+          className={cx(isRead ? 'secondary-action' : 'success-action')}
+          type="button"
+          onClick={onToggleRead}
+        >
+          <Check aria-hidden="true" />
+          {isRead ? 'Oznacz jako nieprzeczytane' : 'Oznacz jako przeczytane'}
+        </button>
+        <button className="secondary-action" type="button" onClick={onNext} disabled={!onNext}>
+          Następny
+          <ChevronRight aria-hidden="true" />
+        </button>
+      </div>
+    </section>
   );
 }
 
@@ -932,7 +868,11 @@ function ExamView({
     if (!currentQuestion) return;
     setAnswers((current) => ({
       ...current,
-      [currentQuestion.id]: toggleAnswer(currentQuestion, current[currentQuestion.id] ?? [], optionId)
+      [currentQuestion.id]: toggleAnswer(
+        currentQuestion,
+        current[currentQuestion.id] ?? [],
+        optionId
+      )
     }));
   }
 
@@ -1165,7 +1105,12 @@ function ExamView({
               Wstecz
             </button>
             {!isLastQuestion ? (
-              <button className="primary-action" type="button" onClick={goNext} disabled={!canMoveForward}>
+              <button
+                className="primary-action"
+                type="button"
+                onClick={goNext}
+                disabled={!canMoveForward}
+              >
                 Dalej
                 <ChevronRight aria-hidden="true" />
               </button>
@@ -1272,7 +1217,7 @@ function AuditView() {
           <h2>{importedCount} pytań z quizu zaimportowane do banku</h2>
           <p>
             Każdy element ma mapowanie do oficjalnego rozdziału i źródeł Microsoft Learn.
-            {` ${importedExamQuestionCount()} pytań zamkniętych zasila egzaminy, ${importedFlashcardCount()} pozycji zasila fiszki, a ${correctionCount} znane błędy zostały poprawione.`}
+            {` ${importedExamQuestionCount()} pytań zamkniętych zasila egzaminy, a ${correctionCount} znane błędy zostały poprawione.`}
           </p>
         </div>
         <span className="status-pill verified">Microsoft Learn mapped</span>
@@ -1290,14 +1235,14 @@ function AuditView() {
             <span>Domain</span>
             <span>Subchapter</span>
             <span>Questions</span>
-            <span>Flashcards</span>
+            <span>Articles</span>
           </div>
-          {coverage.map(({ chapter, subchapter, questions, flashcards }) => (
+          {coverage.map(({ chapter, subchapter, questions, articles }) => (
             <div className="table-row" role="row" key={`${chapter.id}-${subchapter.id}`}>
               <span>{chapter.title}</span>
               <span>{subchapter.title}</span>
               <span>{questions}</span>
-              <span>{flashcards}</span>
+              <span>{articles}</span>
             </div>
           ))}
         </div>

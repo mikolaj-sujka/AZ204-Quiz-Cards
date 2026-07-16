@@ -1,5 +1,6 @@
 import rawContent from '../data/az204-content.json';
 import rawSourceQuiz from '../data/source-quiz.generated.json';
+import rawArticles from '../data/articles.json';
 
 export type ChapterId = 'compute' | 'storage' | 'security' | 'monitoring' | 'integration';
 
@@ -28,18 +29,24 @@ export type Question = {
   origin: 'original' | 'adapted-source-quiz';
 };
 
-export type Flashcard = {
+export type ArticleSection = {
+  heading: string;
+  body: string;
+};
+
+export type Article = {
   id: string;
   chapterId: ChapterId;
   subchapterId: string;
-  front: string;
-  back: string;
+  topic: string;
+  title: string;
+  summary: string;
   keyPoints: string[];
+  sections: ArticleSection[];
   sourceUrls: string[];
   verifiedAt: string;
   auditStatus: AuditStatus;
-  origin?: 'original' | 'adapted-source-quiz';
-  sourceTopic?: string;
+  order: number;
 };
 
 export type Subchapter = {
@@ -92,6 +99,12 @@ export type SourceQuizBank = {
   items: SourceQuizItem[];
 };
 
+export type ArticleBank = {
+  generatedAt: string;
+  sourceNote: string;
+  articles: Article[];
+};
+
 export type ExamContent = {
   metadata: {
     examCode: string;
@@ -108,33 +121,13 @@ export type ExamContent = {
     };
   };
   chapters: Chapter[];
-  flashcards: Flashcard[];
   questions: Question[];
   importedQuestionManifest: ImportedQuestionManifestItem[];
 };
 
 export const content = rawContent as unknown as ExamContent;
 export const sourceQuizBank = rawSourceQuiz as unknown as SourceQuizBank;
-
-export const sourceQuizFlashcards: Flashcard[] = sourceQuizBank.items.map((item) => ({
-  id: `fc-${item.id}`,
-  chapterId: item.chapterId,
-  subchapterId: item.subchapterId,
-  front: item.prompt,
-  back: item.answer || 'Brak odpowiedzi w źródłowym pliku. Sprawdź źródła Microsoft Learn.',
-  keyPoints: [
-    `Source topic: ${item.sourceTopic}`,
-    item.options.length > 0 ? 'Format: pytanie testowe' : 'Format: pytanie opisowe/kodowe',
-    item.correctionNotes
-      ? `Audit correction: ${item.correctionNotes}`
-      : 'Microsoft Learn source mapped'
-  ],
-  sourceUrls: item.sourceUrls,
-  verifiedAt: item.verifiedAt,
-  auditStatus: item.auditStatus,
-  origin: 'adapted-source-quiz',
-  sourceTopic: item.sourceTopic
-}));
+export const articleBank = rawArticles as unknown as ArticleBank;
 
 export const sourceQuizQuestions: Question[] = sourceQuizBank.items
   .filter((item) => item.options.length > 0 && item.answerIds.length > 0)
@@ -167,13 +160,11 @@ export const originalVerifiedQuestions = content.questions.filter(
   (question) => question.auditStatus === 'verified'
 );
 
-export const originalVerifiedFlashcards = content.flashcards.filter(
-  (flashcard) => flashcard.auditStatus === 'verified'
-);
-
 export const verifiedQuestions = [...originalVerifiedQuestions, ...sourceQuizQuestions];
 
-export const verifiedFlashcards = [...originalVerifiedFlashcards, ...sourceQuizFlashcards];
+export const verifiedArticles = articleBank.articles.filter(
+  (article) => article.auditStatus === 'verified'
+);
 
 export function getChapter(chapterId: ChapterId) {
   return content.chapters.find((chapter) => chapter.id === chapterId);
@@ -189,18 +180,18 @@ export function getQuestionsForSubchapter(chapterId: ChapterId, subchapterId: st
   );
 }
 
-export function getFlashcardsForSubchapter(chapterId: ChapterId, subchapterId: string) {
-  return verifiedFlashcards.filter(
-    (flashcard) => flashcard.chapterId === chapterId && flashcard.subchapterId === subchapterId
-  );
-}
-
 export function getQuestionsForChapter(chapterId: ChapterId) {
   return verifiedQuestions.filter((question) => question.chapterId === chapterId);
 }
 
-export function getFlashcardsForChapter(chapterId: ChapterId) {
-  return verifiedFlashcards.filter((flashcard) => flashcard.chapterId === chapterId);
+export function getArticlesForSubchapter(chapterId: ChapterId, subchapterId: string) {
+  return verifiedArticles
+    .filter((article) => article.chapterId === chapterId && article.subchapterId === subchapterId)
+    .sort((a, b) => a.order - b.order);
+}
+
+export function getArticlesForChapter(chapterId: ChapterId) {
+  return verifiedArticles.filter((article) => article.chapterId === chapterId);
 }
 
 export function importedBacklogCount() {
@@ -215,10 +206,6 @@ export function importedExamQuestionCount() {
   return sourceQuizQuestions.length;
 }
 
-export function importedFlashcardCount() {
-  return sourceQuizFlashcards.length;
-}
-
 export function getOfficialSubchapterCount() {
   return content.chapters.reduce((sum, chapter) => sum + chapter.subchapters.length, 0);
 }
@@ -229,7 +216,7 @@ export function getActiveCoverageBySubchapter() {
       chapter,
       subchapter,
       questions: getQuestionsForSubchapter(chapter.id, subchapter.id).length,
-      flashcards: getFlashcardsForSubchapter(chapter.id, subchapter.id).length
+      articles: getArticlesForSubchapter(chapter.id, subchapter.id).length
     }))
   );
 }

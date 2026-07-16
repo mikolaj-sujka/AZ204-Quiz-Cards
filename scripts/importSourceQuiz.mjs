@@ -337,7 +337,9 @@ const ID_CORRECTIONS = {
       'Azure Container Apps is a single-region service — if the region becomes unavailable, the environment and apps in it are also unavailable, so waiting for regional recovery or manually redeploying after the outage occurs are not the recommended approach.',
     correctionNotes:
       'Corrected: only proactive multi-region deployment + Front Door/Traffic Manager is the recommended strategy, not reactive manual redeployment (removed options a and b from answerIds).',
-    extraSourceUrls: ['https://learn.microsoft.com/en-us/azure/reliability/reliability-container-apps']
+    extraSourceUrls: [
+      'https://learn.microsoft.com/en-us/azure/reliability/reliability-container-apps'
+    ]
   },
   'src-6c7cad522339c53bf502baa8': {
     options: [
@@ -381,7 +383,9 @@ const ID_CORRECTIONS = {
       "There is no `Message` wrapper type in this SDK (that type belongs to the legacy `Microsoft.Azure.ServiceBus` SDK, not Azure Queue Storage), so `Message(...)`-based options don't apply here.",
     correctionNotes:
       'Corrected: Azure.Storage.Queues.QueueClient has no SendAsync(Message) method; use SendMessageAsync(string) and pass text directly.',
-    extraSourceUrls: ['https://learn.microsoft.com/en-us/dotnet/api/azure.storage.queues.queueclient']
+    extraSourceUrls: [
+      'https://learn.microsoft.com/en-us/dotnet/api/azure.storage.queues.queueclient'
+    ]
   },
   'src-29fafe6479ac8852d835aff3': {
     answerIds: ['a', 'd', 'e', 'f', 'g', 'h'],
@@ -390,7 +394,9 @@ const ID_CORRECTIONS = {
       'On-behalf-of is not a public-client flow — it is used by a confidential client (a middle-tier service) acting on behalf of a user, and requires the middle tier to authenticate itself with a client secret or certificate.',
     correctionNotes:
       'Corrected: removed "On-behalf-of" from public-client flows — it is a confidential-client-only flow.',
-    extraSourceUrls: ['https://learn.microsoft.com/en-us/entra/identity-platform/msal-client-applications']
+    extraSourceUrls: [
+      'https://learn.microsoft.com/en-us/entra/identity-platform/msal-client-applications'
+    ]
   },
   'src-586b36c5c8f175f2dc86a79d': {
     answerIds: ['b', 'c'],
@@ -399,7 +405,9 @@ const ID_CORRECTIONS = {
       'Integrated Windows and Username/password (ROPC) are public-client-only flows, not confidential-client flows.',
     correctionNotes:
       'Corrected: removed "Integrated Windows" and "Username/password" from confidential-client flows — both are public-client-only.',
-    extraSourceUrls: ['https://learn.microsoft.com/en-us/entra/identity-platform/msal-client-applications']
+    extraSourceUrls: [
+      'https://learn.microsoft.com/en-us/entra/identity-platform/msal-client-applications'
+    ]
   },
   'src-e8fa6d692503b41062c1544d': {
     answer:
@@ -407,7 +415,9 @@ const ID_CORRECTIONS = {
       "as archived Classic API guidance rather than 'the long term supported solution' — Standard tests are the recommended availability test type for current monitoring in general, with URL ping tests deprecated (retiring 2026-09-30).",
     correctionNotes:
       'Corrected: Custom TrackAvailability is documented as archived Classic API guidance, not "the long term supported solution"; Standard tests are recommended for current monitoring in general.',
-    extraSourceUrls: ['https://learn.microsoft.com/en-us/azure/azure-monitor/app/availability-overview']
+    extraSourceUrls: [
+      'https://learn.microsoft.com/en-us/azure/azure-monitor/app/availability-overview'
+    ]
   },
   'src-caa03b76e59d6566a9beecdb': {
     answer:
@@ -464,20 +474,42 @@ const TEXT_CORRECTIONS = {
 };
 
 const TEXT_CORRECTION_SOURCE_URLS = {
-  'src-f30fa7e166328223be26bb1d': ['https://learn.microsoft.com/en-us/azure/azure-functions/functions-versions'],
-  'src-e8b0e5f13fc3dfffc1b770a2': ['https://learn.microsoft.com/en-us/azure/azure-functions/functions-versions'],
-  'src-b96627f3bf938d7afe7a5dc0': ['https://learn.microsoft.com/en-us/azure/azure-functions/functions-versions'],
-  'src-315bbb38dd3a8964167b9281': ['https://learn.microsoft.com/en-us/azure/storage/common/redundancy-migration'],
+  'src-f30fa7e166328223be26bb1d': [
+    'https://learn.microsoft.com/en-us/azure/azure-functions/functions-versions'
+  ],
+  'src-e8b0e5f13fc3dfffc1b770a2': [
+    'https://learn.microsoft.com/en-us/azure/azure-functions/functions-versions'
+  ],
+  'src-b96627f3bf938d7afe7a5dc0': [
+    'https://learn.microsoft.com/en-us/azure/azure-functions/functions-versions'
+  ],
+  'src-315bbb38dd3a8964167b9281': [
+    'https://learn.microsoft.com/en-us/azure/storage/common/redundancy-migration'
+  ],
   'src-c7f0d92f2eb6d363be676fa9': [
     'https://learn.microsoft.com/en-us/dotnet/api/overview/azure/security.keyvault.certificates-readme'
   ],
-  'src-ed46e9e4a8007f610128101a': ['https://learn.microsoft.com/en-us/entra/identity-platform/reference-app-manifest'],
-  'src-a402dd6142b5fe63510ccd3f': ['https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-configuration'],
-  'src-6ccd69c73b7922f1745e0355': ['https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.tracing.eventsource'],
-  'src-109dc7569cbc21675c3c9e62': ['https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas'],
-  'src-aabeb0b6caaf1f44da9402b8': ['https://learn.microsoft.com/en-us/azure/api-management/self-hosted-gateway-overview'],
-  'src-ecb7753c155a66b0f1f5812e': ['https://learn.microsoft.com/en-us/azure/app-service/manage-automatic-scaling'],
-  'src-767e004879c84b95bb531226': ['https://learn.microsoft.com/en-us/azure/app-service/manage-automatic-scaling']
+  'src-ed46e9e4a8007f610128101a': [
+    'https://learn.microsoft.com/en-us/entra/identity-platform/reference-app-manifest'
+  ],
+  'src-a402dd6142b5fe63510ccd3f': [
+    'https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-configuration'
+  ],
+  'src-6ccd69c73b7922f1745e0355': [
+    'https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.tracing.eventsource'
+  ],
+  'src-109dc7569cbc21675c3c9e62': [
+    'https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-quotas'
+  ],
+  'src-aabeb0b6caaf1f44da9402b8': [
+    'https://learn.microsoft.com/en-us/azure/api-management/self-hosted-gateway-overview'
+  ],
+  'src-ecb7753c155a66b0f1f5812e': [
+    'https://learn.microsoft.com/en-us/azure/app-service/manage-automatic-scaling'
+  ],
+  'src-767e004879c84b95bb531226': [
+    'https://learn.microsoft.com/en-us/azure/app-service/manage-automatic-scaling'
+  ]
 };
 
 const TEXT_CORRECTION_NOTES = {
@@ -560,6 +592,16 @@ function parseQuestionFile(topic, markdown) {
       finalAnswer = finalAnswer.replace(oldText, newText);
       finalCorrectionNotes = TEXT_CORRECTION_NOTES[id];
       extraSourceUrls = TEXT_CORRECTION_SOURCE_URLS[id] ?? [];
+    }
+
+    // Open/code items with no options had no exam usage even before the flashcards
+    // module existed to display them; skip importing them rather than shipping unused data.
+    if (finalOptions.length === 0 || finalAnswerIds.length === 0) {
+      question = [];
+      answer = [];
+      options = [];
+      answerIds = [];
+      return;
     }
 
     items.push({

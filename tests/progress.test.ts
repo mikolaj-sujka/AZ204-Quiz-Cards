@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  chapterProgress,
   defaultProgress,
-  isDue,
-  isLeech,
-  isMastered,
-  rateFlashcard,
+  isArticleRead,
+  markArticleRead,
   readProgress,
   recordExamAttempt,
-  resetFlashcardRatings,
   writeProgress
 } from '../src/domain/progress';
 
@@ -26,58 +24,41 @@ describe('progress storage', () => {
     expect(readProgress(createStorage('not-json'))).toEqual(defaultProgress);
   });
 
-  it('a new card is due, and rating it schedules a future review', () => {
-    expect(isDue(undefined)).toBe(true);
+  it('an article is unread until explicitly marked read', () => {
+    expect(isArticleRead(undefined)).toBe(false);
 
     const now = new Date('2026-01-01T00:00:00.000Z');
-    const next = rateFlashcard(defaultProgress, 'fc-1', 'good', now);
-    const state = next.flashcards['fc-1'];
-
-    expect(state.box).toBe(1);
-    expect(state.lapses).toBe(0);
-    expect(isDue(state, now)).toBe(false);
-    expect(isDue(state, new Date('2026-01-05T00:00:00.000Z'))).toBe(true);
+    const next = markArticleRead(defaultProgress, 'art-1', now);
+    expect(isArticleRead(next.articles['art-1'])).toBe(true);
+    expect(next.articles['art-1'].readAt).toBe(now.toISOString());
   });
 
-  it('"again" resets the box to 0 and stays due today, and increments lapses', () => {
+  it('chapterProgress counts read articles for a chapter', () => {
     const now = new Date('2026-01-01T00:00:00.000Z');
-    let progress = rateFlashcard(defaultProgress, 'fc-1', 'easy', now);
-    progress = rateFlashcard(progress, 'fc-1', 'again', now);
+    let progress = markArticleRead(defaultProgress, 'art-1', now);
+    progress = markArticleRead(progress, 'art-2', now);
 
-    const state = progress.flashcards['fc-1'];
-    expect(state.box).toBe(0);
-    expect(state.lapses).toBe(1);
-    expect(isDue(state, now)).toBe(true);
-  });
-
-  it('flags a card as a leech after repeated "again" ratings', () => {
-    const now = new Date('2026-01-01T00:00:00.000Z');
-    let progress = defaultProgress;
-    for (let i = 0; i < 5; i += 1) {
-      progress = rateFlashcard(progress, 'fc-1', 'again', now);
-    }
-    expect(isLeech(progress.flashcards['fc-1'])).toBe(true);
-  });
-
-  it('considers a card mastered once its box reaches the mastery threshold', () => {
-    const now = new Date('2026-01-01T00:00:00.000Z');
-    let progress = rateFlashcard(defaultProgress, 'fc-1', 'easy', now);
-    expect(isMastered(progress.flashcards['fc-1'])).toBe(false);
-    progress = rateFlashcard(progress, 'fc-1', 'easy', now);
-    expect(isMastered(progress.flashcards['fc-1'])).toBe(true);
-  });
-
-  it('reset clears ratings back to new/due', () => {
-    const now = new Date('2026-01-01T00:00:00.000Z');
-    const rated = rateFlashcard(defaultProgress, 'fc-1', 'easy', now);
-    const reset = resetFlashcardRatings(rated, ['fc-1']);
-    expect(reset.flashcards['fc-1']).toBeUndefined();
-    expect(isDue(reset.flashcards['fc-1'], now)).toBe(true);
+    const stats = chapterProgress(progress, 'compute', ['art-1', 'art-2', 'art-3'], ['q1', 'q2']);
+    expect(stats.readArticles).toBe(2);
+    expect(stats.totalArticles).toBe(3);
+    expect(stats.totalQuestions).toBe(2);
   });
 
   it('records attempts and keeps best score', () => {
-    const first = recordExamAttempt(defaultProgress, 'compute:app-service', 60, ['q1'], new Date('2026-01-01'));
-    const second = recordExamAttempt(first, 'compute:app-service', 40, ['q2'], new Date('2026-01-02'));
+    const first = recordExamAttempt(
+      defaultProgress,
+      'compute:app-service',
+      60,
+      ['q1'],
+      new Date('2026-01-01')
+    );
+    const second = recordExamAttempt(
+      first,
+      'compute:app-service',
+      40,
+      ['q2'],
+      new Date('2026-01-02')
+    );
     expect(second.examAttempts['compute:app-service'].attempts).toBe(2);
     expect(second.examAttempts['compute:app-service'].bestScore).toBe(60);
     expect(second.examAttempts['compute:app-service'].missedQuestionIds).toEqual(['q2']);
@@ -85,8 +66,8 @@ describe('progress storage', () => {
 
   it('writes serialized progress', () => {
     const storage = createStorage();
-    const progress = rateFlashcard(defaultProgress, 'fc-1', 'again', new Date('2026-01-01'));
+    const progress = markArticleRead(defaultProgress, 'art-1', new Date('2026-01-01'));
     writeProgress(progress, storage);
-    expect(readProgress(storage).flashcards['fc-1'].box).toBe(0);
+    expect(isArticleRead(readProgress(storage).articles['art-1'])).toBe(true);
   });
 });

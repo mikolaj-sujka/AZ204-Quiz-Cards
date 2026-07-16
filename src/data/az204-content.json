@@ -14,7 +14,7 @@
       "url": "https://az-204.vercel.app/",
       "repository": "https://github.com/arvigeus/AZ-204",
       "license": "Custom Non-Commercial Attribution License (CNAL) Version 1.0",
-      "policy": "Source-quiz items are imported into a generated Microsoft Learn-mapped bank; closed questions are available in exams and all items are available as flashcards."
+      "policy": "Source-quiz items are imported into a generated Microsoft Learn-mapped bank; closed questions are available in exams."
     }
   },
   "chapters": [
@@ -255,129 +255,6 @@
           ]
         }
       ]
-    }
-  ],
-  "flashcards": [
-    {
-      "id": "fc-containers-choice",
-      "chapterId": "compute",
-      "subchapterId": "containers",
-      "front": "Kiedy wybrać Azure Container Apps zamiast Azure Container Instances?",
-      "back": "Azure Container Apps wybierasz, gdy potrzebujesz aplikacji kontenerowej z managed ingress, revisions, autoscaling i integracją z Dapr/KEDA. Azure Container Instances jest lepszy do prostego, szybkiego uruchomienia kontenera bez orkiestracji.",
-      "keyPoints": ["Container Apps: aplikacje i microservices", "Container Instances: proste container groups", "ACR: prywatny rejestr obrazow"],
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/container-apps/overview", "https://learn.microsoft.com/en-us/azure/container-instances/container-instances-overview"],
-      "verifiedAt": "2026-07-05",
-      "auditStatus": "verified"
-    },
-    {
-      "id": "fc-app-service-slots",
-      "chapterId": "compute",
-      "subchapterId": "app-service",
-      "front": "Co daje deployment slot w Azure App Service?",
-      "back": "Deployment slot pozwala wdrożyć nową wersję do osobnego środowiska, przetestować ją i wykonać swap z production. Ustawienia oznaczone jako slot setting pozostają przy slocie.",
-      "keyPoints": ["Blue-green deployment", "Swap with preview", "Slot settings nie przechodzą przy swap"],
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/app-service/deploy-staging-slots"],
-      "verifiedAt": "2026-07-05",
-      "auditStatus": "verified"
-    },
-    {
-      "id": "fc-functions-bindings",
-      "chapterId": "compute",
-      "subchapterId": "functions",
-      "front": "Trigger vs binding w Azure Functions",
-      "back": "Trigger uruchamia funkcję. Binding deklaratywnie łączy funkcję z danymi wejściowymi lub wyjściowymi, np. blob, queue, Cosmos DB albo HTTP.",
-      "keyPoints": ["Jedna funkcja ma jeden trigger", "Może mieć wiele input/output bindings", "Bindings ograniczają kod integracyjny"],
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings"],
-      "verifiedAt": "2026-07-05",
-      "auditStatus": "verified"
-    },
-    {
-      "id": "fc-cosmos-partition",
-      "chapterId": "storage",
-      "subchapterId": "cosmos-db",
-      "front": "Dlaczego partition key jest krytyczny w Azure Cosmos DB?",
-      "back": "Partition key decyduje o dystrybucji danych i żądań. Zły wybór może tworzyć hot partitions, a dobry pozwala skalować throughput i wykonywać efektywne point reads.",
-      "keyPoints": ["Logical partition limit: 20 GB", "Physical partition throughput: 10,000 RU/s", "Point read wymaga id + partition key"],
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview", "https://learn.microsoft.com/en-us/azure/cosmos-db/concepts-limits"],
-      "verifiedAt": "2026-07-05",
-      "auditStatus": "verified"
-    },
-    {
-      "id": "fc-blob-lifecycle",
-      "chapterId": "storage",
-      "subchapterId": "blob-storage",
-      "front": "Do czego służy lifecycle management w Azure Blob Storage?",
-      "back": "Lifecycle management automatycznie przenosi lub usuwa blobs według reguł, np. Hot -> Cool -> Archive po określonej liczbie dni od modyfikacji lub ostatniego dostępu.",
-      "keyPoints": ["Obniżanie kosztów", "Reguły bazują na warunkach", "Archive wymaga rehydration przed odczytem"],
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview"],
-      "verifiedAt": "2026-07-05",
-      "auditStatus": "verified"
-    },
-    {
-      "id": "fc-auth-permissions",
-      "chapterId": "security",
-      "subchapterId": "auth",
-      "front": "Delegated permissions vs application permissions w Microsoft Graph",
-      "back": "Delegated permissions działają w kontekście zalogowanego użytkownika. Application permissions działają bez użytkownika, jako aplikacja/daemon, i zwykle wymagają admin consent.",
-      "keyPoints": ["Delegated: user + app", "Application: app-only", "Scopes są częścią tokena"],
-      "sourceUrls": ["https://learn.microsoft.com/en-us/graph/auth/auth-concepts"],
-      "verifiedAt": "2026-07-05",
-      "auditStatus": "verified"
-    },
-    {
-      "id": "fc-managed-identity",
-      "chapterId": "security",
-      "subchapterId": "secure-solutions",
-      "front": "Po co używać Managed Identity z Key Vault?",
-      "back": "Managed Identity pozwala aplikacji uzyskać token Microsoft Entra ID bez przechowywania client secret. Następnie Key Vault autoryzuje dostęp przez RBAC albo access policies.",
-      "keyPoints": ["Brak secretów w kodzie", "System-assigned lub user-assigned", "Least privilege przez RBAC"],
-      "sourceUrls": ["https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview", "https://learn.microsoft.com/en-us/azure/key-vault/general/authentication"],
-      "verifiedAt": "2026-07-05",
-      "auditStatus": "verified"
-    },
-    {
-      "id": "fc-app-insights",
-      "chapterId": "monitoring",
-      "subchapterId": "app-insights",
-      "front": "Jakie typy telemetry zbiera Application Insights?",
-      "back": "Application Insights zbiera requests, dependencies, exceptions, traces, metrics, custom events i availability test results. Dane można analizować w Azure Monitor Logs/KQL.",
-      "keyPoints": ["APM dla aplikacji", "Availability tests", "Alerts na metrics/logs"],
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview"],
-      "verifiedAt": "2026-07-05",
-      "auditStatus": "verified"
-    },
-    {
-      "id": "fc-apim-policies",
-      "chapterId": "integration",
-      "subchapterId": "api-management",
-      "front": "Czym są policies w Azure API Management?",
-      "back": "Policies to deklaratywne reguły wykonywane w pipeline gateway: inbound, backend, outbound i on-error. Służą m.in. do rate limiting, JWT validation, transformacji i routingu.",
-      "keyPoints": ["XML policy expressions", "rate-limit i quota", "validate-jwt dla OAuth/OIDC"],
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/api-management/api-management-policies"],
-      "verifiedAt": "2026-07-05",
-      "auditStatus": "verified"
-    },
-    {
-      "id": "fc-event-grid-hubs",
-      "chapterId": "integration",
-      "subchapterId": "events",
-      "front": "Event Grid vs Event Hubs",
-      "back": "Event Grid jest do routingu dyskretnych zdarzeń i reakcji serverless. Event Hubs jest do ingestu dużych strumieni eventów/telemetrii z partycjami i consumer groups.",
-      "keyPoints": ["Event Grid: push events", "Event Hubs: streaming ingestion", "Capture zapisuje stream do storage"],
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/event-grid/compare-messaging-services", "https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about"],
-      "verifiedAt": "2026-07-05",
-      "auditStatus": "verified"
-    },
-    {
-      "id": "fc-servicebus-queue",
-      "chapterId": "integration",
-      "subchapterId": "messages",
-      "front": "Service Bus Queue vs Storage Queue",
-      "back": "Service Bus Queue wybierasz dla enterprise messaging: ordering przez sessions, dead-lettering, duplicate detection, transactions i publish/subscribe przez topics. Storage Queue jest prostsza i dobra do podstawowego work queue.",
-      "keyPoints": ["Service Bus: brokered messaging", "Storage Queue: prostota i skala", "Topics/subscriptions tylko Service Bus"],
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview", "https://learn.microsoft.com/en-us/azure/storage/queues/storage-queues-introduction"],
-      "verifiedAt": "2026-07-05",
-      "auditStatus": "verified"
     }
   ],
   "questions": [
@@ -668,30 +545,30 @@
   ],
   "importedQuestionManifest": [
     { "sourceTopic": "API Management", "count": 24, "mappedChapterId": "integration", "mappedSubchapterId": "api-management", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/API Management.md" },
-    { "sourceTopic": "AZ CLI", "count": 18, "mappedChapterId": null, "mappedSubchapterId": null, "auditStatus": "microsoft_mapped", "sourcePath": "Questions/AZ CLI.md" },
+    { "sourceTopic": "AZ CLI", "count": 0, "mappedChapterId": null, "mappedSubchapterId": null, "auditStatus": "microsoft_mapped", "sourcePath": "Questions/AZ CLI.md" },
     { "sourceTopic": "App Configuration", "count": 13, "mappedChapterId": "security", "mappedSubchapterId": "secure-solutions", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/App Configuration.md" },
-    { "sourceTopic": "App Service", "count": 96, "mappedChapterId": "compute", "mappedSubchapterId": "app-service", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/App Service.md" },
+    { "sourceTopic": "App Service", "count": 76, "mappedChapterId": "compute", "mappedSubchapterId": "app-service", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/App Service.md" },
     { "sourceTopic": "Application Insights", "count": 24, "mappedChapterId": "monitoring", "mappedSubchapterId": "app-insights", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Application Insights.md" },
     { "sourceTopic": "Azure", "count": 4, "mappedChapterId": null, "mappedSubchapterId": null, "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Azure.md" },
-    { "sourceTopic": "Blob Storage", "count": 23, "mappedChapterId": "storage", "mappedSubchapterId": "blob-storage", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Blob Storage.md" },
+    { "sourceTopic": "Blob Storage", "count": 21, "mappedChapterId": "storage", "mappedSubchapterId": "blob-storage", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Blob Storage.md" },
     { "sourceTopic": "Compute Solutions", "count": 7, "mappedChapterId": "compute", "mappedSubchapterId": "containers", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Compute Solutions.md" },
-    { "sourceTopic": "Containers", "count": 60, "mappedChapterId": "compute", "mappedSubchapterId": "containers", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Containers.md" },
-    { "sourceTopic": "Cosmos DB", "count": 60, "mappedChapterId": "storage", "mappedSubchapterId": "cosmos-db", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Cosmos DB.md" },
-    { "sourceTopic": "Docker", "count": 5, "mappedChapterId": "compute", "mappedSubchapterId": "containers", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Docker.md" },
-    { "sourceTopic": "Entra ID", "count": 31, "mappedChapterId": "security", "mappedSubchapterId": "auth", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Entra ID.md" },
-    { "sourceTopic": "Event Grid", "count": 16, "mappedChapterId": "integration", "mappedSubchapterId": "events", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Event Grid.md" },
+    { "sourceTopic": "Containers", "count": 53, "mappedChapterId": "compute", "mappedSubchapterId": "containers", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Containers.md" },
+    { "sourceTopic": "Cosmos DB", "count": 52, "mappedChapterId": "storage", "mappedSubchapterId": "cosmos-db", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Cosmos DB.md" },
+    { "sourceTopic": "Docker", "count": 2, "mappedChapterId": "compute", "mappedSubchapterId": "containers", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Docker.md" },
+    { "sourceTopic": "Entra ID", "count": 28, "mappedChapterId": "security", "mappedSubchapterId": "auth", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Entra ID.md" },
+    { "sourceTopic": "Event Grid", "count": 14, "mappedChapterId": "integration", "mappedSubchapterId": "events", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Event Grid.md" },
     { "sourceTopic": "Event Hubs", "count": 16, "mappedChapterId": "integration", "mappedSubchapterId": "events", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Event Hubs.md" },
-    { "sourceTopic": "Functions", "count": 49, "mappedChapterId": "compute", "mappedSubchapterId": "functions", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Functions.md" },
-    { "sourceTopic": "Graph", "count": 16, "mappedChapterId": "security", "mappedSubchapterId": "auth", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Graph.md" },
-    { "sourceTopic": "Key Vault", "count": 13, "mappedChapterId": "security", "mappedSubchapterId": "secure-solutions", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Key Vault.md" },
+    { "sourceTopic": "Functions", "count": 29, "mappedChapterId": "compute", "mappedSubchapterId": "functions", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Functions.md" },
+    { "sourceTopic": "Graph", "count": 15, "mappedChapterId": "security", "mappedSubchapterId": "auth", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Graph.md" },
+    { "sourceTopic": "Key Vault", "count": 9, "mappedChapterId": "security", "mappedSubchapterId": "secure-solutions", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Key Vault.md" },
     { "sourceTopic": "Managed Identities", "count": 25, "mappedChapterId": "security", "mappedSubchapterId": "secure-solutions", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Managed Identities.md" },
     { "sourceTopic": "Message Queues", "count": 18, "mappedChapterId": "integration", "mappedSubchapterId": "messages", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Message Queues.md" },
-    { "sourceTopic": "Monitor", "count": 12, "mappedChapterId": "monitoring", "mappedSubchapterId": "app-insights", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Monitor.md" },
+    { "sourceTopic": "Monitor", "count": 11, "mappedChapterId": "monitoring", "mappedSubchapterId": "app-insights", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Monitor.md" },
     { "sourceTopic": "Queue Storage", "count": 1, "mappedChapterId": "integration", "mappedSubchapterId": "messages", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Queue Storage.md" },
-    { "sourceTopic": "Resource Groups", "count": 1, "mappedChapterId": null, "mappedSubchapterId": null, "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Resource Groups.md" },
-    { "sourceTopic": "Service Bus", "count": 25, "mappedChapterId": "integration", "mappedSubchapterId": "messages", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Service Bus.md" },
-    { "sourceTopic": "Shared Access Signatures", "count": 7, "mappedChapterId": "security", "mappedSubchapterId": "auth", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Shared Access Signatures.md" },
-    { "sourceTopic": "Storage Redundancy", "count": 16, "mappedChapterId": "storage", "mappedSubchapterId": "blob-storage", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Storage Redundancy.md" },
+    { "sourceTopic": "Resource Groups", "count": 0, "mappedChapterId": null, "mappedSubchapterId": null, "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Resource Groups.md" },
+    { "sourceTopic": "Service Bus", "count": 22, "mappedChapterId": "integration", "mappedSubchapterId": "messages", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Service Bus.md" },
+    { "sourceTopic": "Shared Access Signatures", "count": 3, "mappedChapterId": "security", "mappedSubchapterId": "auth", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Shared Access Signatures.md" },
+    { "sourceTopic": "Storage Redundancy", "count": 8, "mappedChapterId": "storage", "mappedSubchapterId": "blob-storage", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Storage Redundancy.md" },
     { "sourceTopic": "Storage Security", "count": 9, "mappedChapterId": "security", "mappedSubchapterId": "auth", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Storage Security.md" }
   ]
 }

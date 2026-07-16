@@ -1,6 +1,6 @@
 ---
 name: verify-az204-content
-description: Verify an AZ-204 quiz question, flashcard, or study-note claim against official Microsoft Learn pages before marking it verified, correcting it, or citing it as a source. Use when adding new content, auditing existing content in src/data/, investigating a suspected factual error, or deciding whether an item is redundant/out-of-scope for the current AZ-204 exam.
+description: Verify an AZ-204 quiz question or article claim against official Microsoft Learn pages before marking it verified, correcting it, or citing it as a source. Use when adding new content, auditing existing content in src/data/, investigating a suspected factual error, or deciding whether an item is redundant/out-of-scope for the current AZ-204 exam.
 ---
 
 # Verify AZ-204 content against Microsoft Learn
@@ -9,8 +9,9 @@ This skill applies the correctness rule from this repo's `CLAUDE.md`: **Microsof
 Learn is the single source of truth**, not the upstream `arvigeus/AZ-204` quiz
 repo, and not general model knowledge. Use it any time you're about to:
 
-- mark a question/flashcard `"auditStatus": "verified"`,
-- write or edit a `correctionNotes` explanation,
+- mark a question/article `"auditStatus": "verified"`,
+- write or edit an article's `sections`/`keyPoints`, or a question's
+  `correctionNotes` explanation,
 - decide an item is a duplicate / out of exam scope / safe to remove,
 - answer "is this still accurate?" about existing content.
 
@@ -58,8 +59,8 @@ repo, and not general model knowledge. Use it any time you're about to:
      something new), or
    - Testing trivia that isn't actually part of what Microsoft Learn's AZ-204
      study guide/training modules cover, even if technically true.
-   Redundant items are a removal candidate (exclusion list in
-   `importSourceQuiz.mjs`), not a correction.
+     Redundant items are a removal candidate (exclusion list in
+     `importSourceQuiz.mjs`), not a correction.
 
 5. **Apply the result the way `CLAUDE.md` describes:**
    - Imported source-quiz item (`src/data/source-quiz.generated.json`): add/
@@ -69,6 +70,9 @@ repo, and not general model knowledge. Use it any time you're about to:
      explaining what changed and why.
    - Original content (`src/data/az204-content.json`): edit directly, keep
      `sourceUrls` pointing at what you actually checked.
+   - Article (`src/data/articles.json`): edit the `keyPoints`/`sections`
+     directly (it's hand-authored, not generated), keep `sourceUrls` pointing
+     at what you actually checked, and update `verifiedAt`.
    - Exclusion: track the item's `id` (or the unique prompt substring used to
      match it) so removal survives regeneration, and update
      `content.importedQuestionManifest` counts + any hardcoded totals in
@@ -83,7 +87,7 @@ repo, and not general model knowledge. Use it any time you're about to:
 
 ## What "good enough" looks like
 
-A verification is complete when you can state, per claim: *which* Microsoft
-Learn URL you checked, *what it says*, and *which verdict* that implies. "I
+A verification is complete when you can state, per claim: _which_ Microsoft
+Learn URL you checked, _what it says_, and _which verdict_ that implies. "I
 believe this is correct" without a URL and a quoted/paraphrased line from that
 URL is not a verification — it's a guess with a source link attached.

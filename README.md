@@ -5,10 +5,8 @@ A local-first React + TypeScript study app for **Exam AZ-204: Developing Solutio
 The app includes:
 
 - Microsoft Learn-aligned chapters and subchapters.
-- 589 imported source-quiz items mapped to Microsoft Learn topic sources.
-- 484 closed source-quiz questions available in exams.
-- 589 imported source-quiz items plus original cards available as flashcards.
-- Flashcards with “znam / powtórz” progress in `localStorage`.
+- 484 imported source-quiz items mapped to Microsoft Learn topic sources, all usable as exam questions.
+- 32 original reference articles, one per exam-relevant service/concept, written and verified against Microsoft Learn, with a "read" toggle in `localStorage`.
 - Sequential subchapter exams and weighted 100-question mock exam mode.
 - End-of-exam review with score, all questions, correct answers, explanations, and Microsoft Learn links.
 - Polish UI/explanations with official English Azure terms.
@@ -50,25 +48,27 @@ Open `http://localhost:5173/AZ204-Quiz-Cards/`.
 
 ## Content Model
 
-The app uses two content layers:
+The app uses three content layers:
 
 1. `src/data/az204-content.json`
    - Official Microsoft AZ-204 chapter structure.
-   - Original verified starter questions and flashcards.
+   - A small set of original verified starter questions.
    - Metadata for the external source quiz.
 
 2. `src/data/source-quiz.generated.json`
    - Generated from `https://github.com/arvigeus/AZ-204`.
    - Every item is mapped to an AZ-204 chapter/subchapter and Microsoft Learn source URLs.
-   - Closed questions are included in exams.
-   - Open/code questions are included as flashcards.
+   - Only closed (multiple-choice) items are imported; open/code-only items with no exam use are filtered out at generation time.
+
+3. `src/data/articles.json`
+   - Original reference articles, one per exam-relevant service/concept (e.g. Container Registry, Container Instances, Container Apps), grouped under the same chapters/subchapters as the rest of the app.
+   - Researched and written directly against current Microsoft Learn documentation, not derived from the source quiz.
 
 The generated bank currently contains:
 
-- `589` total imported study items.
-- `484` closed questions usable in exams.
-- `105` open/code questions usable as flashcards.
+- `484` total imported study items, all usable as exam questions.
 - A 2026-07-13 Microsoft Learn audit removed 36 duplicate/out-of-scope/unfixable items and corrected 23 others (see `scripts/importSourceQuiz.mjs`, `EXCLUDED_IDS`/`ID_CORRECTIONS`/`TEXT_CORRECTIONS`, for the full list and reasoning). Known corrected items include Cosmos DB resource-name limits and a Cosmos DB composite-index answer.
+- A further 105 open/code-only items (never usable as exam questions) are excluded from generation entirely, since the flashcards module that used to display them has been removed.
 
 ## Audit And Sources
 
@@ -124,4 +124,4 @@ Merge the generated PR only after reviewing the detected Microsoft Learn changes
 
 ## Design
 
-The UI is a dark study cockpit with black/gold visual direction, animated filter panels, 3D flashcard flip, hover transitions, readable code blocks, and responsive desktop/mobile layouts.
+The UI is a dark study cockpit with black/gold visual direction, animated filter panels, hover transitions, readable code blocks, and responsive desktop/mobile layouts.
