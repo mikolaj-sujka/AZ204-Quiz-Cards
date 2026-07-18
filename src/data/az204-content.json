@@ -265,19 +265,36 @@
       "subchapterId": "containers",
       "prompt": "Zespół chce uruchomić microservice jako kontener, mieć ingress HTTP, revisions i autoscaling bez zarządzania klastrem Kubernetes. Którą usługę Azure wybierzesz?",
       "options": [
-        { "id": "a", "text": "Azure Container Registry" },
-        { "id": "b", "text": "Azure Container Apps" },
-        { "id": "c", "text": "Azure Queue Storage" },
-        { "id": "d", "text": "Azure Container Instances" }
+        {
+          "id": "a",
+          "text": "Azure Container Registry"
+        },
+        {
+          "id": "b",
+          "text": "Azure Container Apps"
+        },
+        {
+          "id": "c",
+          "text": "Azure Queue Storage"
+        },
+        {
+          "id": "d",
+          "text": "Azure Container Instances"
+        }
       ],
-      "answerIds": ["b"],
+      "answerIds": [
+        "b"
+      ],
       "explanation": "Azure Container Apps jest platformą dla aplikacji i microservices kontenerowych z managed ingress, revisions i skalowaniem. ACR przechowuje obrazy, a ACI jest prostsze i nie daje tego samego modelu aplikacji.",
       "whyWrong": {
         "a": "ACR jest rejestrem obrazów, nie środowiskiem uruchomieniowym aplikacji.",
         "c": "Queue Storage to kolejka wiadomości, nie hosting kontenerów.",
         "d": "ACI nadaje się do prostych container groups, ale nie jest najlepszym wyborem dla managed revisions i autoscaling aplikacji."
       },
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/container-apps/overview", "https://learn.microsoft.com/en-us/azure/container-instances/container-instances-overview"],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/container-apps/overview",
+        "https://learn.microsoft.com/en-us/azure/container-instances/container-instances-overview"
+      ],
       "verifiedAt": "2026-07-05",
       "auditStatus": "verified",
       "origin": "original"
@@ -289,18 +306,35 @@
       "subchapterId": "app-service",
       "prompt": "Które stwierdzenia o deployment slots w Azure App Service są poprawne?",
       "options": [
-        { "id": "a", "text": "Slot pozwala przetestować wdrożenie przed swap do production." },
-        { "id": "b", "text": "Ustawienia oznaczone jako slot setting pozostają przy slocie podczas swap." },
-        { "id": "c", "text": "Sloty są dostępne wyłącznie dla Azure Functions Consumption plan." },
-        { "id": "d", "text": "Swap zawsze usuwa poprzednią wersję aplikacji." }
+        {
+          "id": "a",
+          "text": "Slot pozwala przetestować wdrożenie przed swap do production."
+        },
+        {
+          "id": "b",
+          "text": "Ustawienia oznaczone jako slot setting pozostają przy slocie podczas swap."
+        },
+        {
+          "id": "c",
+          "text": "Sloty są dostępne wyłącznie dla Azure Functions Consumption plan."
+        },
+        {
+          "id": "d",
+          "text": "Swap zawsze usuwa poprzednią wersję aplikacji."
+        }
       ],
-      "answerIds": ["a", "b"],
+      "answerIds": [
+        "a",
+        "b"
+      ],
       "explanation": "Deployment slots wspierają bezpieczniejsze wdrożenia i swap. Slot-specific settings pozostają przypisane do slota, co pozwala mieć inne connection strings lub flagi dla staging.",
       "whyWrong": {
         "c": "Deployment slots są funkcją App Service planów wspierających sloty; nie są wyłącznie dla Functions Consumption.",
         "d": "Swap zamienia sloty; poprzednia wersja zwykle pozostaje dostępna w drugim slocie."
       },
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/app-service/deploy-staging-slots"],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/app-service/deploy-staging-slots"
+      ],
       "verifiedAt": "2026-07-05",
       "auditStatus": "verified",
       "origin": "original"
@@ -312,19 +346,35 @@
       "subchapterId": "functions",
       "prompt": "W Azure Functions co uruchamia funkcję po dodaniu wiadomości do kolejki?",
       "options": [
-        { "id": "a", "text": "Output binding" },
-        { "id": "b", "text": "Queue trigger" },
-        { "id": "c", "text": "Application setting" },
-        { "id": "d", "text": "Deployment slot" }
+        {
+          "id": "a",
+          "text": "Output binding"
+        },
+        {
+          "id": "b",
+          "text": "Queue trigger"
+        },
+        {
+          "id": "c",
+          "text": "Application setting"
+        },
+        {
+          "id": "d",
+          "text": "Deployment slot"
+        }
       ],
-      "answerIds": ["b"],
+      "answerIds": [
+        "b"
+      ],
       "explanation": "Trigger jest mechanizmem uruchamiającym funkcję. Queue trigger uruchamia funkcję, gdy w kolejce pojawi się wiadomość.",
       "whyWrong": {
         "a": "Output binding zapisuje dane po wykonaniu funkcji.",
         "c": "Application setting może konfigurować funkcję, ale jej nie uruchamia.",
         "d": "Deployment slot dotyczy wdrożeń, nie mechanizmu wyzwalania."
       },
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings"],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings"
+      ],
       "verifiedAt": "2026-07-05",
       "auditStatus": "verified",
       "origin": "original"
@@ -336,17 +386,35 @@
       "subchapterId": "cosmos-db",
       "prompt": "W audycie starego quizu znaleziono twierdzenie, że nazwy database/container w Azure Cosmos DB muszą mieć 3-63 znaki. Co jest poprawne według aktualnych limitów Microsoft?",
       "options": [
-        { "id": "a", "text": "Maksymalna długość nazwy database lub container to 255 znaków." },
-        { "id": "b", "text": "Minimum manual throughput dla container/shared-throughput database to 400 RU/s." },
-        { "id": "c", "text": "Każda logical partition ma limit 20 GB storage." },
-        { "id": "d", "text": "Database name i container name zawsze muszą mieć dokładnie 63 znaki." }
+        {
+          "id": "a",
+          "text": "Maksymalna długość nazwy database lub container to 255 znaków."
+        },
+        {
+          "id": "b",
+          "text": "Minimum manual throughput dla container/shared-throughput database to 400 RU/s."
+        },
+        {
+          "id": "c",
+          "text": "Każda logical partition ma limit 20 GB storage."
+        },
+        {
+          "id": "d",
+          "text": "Database name i container name zawsze muszą mieć dokładnie 63 znaki."
+        }
       ],
-      "answerIds": ["a", "b", "c"],
+      "answerIds": [
+        "a",
+        "b",
+        "c"
+      ],
       "explanation": "Aktualne limity Microsoft Learn wskazują 255 znaków jako maksymalną długość nazwy database/container, 400 RU/s jako minimum manual throughput oraz 20 GB limitu storage dla logical partition.",
       "whyWrong": {
         "d": "To błędna reguła. Limit 3-63 znaków nie dotyczy nazw database/container Cosmos DB w aktualnych limitach."
       },
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/cosmos-db/concepts-limits"],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/cosmos-db/concepts-limits"
+      ],
       "verifiedAt": "2026-07-05",
       "auditStatus": "verified",
       "origin": "original"
@@ -358,19 +426,35 @@
       "subchapterId": "cosmos-db",
       "prompt": "Aplikacja koszyka zakupowego wymaga spójności odczytów i zapisów w obrębie sesji użytkownika, ale nie wymaga global strong consistency. Który consistency level jest najtrafniejszy?",
       "options": [
-        { "id": "a", "text": "Strong" },
-        { "id": "b", "text": "Bounded staleness" },
-        { "id": "c", "text": "Session" },
-        { "id": "d", "text": "Eventual" }
+        {
+          "id": "a",
+          "text": "Strong"
+        },
+        {
+          "id": "b",
+          "text": "Bounded staleness"
+        },
+        {
+          "id": "c",
+          "text": "Session"
+        },
+        {
+          "id": "d",
+          "text": "Eventual"
+        }
       ],
-      "answerIds": ["c"],
+      "answerIds": [
+        "c"
+      ],
       "explanation": "Session consistency zapewnia monotonic reads/writes i read-your-writes w ramach sesji klienta, co pasuje do koszyka użytkownika.",
       "whyWrong": {
         "a": "Strong jest mocniejsze i droższe wydajnościowo niż potrzeba w tym scenariuszu.",
         "b": "Bounded staleness ogranicza opóźnienie replikacji, ale nie jest najbardziej naturalnym wyborem dla per-user session.",
         "d": "Eventual nie gwarantuje read-your-writes w sesji."
       },
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels"],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels"
+      ],
       "verifiedAt": "2026-07-05",
       "auditStatus": "verified",
       "origin": "original"
@@ -382,19 +466,35 @@
       "subchapterId": "blob-storage",
       "prompt": "Chcesz automatycznie przenosić rzadko używane blobs do Cool, a po dłuższym czasie do Archive. Czego użyjesz?",
       "options": [
-        { "id": "a", "text": "Blob index tags only" },
-        { "id": "b", "text": "Lifecycle management policy" },
-        { "id": "c", "text": "Azure Event Hubs Capture" },
-        { "id": "d", "text": "Stored access policy" }
+        {
+          "id": "a",
+          "text": "Blob index tags only"
+        },
+        {
+          "id": "b",
+          "text": "Lifecycle management policy"
+        },
+        {
+          "id": "c",
+          "text": "Azure Event Hubs Capture"
+        },
+        {
+          "id": "d",
+          "text": "Stored access policy"
+        }
       ],
-      "answerIds": ["b"],
+      "answerIds": [
+        "b"
+      ],
       "explanation": "Lifecycle management policy definiuje reguły automatycznego tieringu lub usuwania blobów według wieku, ostatniej modyfikacji, prefiksu albo tagów.",
       "whyWrong": {
         "a": "Blob index tags mogą być warunkiem reguły, ale same nie wykonują lifecycle transitions.",
         "c": "Event Hubs Capture zapisuje strumień zdarzeń do Storage/Data Lake, nie zarządza cyklem życia blobów.",
         "d": "Stored access policy zarządza uprawnieniami SAS."
       },
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview"],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview"
+      ],
       "verifiedAt": "2026-07-05",
       "auditStatus": "verified",
       "origin": "original"
@@ -406,19 +506,35 @@
       "subchapterId": "auth",
       "prompt": "Aplikacja daemon ma czytać dane z Microsoft Graph bez zalogowanego użytkownika. Jaki typ uprawnień jest właściwy?",
       "options": [
-        { "id": "a", "text": "Delegated permissions" },
-        { "id": "b", "text": "Application permissions" },
-        { "id": "c", "text": "Storage account SAS" },
-        { "id": "d", "text": "Function key" }
+        {
+          "id": "a",
+          "text": "Delegated permissions"
+        },
+        {
+          "id": "b",
+          "text": "Application permissions"
+        },
+        {
+          "id": "c",
+          "text": "Storage account SAS"
+        },
+        {
+          "id": "d",
+          "text": "Function key"
+        }
       ],
-      "answerIds": ["b"],
+      "answerIds": [
+        "b"
+      ],
       "explanation": "Application permissions są używane w scenariuszach app-only, np. daemon/service bez interaktywnego użytkownika.",
       "whyWrong": {
         "a": "Delegated permissions wymagają kontekstu zalogowanego użytkownika.",
         "c": "SAS dotyczy Azure Storage, nie Microsoft Graph permissions.",
         "d": "Function key zabezpiecza endpoint Azure Functions, nie daje uprawnień Graph."
       },
-      "sourceUrls": ["https://learn.microsoft.com/en-us/graph/auth/auth-concepts"],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/graph/auth/auth-concepts"
+      ],
       "verifiedAt": "2026-07-05",
       "auditStatus": "verified",
       "origin": "original"
@@ -430,19 +546,36 @@
       "subchapterId": "secure-solutions",
       "prompt": "Aplikacja w App Service ma pobrać sekret z Key Vault bez przechowywania client secret w konfiguracji. Co jest najlepszym wzorcem?",
       "options": [
-        { "id": "a", "text": "Shared Access Signature" },
-        { "id": "b", "text": "Managed Identity + uprawnienie do Key Vault" },
-        { "id": "c", "text": "Connection string zapisany w repozytorium" },
-        { "id": "d", "text": "Public anonymous access do Key Vault" }
+        {
+          "id": "a",
+          "text": "Shared Access Signature"
+        },
+        {
+          "id": "b",
+          "text": "Managed Identity + uprawnienie do Key Vault"
+        },
+        {
+          "id": "c",
+          "text": "Connection string zapisany w repozytorium"
+        },
+        {
+          "id": "d",
+          "text": "Public anonymous access do Key Vault"
+        }
       ],
-      "answerIds": ["b"],
+      "answerIds": [
+        "b"
+      ],
       "explanation": "Managed Identity pozwala aplikacji uzyskać token Microsoft Entra ID bez secretów. Key Vault musi przyznać tej tożsamości odpowiednie uprawnienia.",
       "whyWrong": {
         "a": "SAS jest mechanizmem Azure Storage, nie standardowym dostępem do Key Vault.",
         "c": "Sekrety w repozytorium są antywzorcem bezpieczeństwa.",
         "d": "Key Vault nie powinien być publicznie anonimowy."
       },
-      "sourceUrls": ["https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview", "https://learn.microsoft.com/en-us/azure/key-vault/general/authentication"],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview",
+        "https://learn.microsoft.com/en-us/azure/key-vault/general/authentication"
+      ],
       "verifiedAt": "2026-07-05",
       "auditStatus": "verified",
       "origin": "original"
@@ -454,19 +587,36 @@
       "subchapterId": "app-insights",
       "prompt": "Chcesz regularnie sprawdzać zewnętrzną dostępność endpointu web API i generować alert, gdy endpoint nie odpowiada. Która funkcja pasuje najlepiej?",
       "options": [
-        { "id": "a", "text": "Application Insights availability test" },
-        { "id": "b", "text": "Blob lifecycle policy" },
-        { "id": "c", "text": "Cosmos DB change feed" },
-        { "id": "d", "text": "Service Bus session" }
+        {
+          "id": "a",
+          "text": "Application Insights availability test"
+        },
+        {
+          "id": "b",
+          "text": "Blob lifecycle policy"
+        },
+        {
+          "id": "c",
+          "text": "Cosmos DB change feed"
+        },
+        {
+          "id": "d",
+          "text": "Service Bus session"
+        }
       ],
-      "answerIds": ["a"],
+      "answerIds": [
+        "a"
+      ],
       "explanation": "Availability tests w Application Insights monitorują dostępność endpointów z zewnątrz i mogą być powiązane z alertami.",
       "whyWrong": {
         "b": "Lifecycle policy zarządza blobami, nie testuje endpointów.",
         "c": "Change feed służy do reagowania na zmiany w Cosmos DB.",
         "d": "Service Bus session pomaga w ordering/grupowaniu wiadomości."
       },
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/azure-monitor/app/availability-overview", "https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/alerts-overview"],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/availability-overview",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/alerts-overview"
+      ],
       "verifiedAt": "2026-07-05",
       "auditStatus": "verified",
       "origin": "original"
@@ -478,18 +628,36 @@
       "subchapterId": "api-management",
       "prompt": "Które Azure API Management policies pasują do ograniczenia liczby wywołań i walidacji tokenu JWT?",
       "options": [
-        { "id": "a", "text": "rate-limit" },
-        { "id": "b", "text": "validate-jwt" },
-        { "id": "c", "text": "set-body" },
-        { "id": "d", "text": "blob-tier" }
+        {
+          "id": "a",
+          "text": "rate-limit"
+        },
+        {
+          "id": "b",
+          "text": "validate-jwt"
+        },
+        {
+          "id": "c",
+          "text": "set-body"
+        },
+        {
+          "id": "d",
+          "text": "blob-tier"
+        }
       ],
-      "answerIds": ["a", "b"],
+      "answerIds": [
+        "a",
+        "b"
+      ],
       "explanation": "rate-limit ogranicza wywołania w danym okresie, a validate-jwt sprawdza token JWT w APIM gateway.",
       "whyWrong": {
         "c": "set-body zmienia body request/response, ale nie ogranicza ruchu ani nie waliduje JWT.",
         "d": "blob-tier nie jest APIM policy."
       },
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/api-management/rate-limit-policy", "https://learn.microsoft.com/en-us/azure/api-management/validate-jwt-policy"],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/api-management/rate-limit-policy",
+        "https://learn.microsoft.com/en-us/azure/api-management/validate-jwt-policy"
+      ],
       "verifiedAt": "2026-07-05",
       "auditStatus": "verified",
       "origin": "original"
@@ -501,19 +669,36 @@
       "subchapterId": "events",
       "prompt": "System IoT wysyła bardzo duży strumień telemetrii, który ma być konsumowany przez kilka niezależnych aplikacji analitycznych. Która usługa jest najtrafniejsza?",
       "options": [
-        { "id": "a", "text": "Azure Event Hubs" },
-        { "id": "b", "text": "Azure Event Grid" },
-        { "id": "c", "text": "Azure App Configuration" },
-        { "id": "d", "text": "Azure Key Vault" }
+        {
+          "id": "a",
+          "text": "Azure Event Hubs"
+        },
+        {
+          "id": "b",
+          "text": "Azure Event Grid"
+        },
+        {
+          "id": "c",
+          "text": "Azure App Configuration"
+        },
+        {
+          "id": "d",
+          "text": "Azure Key Vault"
+        }
       ],
-      "answerIds": ["a"],
+      "answerIds": [
+        "a"
+      ],
       "explanation": "Event Hubs jest projektowany do wysokoprzepustowego ingestu eventów i telemetrii, z partycjami i consumer groups.",
       "whyWrong": {
         "b": "Event Grid jest do routingu zdarzeń, a nie typowo do masowego stream ingestu telemetrii.",
         "c": "App Configuration przechowuje konfigurację aplikacji.",
         "d": "Key Vault przechowuje secrets, keys i certificates."
       },
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about", "https://learn.microsoft.com/en-us/azure/event-grid/compare-messaging-services"],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about",
+        "https://learn.microsoft.com/en-us/azure/event-grid/compare-messaging-services"
+      ],
       "verifiedAt": "2026-07-05",
       "auditStatus": "verified",
       "origin": "original"
@@ -525,50 +710,640 @@
       "subchapterId": "messages",
       "prompt": "Aplikacja wymaga kolejki z dead-letter queue, duplicate detection i opcją publish/subscribe przez topics. Co wybierzesz?",
       "options": [
-        { "id": "a", "text": "Azure Queue Storage" },
-        { "id": "b", "text": "Azure Service Bus" },
-        { "id": "c", "text": "Azure Blob Storage" },
-        { "id": "d", "text": "Azure Container Registry" }
+        {
+          "id": "a",
+          "text": "Azure Queue Storage"
+        },
+        {
+          "id": "b",
+          "text": "Azure Service Bus"
+        },
+        {
+          "id": "c",
+          "text": "Azure Blob Storage"
+        },
+        {
+          "id": "d",
+          "text": "Azure Container Registry"
+        }
       ],
-      "answerIds": ["b"],
+      "answerIds": [
+        "b"
+      ],
       "explanation": "Azure Service Bus zapewnia enterprise messaging, w tym queues, topics/subscriptions, dead-lettering i duplicate detection.",
       "whyWrong": {
         "a": "Queue Storage jest prostsze i nie ma wszystkich enterprise messaging capabilities Service Bus.",
         "c": "Blob Storage przechowuje obiekty, nie obsługuje brokered messaging.",
         "d": "ACR przechowuje obrazy kontenerów."
       },
-      "sourceUrls": ["https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview", "https://learn.microsoft.com/en-us/azure/storage/queues/storage-queues-introduction"],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview",
+        "https://learn.microsoft.com/en-us/azure/storage/queues/storage-queues-introduction"
+      ],
       "verifiedAt": "2026-07-05",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-ma-containers-aci-files-linux-only",
+      "type": "single",
+      "chapterId": "compute",
+      "subchapterId": "containers",
+      "prompt": "Chcesz zamontować udział Azure Files jako wolumin w kontenerze uruchamianym w Azure Container Instances (ACI). Które stwierdzenie o obsłudze systemów operacyjnych jest poprawne?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Udziały Azure Files można montować wyłącznie w kontenerach z systemem Linux."
+        },
+        {
+          "id": "b",
+          "text": "Udziały Azure Files można montować zarówno w kontenerach Linux, jak i Windows."
+        },
+        {
+          "id": "c",
+          "text": "Udziały Azure Files można montować wyłącznie w kontenerach Windows."
+        },
+        {
+          "id": "d",
+          "text": "Obsługa zależy wyłącznie od regionu Azure, a nie od systemu operacyjnego kontenera."
+        }
+      ],
+      "answerIds": [
+        "a"
+      ],
+      "explanation": "Oficjalna dokumentacja ACI wprost wymienia to jako ograniczenie: \"You can only mount Azure Files shares to Linux containers.\" Dodatkowo montowanie wymaga uruchomienia kontenera Linux jako root, a montowanie SMB z użyciem managed identity w ogóle nie jest wspierane.",
+      "whyWrong": {
+        "b": "Nieprawda — dokumentacja ACI jednoznacznie ogranicza montowanie udziałów Azure Files tylko do kontenerów Linux; kontenery Windows nie są obsługiwane.",
+        "c": "To odwrotność faktycznego ograniczenia — obsługiwany jest Linux, a nie Windows.",
+        "d": "Ograniczenie dotyczy typu systemu operacyjnego kontenera (Linux vs Windows), a nie regionu wdrożenia."
+      },
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/container-instances/container-instances-volume-azure-files"
+      ],
+      "verifiedAt": "2026-07-18",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-ma-app-service-ase-purpose",
+      "type": "single",
+      "chapterId": "compute",
+      "subchapterId": "app-service",
+      "prompt": "Czym jest Azure App Service Environment (ASE) i czym zasadniczo różni się od standardowej, wielodostępnej (multi-tenant) oferty App Service?",
+      "options": [
+        {
+          "id": "a",
+          "text": "W pełni izolowanym i dedykowanym środowiskiem do uruchamiania aplikacji App Service, zapewniającym bezpieczne hostowanie przy dużej skali."
+        },
+        {
+          "id": "b",
+          "text": "Współdzieloną infrastrukturą, na której działają aplikacje wielu klientów jednocześnie, podobnie jak w warstwach Free/Shared."
+        },
+        {
+          "id": "c",
+          "text": "Funkcją automatycznie replikującą aplikację App Service do wielu regionów Azure w celu odzyskiwania po awarii."
+        },
+        {
+          "id": "d",
+          "text": "Narzędziem do lokalnego debugowania aplikacji App Service przed jej wdrożeniem do chmury."
+        }
+      ],
+      "answerIds": [
+        "a"
+      ],
+      "explanation": "Dokumentacja App Service Environment stwierdza wprost: \"App Service Environment is an Azure App Service feature that provides a fully isolated and dedicated environment to run App Service apps securely at high scale.\" W przeciwieństwie do wielodostępnej oferty App Service (współdzielona infrastruktura), ASE zapewnia dedykowany compute dla jednego klienta (single-tenant), działający w jego własnej sieci wirtualnej.",
+      "whyWrong": {
+        "b": "To opis warstw Shared compute (Free/Shared) w standardowym, wielodostępnym App Service — ASE to dokładne przeciwieństwo: dedykowana, jednodostępna (single-tenant) infrastruktura.",
+        "c": "ASE nie jest mechanizmem cross-regionalnej replikacji ani DR — to pojedyncze, izolowane środowisko hostingowe w konkretnej sieci wirtualnej/regionie.",
+        "d": "ASE to usługa produkcyjnego hostingu w Azure, a nie narzędzie deweloperskie do lokalnego debugowania."
+      },
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/app-service/environment/overview"
+      ],
+      "verifiedAt": "2026-07-18",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-ma-app-service-autoscale-rule-evaluation",
+      "type": "single",
+      "chapterId": "compute",
+      "subchapterId": "app-service",
+      "prompt": "Masz jeden profil (warunek) autoskalowania Azure Monitor dla planu App Service, zawierający dwie reguły scale-out i dwie reguły scale-in, monitorujące różne metryki. Kiedy autoscale faktycznie wykona akcję scale-in?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Gdy próg dowolnej pojedynczej reguły scale-in zostanie przekroczony."
+        },
+        {
+          "id": "b",
+          "text": "Dopiero gdy progi wszystkich reguł scale-in w danym profilu zostaną przekroczone jednocześnie."
+        },
+        {
+          "id": "c",
+          "text": "Scale-in nigdy nie nastąpi, jeśli w profilu zdefiniowano więcej niż jedną regułę scale-in."
+        },
+        {
+          "id": "d",
+          "text": "Scale-in nastąpi automatycznie po upływie okresu chłodzenia (cooldown), niezależnie od reguł."
+        }
+      ],
+      "answerIds": [
+        "b"
+      ],
+      "explanation": "Dokumentacja Azure Monitor autoscale opisuje asymetryczną logikę ewaluacji reguł: \"If one or more scale-out rules are triggered, autoscale calculates the new capacity... If no scale-out rules are triggered, autoscale evaluates the scale-in rules... Autoscale only scales in if all the scale-in rules are triggered.\" Czyli scale-out wystarczy, by spełniona była JEDNA reguła (logika OR), natomiast scale-in wymaga spełnienia WSZYSTKICH reguł scale-in (logika AND).",
+      "whyWrong": {
+        "a": "To logika obowiązująca dla reguł scale-out (wystarczy dowolna jedna reguła), a nie scale-in — dla scale-in wymagane jest spełnienie wszystkich reguł.",
+        "c": "Wiele reguł scale-in jest w pełni obsługiwane — po prostu wszystkie muszą być spełnione jednocześnie, aby nastąpiło zmniejszenie liczby instancji.",
+        "d": "Cooldown to jedynie minimalny odstęp czasu między kolejnymi akcjami skalowania; sam w sobie nie wyzwala scale-in — o akcji decydują reguły metryk."
+      },
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/autoscale/autoscale-understanding-settings"
+      ],
+      "verifiedAt": "2026-07-18",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-ma-app-service-automatic-scaling-tiers",
+      "type": "single",
+      "chapterId": "compute",
+      "subchapterId": "app-service",
+      "prompt": "W których warstwach cenowych Azure App Service dostępna jest platformowa funkcja Automatic Scaling (skalowanie oparte na ruchu HTTP, odrębne od opartego na regułach Azure Monitor autoscale)?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Basic i wyżej."
+        },
+        {
+          "id": "b",
+          "text": "Standard i wyżej."
+        },
+        {
+          "id": "c",
+          "text": "Wyłącznie Premium v2, v3 i v4."
+        },
+        {
+          "id": "d",
+          "text": "Wyłącznie IsolatedV2."
+        }
+      ],
+      "answerIds": [
+        "c"
+      ],
+      "explanation": "Tabela porównawcza w dokumentacji \"How to Enable Automatic Scaling\" pokazuje trzy tryby skalowania z ich dostępnością: Manual — Basic i wyżej; Autoscale (Azure Monitor) — Standard i wyżej; Automatic scaling — dostępne wyłącznie w warstwach Premium v2, v3 i v4.",
+      "whyWrong": {
+        "a": "Basic i wyżej to zakres dostępności ręcznego skalowania (Manual), a nie Automatic Scaling.",
+        "b": "Standard i wyżej to zakres dostępności klasycznego, opartego na regułach Azure Monitor autoscale — Automatic Scaling wymaga wyższej warstwy (Premium v2-v4).",
+        "d": "IsolatedV2 (poprzez ASE) obsługuje wiele funkcji skalowania, ale Automatic Scaling nie jest ograniczone wyłącznie do tej warstwy — jest dostępne już od Premium v2."
+      },
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/app-service/manage-automatic-scaling"
+      ],
+      "verifiedAt": "2026-07-18",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-ma-app-service-autoscale-flapping",
+      "type": "single",
+      "chapterId": "compute",
+      "subchapterId": "app-service",
+      "prompt": "Konfigurujesz reguły Azure Monitor autoscale dla planu App Service i zauważasz w dzienniku aktywności wpisy typu `Flapping`. Co to oznacza i jak najlepiej zareagować?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Autoscale wykrył sytuację, w której akcja scale-in natychmiast wywołałaby przeciwną akcję scale-out (i odwrotnie) — warto rozważyć poszerzenie odstępu między progami reguł scale-out i scale-in."
+        },
+        {
+          "id": "b",
+          "text": "Oznacza to błąd konfiguracji uniemożliwiający jakiekolwiek skalowanie do czasu ręcznej interwencji administratora."
+        },
+        {
+          "id": "c",
+          "text": "Oznacza to, że Azure Monitor odrzucił regułę autoscale, ponieważ scale-out i scale-in mają identyczny próg."
+        }
+      ],
+      "answerIds": [
+        "a"
+      ],
+      "explanation": "Dokumentacja \"Best practices for autoscale\" opisuje flapping jako sytuację, w której akcja skalowania wywołałaby przeciwną akcję skalowania, i zaleca: \"Autoscale detects flapping and aborts the scale attempt. You see a log type of Flapping in this situation. If you see this log type, consider whether your thresholds are too narrow.\" Rekomendacją jest więc zwiększenie marginesu między progami scale-out i scale-in, a nie pozostawienie ich blisko siebie.",
+      "whyWrong": {
+        "b": "Flapping nie blokuje całego mechanizmu autoscale na stałe — to sygnał dotyczący konkretnej próby skalowania, którą autoscale przerwał, aby uniknąć niestabilnego, oscylującego zachowania; nie wymaga ręcznej interwencji, choć warto poprawić progi.",
+        "c": "Azure Monitor nie odrzuca reguł z tym samym progiem na etapie konfiguracji — flapping jest wykrywany i obsługiwany w trakcie działania (runtime), a nie jako błąd walidacji przy tworzeniu reguły."
+      },
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/autoscale/autoscale-best-practices",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/autoscale/autoscale-understanding-settings"
+      ],
+      "verifiedAt": "2026-07-18",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-ma-functions-nodejs-v4-model",
+      "type": "single",
+      "chapterId": "compute",
+      "subchapterId": "functions",
+      "prompt": "W modelu programistycznym v4 dla Azure Functions w Node.js, w jaki sposób konfiguruje się triggery i bindingi funkcji?",
+      "options": [
+        {
+          "id": "a",
+          "text": "W kodzie, poprzez rejestrację funkcji za pomocą obiektu `app` z pakietu `@azure/functions`."
+        },
+        {
+          "id": "b",
+          "text": "Wyłącznie poprzez edycję pliku `function.json` dla każdej funkcji."
+        },
+        {
+          "id": "c",
+          "text": "Wyłącznie poprzez wpisy konfiguracyjne w pliku `host.json`."
+        }
+      ],
+      "answerIds": [
+        "a"
+      ],
+      "explanation": "Dokumentacja modelu v4 dla Node.js wskazuje, że triggery i bindingi rejestruje się w kodzie: importuje się obiekt `app` z pakietu `@azure/functions` i wywołuje metodę odpowiadającą typowi triggera (np. `app.http(...)`), zamiast deklarować je w osobnym pliku `function.json`, jak to było wymagane w modelu v3.",
+      "whyWrong": {
+        "b": "Deklarowanie triggerów/bindingów w `function.json` dla każdej funkcji to podejście modelu v3 — model v4 przenosi tę konfigurację do kodu.",
+        "c": "`host.json` konfiguruje globalne ustawienia hosta funkcji (np. logowanie, wersje rozszerzeń), a nie triggery i bindingi konkretnej funkcji."
+      },
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference-node?tabs=v4&pivots=nodejs-model-v4"
+      ],
+      "verifiedAt": "2026-07-18",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-ma-secure-solutions-appconfig-cmk-permissions",
+      "type": "single",
+      "chapterId": "security",
+      "subchapterId": "secure-solutions",
+      "prompt": "Konfigurujesz Azure App Configuration (warstwa Standard) do szyfrowania danych kluczem customer-managed z Azure Key Vault, przy czym Key Vault używa modelu access policy (nie Azure RBAC). Jakie uprawnienia do klucza musisz nadać managed identity App Configuration w access policy tego Key Vault?",
+      "options": [
+        {
+          "id": "a",
+          "text": "GET, WRAP i UNWRAP"
+        },
+        {
+          "id": "b",
+          "text": "GET i LIST"
+        },
+        {
+          "id": "c",
+          "text": "CREATE i DELETE"
+        },
+        {
+          "id": "d",
+          "text": "BACKUP i RESTORE"
+        }
+      ],
+      "answerIds": [
+        "a"
+      ],
+      "explanation": "Managed identity App Configuration potrzebuje dostępu do operacji GET, WRAP i UNWRAP na kluczu w Key Vault, żeby móc zweryfikować, zaszyfrować (wrap) i odszyfrować (unwrap) klucz szyfrujący magazynu App Configuration. Przy autoryzacji przez access policy nadaje się te uprawnienia np. poleceniem `az keyvault set-policy -n <KeyVaultName> --object-id <ManagedIdentityPrincipalId> --key-permissions get wrapKey unwrapKey`; przy Key Vault z Azure RBAC równoważny efekt daje przypisanie roli Key Vault Crypto Service Encryption User.",
+      "whyWrong": {
+        "b": "GET i LIST pozwalają odczytywać i wyliczać klucze, ale nie obejmują operacji wrap/unwrap wymaganych do faktycznego szyfrowania i odszyfrowywania klucza App Configuration.",
+        "c": "CREATE i DELETE dotyczą zarządzania cyklem życia klucza (tworzenie/usuwanie), a nie operacji kryptograficznych potrzebnych App Configuration do pracy z kluczem customer-managed.",
+        "d": "BACKUP i RESTORE służą do tworzenia i przywracania kopii zapasowych obiektów Key Vault, nie mają związku z bieżącym szyfrowaniem danych w App Configuration."
+      },
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-app-configuration/concept-customer-managed-keys"
+      ],
+      "verifiedAt": "2026-07-18",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-ma-events-eventgrid-400-413-deadletter",
+      "type": "single",
+      "chapterId": "integration",
+      "subchapterId": "events",
+      "prompt": "Masz subskrypcję zdarzeń Event Grid ze skonfigurowaną lokalizacją dead-letter. Endpoint webhooka, do którego Event Grid próbuje dostarczyć zdarzenie, odpowiada kodem HTTP 400 (Bad Request). Jak zachowa się Event Grid?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Natychmiast zaplanuje zdarzenie do dead-letteringu, bez ponawiania próby dostarczenia"
+        },
+        {
+          "id": "b",
+          "text": "Będzie ponawiać dostarczanie zgodnie ze standardowym harmonogramem retry z wykładniczym backoffem (10 s, 30 s, 1 min, 5 min...)"
+        },
+        {
+          "id": "c",
+          "text": "Będzie ponawiać dostarczanie w nieskończoność, aż endpoint odpowie kodem sukcesu"
+        },
+        {
+          "id": "d",
+          "text": "Uzna dostarczenie za zakończone sukcesem i usunie zdarzenie bez dead-letteringu"
+        }
+      ],
+      "answerIds": [
+        "a"
+      ],
+      "explanation": "Zgodnie z dokumentacją Event Grid, kody 400 (Bad Request) i 413 (Request Entity Too Large) są traktowane jako błędy niemożliwe do naprawienia przez ponawianie prób - Event Grid od razu kieruje zdarzenie do dead-letteringu (jeśli skonfigurowany) albo je odrzuca, jeśli dead-lettering nie jest włączony. Standardowy harmonogram retry z exponential backoff dotyczy innych kodów błędów (np. 408, 503 czy pozostałych 5xx/4xx spoza tej listy).",
+      "whyWrong": {
+        "b": "Harmonogram retry z wykładniczym backoffem stosuje się do błędów, które mogą ustąpić po ponowieniu (np. 408, 503) - kody 400 i 413 są jednoznacznie wyłączone z ponawiania, ponieważ oznaczają, że dostarczenie nigdy się nie powiedzie.",
+        "c": "Event Grid nigdy nie ponawia dostarczania w nieskończoność (limituje to maksymalna liczba prób i TTL zdarzenia), a dla kodów 400/413 nie ponawia w ogóle - zdarzenie trafia od razu do dead-letteringu.",
+        "d": "Kod 400 oznacza błąd dostarczenia, a nie sukces - zdarzenie nie jest oznaczane jako dostarczone; trafia do dead-letteringu (o ile skonfigurowany) lub zostaje odrzucone."
+      },
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/event-grid/delivery-and-retry"
+      ],
+      "verifiedAt": "2026-07-18",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-ma-events-eventgrid-webhook-validation-handshake",
+      "type": "single",
+      "chapterId": "integration",
+      "subchapterId": "events",
+      "prompt": "Jaki jest cel walidacyjnego handshake'u (dowodu własności endpointu), który Azure Event Grid wymaga przed rozpoczęciem dostarczania zdarzeń do nowo zarejestrowanego webhooka?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Potwierdzenie, że rejestrujący faktycznie kontroluje docelowy endpoint, co zapobiega zalewaniu (floodowaniu) nieświadomego adresu zdarzeniami"
+        },
+        {
+          "id": "b",
+          "text": "Szyfrowanie danych zdarzenia przesyłanych do webhooka"
+        },
+        {
+          "id": "c",
+          "text": "Zapewnienie, że endpoint webhooka jest hostowany w infrastrukturze Azure"
+        },
+        {
+          "id": "d",
+          "text": "Ustanowienie kontekstu uwierzytelniania i autoryzacji dla przyszłych dostaw zdarzeń"
+        }
+      ],
+      "answerIds": [
+        "a"
+      ],
+      "explanation": "Dokumentacja Event Grid wprost stwierdza, że usługa wymaga udowodnienia własności webhooka przed rozpoczęciem dostarczania zdarzeń, a wymóg ten zapobiega sytuacji, w której złośliwy użytkownik zarejestrowałby cudzy, nieświadomy tego endpoint i zalałby go zdarzeniami. Dokumentacja zaznacza również wprost, że handshake nie ma na celu ustanowienia kontekstu uwierzytelniania/autoryzacji - służy wyłącznie ochronie przed nadużyciem.",
+      "whyWrong": {
+        "b": "Handshake dotyczy potwierdzenia własności/zgody na odbiór, a nie szyfrowania payloadu zdarzenia.",
+        "c": "Walidacja nie sprawdza, gdzie hostowany jest endpoint - webhook może być hostowany poza Azure.",
+        "d": "Dokumentacja explicite zaznacza, że handshake nie ustanawia kontekstu uwierzytelniania ani autoryzacji - to wyłącznie mechanizm ochrony przed nadużyciem (abuse protection)."
+      },
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/event-grid/webhook-event-delivery"
+      ],
+      "verifiedAt": "2026-07-18",
+      "auditStatus": "verified",
+      "origin": "original"
+    },
+    {
+      "id": "q-ma-events-eventhubs-entra-id-oauth",
+      "type": "single",
+      "chapterId": "integration",
+      "subchapterId": "events",
+      "prompt": "Jaką kluczową zaletę daje uwierzytelnianie aplikacji do Azure Event Hubs za pomocą Microsoft Entra ID w porównaniu z użyciem kluczy SAS zapisanych w konfiguracji aplikacji?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nie trzeba przechowywać poświadczeń w kodzie aplikacji - aplikacja pobiera token dostępu OAuth 2.0 z Microsoft identity platform"
+        },
+        {
+          "id": "b",
+          "text": "Całkowicie eliminuje potrzebę stosowania tokenów OAuth 2.0 przy autoryzacji"
+        },
+        {
+          "id": "c",
+          "text": "Pozwala wygodnie przechowywać poświadczenia bezpośrednio w kodzie aplikacji"
+        },
+        {
+          "id": "d",
+          "text": "Wymaga przypisania wbudowanej roli Owner lub Contributor do przestrzeni nazw Event Hubs"
+        }
+      ],
+      "answerIds": [
+        "a"
+      ],
+      "explanation": "Dokumentacja Event Hubs wskazuje, że kluczową zaletą Microsoft Entra ID jest brak konieczności przechowywania poświadczeń w kodzie - aplikacja żąda tokenu OAuth 2.0 z Microsoft identity platform, a Entra ID uwierzytelnia jednostkę (użytkownika, grupę, service principal lub managed identity) wykonującą żądanie.",
+      "whyWrong": {
+        "b": "Jest odwrotnie - uwierzytelnianie przez Entra ID opiera się właśnie na tokenach OAuth 2.0 pobieranych z Microsoft identity platform.",
+        "c": "To zaprzeczenie faktycznej zalety - celem Entra ID jest właśnie wyeliminowanie potrzeby przechowywania poświadczeń w kodzie aplikacji.",
+        "d": "Dokumentacja zaznacza, że role Owner/Contributor nie są już honorowane do autoryzacji dostępu do danych Event Hubs - należy używać dedykowanych ról takich jak Azure Event Hubs Data Owner/Sender/Receiver."
+      },
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/event-hubs/authenticate-application"
+      ],
+      "verifiedAt": "2026-07-18",
       "auditStatus": "verified",
       "origin": "original"
     }
   ],
   "importedQuestionManifest": [
-    { "sourceTopic": "API Management", "count": 24, "mappedChapterId": "integration", "mappedSubchapterId": "api-management", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/API Management.md" },
-    { "sourceTopic": "AZ CLI", "count": 0, "mappedChapterId": null, "mappedSubchapterId": null, "auditStatus": "microsoft_mapped", "sourcePath": "Questions/AZ CLI.md" },
-    { "sourceTopic": "App Configuration", "count": 13, "mappedChapterId": "security", "mappedSubchapterId": "secure-solutions", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/App Configuration.md" },
-    { "sourceTopic": "App Service", "count": 76, "mappedChapterId": "compute", "mappedSubchapterId": "app-service", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/App Service.md" },
-    { "sourceTopic": "Application Insights", "count": 24, "mappedChapterId": "monitoring", "mappedSubchapterId": "app-insights", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Application Insights.md" },
-    { "sourceTopic": "Azure", "count": 4, "mappedChapterId": null, "mappedSubchapterId": null, "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Azure.md" },
-    { "sourceTopic": "Blob Storage", "count": 21, "mappedChapterId": "storage", "mappedSubchapterId": "blob-storage", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Blob Storage.md" },
-    { "sourceTopic": "Compute Solutions", "count": 7, "mappedChapterId": "compute", "mappedSubchapterId": "containers", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Compute Solutions.md" },
-    { "sourceTopic": "Containers", "count": 53, "mappedChapterId": "compute", "mappedSubchapterId": "containers", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Containers.md" },
-    { "sourceTopic": "Cosmos DB", "count": 52, "mappedChapterId": "storage", "mappedSubchapterId": "cosmos-db", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Cosmos DB.md" },
-    { "sourceTopic": "Docker", "count": 2, "mappedChapterId": "compute", "mappedSubchapterId": "containers", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Docker.md" },
-    { "sourceTopic": "Entra ID", "count": 28, "mappedChapterId": "security", "mappedSubchapterId": "auth", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Entra ID.md" },
-    { "sourceTopic": "Event Grid", "count": 14, "mappedChapterId": "integration", "mappedSubchapterId": "events", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Event Grid.md" },
-    { "sourceTopic": "Event Hubs", "count": 16, "mappedChapterId": "integration", "mappedSubchapterId": "events", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Event Hubs.md" },
-    { "sourceTopic": "Functions", "count": 29, "mappedChapterId": "compute", "mappedSubchapterId": "functions", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Functions.md" },
-    { "sourceTopic": "Graph", "count": 15, "mappedChapterId": "security", "mappedSubchapterId": "auth", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Graph.md" },
-    { "sourceTopic": "Key Vault", "count": 9, "mappedChapterId": "security", "mappedSubchapterId": "secure-solutions", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Key Vault.md" },
-    { "sourceTopic": "Managed Identities", "count": 25, "mappedChapterId": "security", "mappedSubchapterId": "secure-solutions", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Managed Identities.md" },
-    { "sourceTopic": "Message Queues", "count": 18, "mappedChapterId": "integration", "mappedSubchapterId": "messages", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Message Queues.md" },
-    { "sourceTopic": "Monitor", "count": 11, "mappedChapterId": "monitoring", "mappedSubchapterId": "app-insights", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Monitor.md" },
-    { "sourceTopic": "Queue Storage", "count": 1, "mappedChapterId": "integration", "mappedSubchapterId": "messages", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Queue Storage.md" },
-    { "sourceTopic": "Resource Groups", "count": 0, "mappedChapterId": null, "mappedSubchapterId": null, "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Resource Groups.md" },
-    { "sourceTopic": "Service Bus", "count": 22, "mappedChapterId": "integration", "mappedSubchapterId": "messages", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Service Bus.md" },
-    { "sourceTopic": "Shared Access Signatures", "count": 3, "mappedChapterId": "security", "mappedSubchapterId": "auth", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Shared Access Signatures.md" },
-    { "sourceTopic": "Storage Redundancy", "count": 8, "mappedChapterId": "storage", "mappedSubchapterId": "blob-storage", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Storage Redundancy.md" },
-    { "sourceTopic": "Storage Security", "count": 9, "mappedChapterId": "security", "mappedSubchapterId": "auth", "auditStatus": "microsoft_mapped", "sourcePath": "Questions/Storage Security.md" }
+    {
+      "sourceTopic": "API Management",
+      "count": 24,
+      "mappedChapterId": "integration",
+      "mappedSubchapterId": "api-management",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/API Management.md"
+    },
+    {
+      "sourceTopic": "AZ CLI",
+      "count": 0,
+      "mappedChapterId": null,
+      "mappedSubchapterId": null,
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/AZ CLI.md"
+    },
+    {
+      "sourceTopic": "App Configuration",
+      "count": 13,
+      "mappedChapterId": "security",
+      "mappedSubchapterId": "secure-solutions",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/App Configuration.md"
+    },
+    {
+      "sourceTopic": "App Service",
+      "count": 76,
+      "mappedChapterId": "compute",
+      "mappedSubchapterId": "app-service",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/App Service.md"
+    },
+    {
+      "sourceTopic": "Application Insights",
+      "count": 24,
+      "mappedChapterId": "monitoring",
+      "mappedSubchapterId": "app-insights",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Application Insights.md"
+    },
+    {
+      "sourceTopic": "Azure",
+      "count": 4,
+      "mappedChapterId": null,
+      "mappedSubchapterId": null,
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Azure.md"
+    },
+    {
+      "sourceTopic": "Blob Storage",
+      "count": 21,
+      "mappedChapterId": "storage",
+      "mappedSubchapterId": "blob-storage",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Blob Storage.md"
+    },
+    {
+      "sourceTopic": "Compute Solutions",
+      "count": 7,
+      "mappedChapterId": "compute",
+      "mappedSubchapterId": "containers",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Compute Solutions.md"
+    },
+    {
+      "sourceTopic": "Containers",
+      "count": 53,
+      "mappedChapterId": "compute",
+      "mappedSubchapterId": "containers",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Containers.md"
+    },
+    {
+      "sourceTopic": "Cosmos DB",
+      "count": 52,
+      "mappedChapterId": "storage",
+      "mappedSubchapterId": "cosmos-db",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Cosmos DB.md"
+    },
+    {
+      "sourceTopic": "Docker",
+      "count": 2,
+      "mappedChapterId": "compute",
+      "mappedSubchapterId": "containers",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Docker.md"
+    },
+    {
+      "sourceTopic": "Entra ID",
+      "count": 28,
+      "mappedChapterId": "security",
+      "mappedSubchapterId": "auth",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Entra ID.md"
+    },
+    {
+      "sourceTopic": "Event Grid",
+      "count": 14,
+      "mappedChapterId": "integration",
+      "mappedSubchapterId": "events",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Event Grid.md"
+    },
+    {
+      "sourceTopic": "Event Hubs",
+      "count": 16,
+      "mappedChapterId": "integration",
+      "mappedSubchapterId": "events",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Event Hubs.md"
+    },
+    {
+      "sourceTopic": "Functions",
+      "count": 29,
+      "mappedChapterId": "compute",
+      "mappedSubchapterId": "functions",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Functions.md"
+    },
+    {
+      "sourceTopic": "Graph",
+      "count": 15,
+      "mappedChapterId": "security",
+      "mappedSubchapterId": "auth",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Graph.md"
+    },
+    {
+      "sourceTopic": "Key Vault",
+      "count": 9,
+      "mappedChapterId": "security",
+      "mappedSubchapterId": "secure-solutions",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Key Vault.md"
+    },
+    {
+      "sourceTopic": "Managed Identities",
+      "count": 25,
+      "mappedChapterId": "security",
+      "mappedSubchapterId": "secure-solutions",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Managed Identities.md"
+    },
+    {
+      "sourceTopic": "Message Queues",
+      "count": 18,
+      "mappedChapterId": "integration",
+      "mappedSubchapterId": "messages",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Message Queues.md"
+    },
+    {
+      "sourceTopic": "Monitor",
+      "count": 11,
+      "mappedChapterId": "monitoring",
+      "mappedSubchapterId": "app-insights",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Monitor.md"
+    },
+    {
+      "sourceTopic": "Queue Storage",
+      "count": 1,
+      "mappedChapterId": "integration",
+      "mappedSubchapterId": "messages",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Queue Storage.md"
+    },
+    {
+      "sourceTopic": "Resource Groups",
+      "count": 0,
+      "mappedChapterId": null,
+      "mappedSubchapterId": null,
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Resource Groups.md"
+    },
+    {
+      "sourceTopic": "Service Bus",
+      "count": 22,
+      "mappedChapterId": "integration",
+      "mappedSubchapterId": "messages",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Service Bus.md"
+    },
+    {
+      "sourceTopic": "Shared Access Signatures",
+      "count": 3,
+      "mappedChapterId": "security",
+      "mappedSubchapterId": "auth",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Shared Access Signatures.md"
+    },
+    {
+      "sourceTopic": "Storage Redundancy",
+      "count": 8,
+      "mappedChapterId": "storage",
+      "mappedSubchapterId": "blob-storage",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Storage Redundancy.md"
+    },
+    {
+      "sourceTopic": "Storage Security",
+      "count": 9,
+      "mappedChapterId": "security",
+      "mappedSubchapterId": "auth",
+      "auditStatus": "microsoft_mapped",
+      "sourcePath": "Questions/Storage Security.md"
+    }
   ]
 }

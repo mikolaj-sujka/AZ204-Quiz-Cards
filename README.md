@@ -6,7 +6,7 @@ The app includes:
 
 - Microsoft Learn-aligned chapters and subchapters.
 - 484 imported source-quiz items mapped to Microsoft Learn topic sources, all usable as exam questions.
-- 32 original reference articles, one per exam-relevant service/concept, written and verified against Microsoft Learn, with a "read" toggle in `localStorage`.
+- 34 original reference articles, one per exam-relevant service/concept, written and verified against Microsoft Learn, with a "read" toggle in `localStorage`.
 - Sequential subchapter exams and weighted 100-question mock exam mode.
 - End-of-exam review with score, all questions, correct answers, explanations, and Microsoft Learn links.
 - Polish UI/explanations with official English Azure terms.

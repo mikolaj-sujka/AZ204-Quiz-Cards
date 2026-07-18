@@ -1408,6 +1408,91 @@
       "verifiedAt": "2026-07-15",
       "auditStatus": "verified",
       "order": 2
+    },
+    {
+      "id": "art-storage-blob-storage-sdk-client-library-and-blob-types",
+      "chapterId": "storage",
+      "subchapterId": "blob-storage",
+      "topic": "SDK client library & blob types",
+      "title": "Blob Types and the Blob Storage Client Library Object Model",
+      "summary": "Covers the three blob types Azure Storage supports, the client library's three-level resource hierarchy with its matching .NET client classes, and the core create/upload/download/copy operations used to perform data operations with the SDK.",
+      "keyPoints": [
+        "Azure Storage supports three blob types: block blobs (text/binary data built from independently managed blocks, can store up to about 190.7 TiB), append blobs (built like block blobs but optimized for append-only operations, e.g. logging data from VMs), and page blobs (random-access files up to 8 TiB, used to store VHD files and serve as disks for Azure VMs).",
+        "The client library mirrors Blob Storage's three-level resource hierarchy with three main .NET classes: BlobServiceClient represents the storage account, BlobContainerClient represents a container in that account, and BlobClient represents a single blob in a container.",
+        "Container names must be 3-63 characters long, start with a letter or number, and contain only lowercase letters, numbers, and the dash character (no two consecutive dashes) — the name becomes part of the container's URI.",
+        "Typical operations: BlobContainerClient.Create/CreateAsync creates a container; container.GetBlobClient(name) obtains a BlobClient; BlobClient.Upload/UploadAsync uploads data (e.g. from a file path or stream) and BlobClient.DownloadTo/DownloadToAsync downloads it; BlobContainerClient.GetBlobs/GetBlobsAsync enumerates the blobs in a container.",
+        "Copying a blob server-side is done by calling StartCopyFromUriAsync on the destination BlobClient, passing the source blob's URI. This starts an asynchronous copy and returns a CopyFromUriOperation, so completion must be checked afterwards via the destination blob's GetPropertiesAsync().Value.CopyStatus rather than assumed to happen immediately.",
+        "All Blob service operations throw a RequestFailedException (carrying a documented ErrorCode) on failure, and every client instance method is guaranteed thread-safe, so reusing a single client instance — even across threads — is the recommended, safe pattern."
+      ],
+      "sections": [
+        {
+          "heading": "Three blob types",
+          "body": "Azure Storage supports three types of blobs, and choosing the right one for a scenario is a recurring exam theme. Block blobs store text and binary data as a set of blocks that can be managed (uploaded, replaced) individually; they're the default choice for documents, images, and media, and can store up to about 190.7 TiB. Append blobs are also composed of blocks like block blobs, but they're optimized specifically for append operations — the canonical scenario is logging data from virtual machines, where new data is only ever added to the end of the blob. Page blobs store random-access files up to 8 TiB in size and are the blob type used to store VHD (virtual hard drive) files, serving as the backing disks for Azure virtual machines."
+        },
+        {
+          "heading": "Resource hierarchy and client classes",
+          "body": "Blob Storage exposes three resource levels: the storage account, a container within the account, and a blob within a container. The Azure.Storage.Blobs client library for .NET mirrors this exactly with three client classes. BlobServiceClient represents the storage account itself and is the entry point for account-level operations (e.g., listing containers). BlobContainerClient represents a single container and is obtained either by constructing it directly or via BlobServiceClient.GetBlobContainerClient(name); it's used for container-level operations such as Create/Delete and for obtaining blob clients. BlobClient represents a single blob and is obtained via BlobContainerClient.GetBlobClient(name); it exposes the actual data operations (upload, download, properties, metadata). Container names are constrained because they become part of the container's URI: 3-63 characters, must start with a letter or number, and can only contain lowercase letters, numbers, and dashes (never two dashes in a row)."
+        },
+        {
+          "heading": "Core operations: create, upload, download, enumerate",
+          "body": "A typical workflow creates a BlobContainerClient (from a connection string and container name, or from a BlobServiceClient), calls Create/CreateAsync to ensure the container exists, then calls container.GetBlobClient(blobName) to get a BlobClient for a specific blob. Uploading is done via BlobClient.Upload/UploadAsync — commonly from a local file path or a Stream — and downloading via BlobClient.DownloadTo/DownloadToAsync to a local path or stream. To enumerate the blobs already in a container, BlobContainerClient.GetBlobs/GetBlobsAsync returns BlobItem entries (exposing at least the blob's Name) without needing to know their names in advance. Every synchronous method has an async counterpart, and all client instance methods are documented as thread-safe, so a single long-lived client instance can safely be shared and reused across the application rather than re-created per call."
+        },
+        {
+          "heading": "Copying a blob server-side",
+          "body": "The most efficient way to copy a blob from one container (or account) to another is a server-side copy rather than downloading and re-uploading the bytes through the client application. This is initiated by calling StartCopyFromUriAsync on the destination BlobClient, passing the source blob's Uri — i.e., the call is made on the target blob, referencing the source, not the other way around. The operation begins an asynchronous copy on the service side and returns a CopyFromUriOperation describing the copy's state; because the copy isn't guaranteed to be complete when the call returns, the actual completion must be confirmed by calling GetPropertiesAsync() on the destination blob and inspecting the returned BlobProperties.CopyStatus. On failure, Blob service operations throw a RequestFailedException with a specific ErrorCode (or an AggregateException if multiple failures occurred), which is the mechanism application code should catch to handle recoverable errors such as a container already existing or already being deleted."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction",
+        "https://learn.microsoft.com/en-us/dotnet/api/overview/azure/storage.blobs-readme",
+        "https://learn.microsoft.com/en-us/dotnet/api/azure.storage.blobs.specialized.blobbaseclient.startcopyfromuriasync"
+      ],
+      "verifiedAt": "2026-07-18",
+      "auditStatus": "verified",
+      "order": 4
+    },
+    {
+      "id": "art-monitoring-app-insights-application-map-and-span-kinds",
+      "chapterId": "monitoring",
+      "subchapterId": "app-insights",
+      "topic": "Application Map & OpenTelemetry span kinds",
+      "title": "Application Map: Visualizing Distributed Topology and Mapping OpenTelemetry Span Kinds to Requests vs Dependencies",
+      "summary": "Explains how Application Map discovers and displays your distributed application's components and dependency calls, how to filter and troubleshoot it, and the OpenTelemetry span-kind rule that decides whether a span shows up as a Request or a Dependency.",
+      "keyPoints": [
+        "Application Map represents application topology as nodes (components, identified by their cloud role name/roleName property) connected by directional edges (dependency calls from a source node to a target node); it's built by following HTTP dependency calls between instrumented components.",
+        "Components are independently deployable parts of your app that you have code/telemetry access to; they're distinct from 'observed' external dependencies (e.g. Azure SQL, Event Hubs) which your team doesn't instrument directly. Components can be different roles reporting to one Application Insights resource, or separate Application Insights resources entirely (even across subscriptions).",
+        "The map is built by progressive discovery: on first load a query discovers components related to the main one, and 'Update map components' re-runs discovery to refresh all nodes - this isn't needed when every component is just a different role inside a single Application Insights resource.",
+        "Cloud role instance (separate from cloud role name) lets you drill into a specific load-balanced server/instance behind a node - useful to tell whether a problem affects all instances of a role or just one; it can be overridden via OpenTelemetry resource attributes, or via JavaScript telemetry initializers for browser telemetry.",
+        "Node filters (Nodes only / Nodes and sources / Nodes and targets / Nodes, sources and targets, with contains/!contains/==/!= operators) and connector filters (by error state, error rate, average call duration, or call count, with Pxx percentile-based values) let you cut down a noisy map to a focused view, and can be pinned to a dashboard.",
+        "Intelligent view applies a machine-learning model (trained on the map's historical behavior) to highlight only the edges most likely to be the root cause of a failure, filtering out 'benign' failure noise in large distributed apps; sensitivity is adjustable (High/Medium/Low) and it supports time windows up to 7 days.",
+        "For .NET (System.Diagnostics.Activity/ActivitySource), ActivityKind.Client, ActivityKind.Producer, and ActivityKind.Internal are mapped to Application Insights 'dependencies', while ActivityKind.Server and ActivityKind.Consumer are mapped to Application Insights 'requests'. StartActivity defaults to ActivityKind.Internal if no kind is specified.",
+        "For Java, the OpenTelemetry @WithSpan annotation defaults to populating the 'dependencies' table with dependency type InProc; for a background job not captured by autoinstrumentation that should count as an operation (e.g. appear in the Requests table), you must explicitly set kind = SpanKind.SERVER on the @WithSpan annotation."
+      ],
+      "sections": [
+        {
+          "heading": "Nodes, connectors, and what counts as a component",
+          "body": "Application Map draws circles (*nodes*) for each application component or its dependencies, and directional lines (*connectors*/*edges*) for the HTTP calls between a *source* node and a *target* node. Nodes are identified by the component's cloud role name (roleName) property in recorded telemetry. A **component** is a part of your distributed/microservice app that your team can see code or telemetry for; it's different from an *observed external dependency* like Azure SQL Database or Event Hubs, which you typically don't instrument directly. Components can be separate roles reporting into a single Application Insights resource, or entirely separate Application Insights resources (even across subscriptions) - Application Map stitches the topology together either way, as long as you have access to each resource."
+        },
+        {
+          "heading": "Discovery, cloud role instances, and filtering a noisy map",
+          "body": "The map is populated by *progressive discovery*: the initial load runs a query to find components related to the main one, and a status bar tracks how many components have been found so far; the **Update map components** action re-triggers discovery to refresh the full node set (not required when every component is just a different role inside one Application Insights resource - the initial load already finds those). When a role has multiple load-balanced instances, the **cloud role instance** property (separate from cloud role name) lets you investigate whether an issue is affecting one specific instance or all of them; override it via OpenTelemetry resource attributes for server apps, or JavaScript telemetry initializers for browser apps. To cut a large map down to size, **node filters** (search node properties with contains/!contains/==/!= across Nodes only / Nodes and sources / Nodes and targets / Nodes, sources and targets) and **connector filters** (by error state, error rate, average call duration, or call count - several of which use Pxx percentile values) can be combined and pinned to a dashboard, e.g. an 'Error connector' filter to permanently watch for red (failing) edges."
+        },
+        {
+          "heading": "Intelligent view: ML-assisted root-cause highlighting",
+          "body": "In large distributed apps, ordinary failure-rate coloring can make Application Map noisy with many red edges from low-impact, 'benign' failures. **Intelligent view** applies a machine-learning model trained on the map's historical behavior to highlight, in red, only the edges that are the most probable causes of a service failure, and it surfaces actionable insights explaining why a given edge was flagged. Detection sensitivity is adjustable - High highlights fewer edges, Medium is the balanced default, Low highlights more - and Intelligent view supports time windows of up to 7 days; it may take a minute to load for very large applications."
+        },
+        {
+          "heading": "OpenTelemetry span kinds decide Request vs Dependency",
+          "body": "Whichever telemetry type a span becomes in Application Insights (and therefore how it's classified in the Requests table vs the Dependencies table) is governed by its OpenTelemetry span kind, not by where the code runs. In .NET, `ActivitySource.StartActivity()` defaults to `ActivityKind.Internal` if you don't pass a kind explicitly. `ActivityKind.Client`, `ActivityKind.Producer`, and `ActivityKind.Internal` are all mapped to Application Insights **dependencies**, while only `ActivityKind.Server` and `ActivityKind.Consumer` are mapped to Application Insights **requests** - so a worker that merely processes a message (e.g. pulled from Azure Service Bus) needs to be started as a Server or Consumer-kind span/activity to show up as a Request rather than a Dependency. In Java, the `@WithSpan` annotation defaults to the Dependencies table with dependency type `InProc`; for a background job not otherwise captured by autoinstrumentation that you want treated as an operation (appearing in Requests), you must explicitly set `kind = SpanKind.SERVER` on the annotation."
+        }
+      ],
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-map",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-add-modify"
+      ],
+      "verifiedAt": "2026-07-18",
+      "auditStatus": "verified",
+      "order": 4
     }
   ]
 }
