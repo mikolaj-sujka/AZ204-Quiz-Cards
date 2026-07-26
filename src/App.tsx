@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   ExternalLink,
   Filter,
+  Flame,
   Layers,
   ListChecks,
   RotateCcw,
@@ -23,6 +24,7 @@ import {
   type Article,
   type Chapter,
   type ChapterId,
+  type HardTopic,
   type Question,
   type Subchapter,
   content,
@@ -37,6 +39,7 @@ import {
   importedVerifiedCount,
   sourceQuizBank,
   verifiedArticles,
+  verifiedHardTopics,
   verifiedQuestions
 } from './domain/content';
 import {
@@ -56,7 +59,7 @@ import {
   writeProgress
 } from './domain/progress';
 
-type View = 'dashboard' | 'articles' | 'exam' | 'audit';
+type View = 'dashboard' | 'articles' | 'hard-topics' | 'exam' | 'audit';
 type ThemeMode = 'day' | 'night';
 
 type StudyTarget = {
@@ -146,6 +149,13 @@ export function App() {
             Artykuły
           </NavButton>
           <NavButton
+            active={view === 'hard-topics'}
+            icon={<Flame />}
+            onClick={() => setView('hard-topics')}
+          >
+            Trudne tematy
+          </NavButton>
+          <NavButton
             active={view === 'exam'}
             icon={<ClipboardCheck />}
             onClick={() => setView('exam')}
@@ -193,7 +203,7 @@ export function App() {
       <main className="main-content">
         <Header />
 
-        {view !== 'dashboard' && view !== 'audit' ? (
+        {view !== 'dashboard' && view !== 'audit' && view !== 'hard-topics' ? (
           <StudyFilters
             target={target}
             selectedChapter={selectedChapter}
@@ -215,6 +225,7 @@ export function App() {
             onProgressChange={setProgress}
           />
         ) : null}
+        {view === 'hard-topics' ? <HardTopicsView /> : null}
         {view === 'exam' ? (
           <ExamView
             target={target}
@@ -801,6 +812,76 @@ function ArticleDetail({
         </button>
       </div>
     </section>
+  );
+}
+
+function HardTopicsView() {
+  const clusters: { cluster: string; topics: HardTopic[] }[] = [];
+  for (const topic of verifiedHardTopics) {
+    const group = clusters[clusters.length - 1];
+    if (group && group.cluster === topic.cluster) {
+      group.topics.push(topic);
+    } else {
+      clusters.push({ cluster: topic.cluster, topics: [topic] });
+    }
+  }
+
+  return (
+    <div className="stack">
+      <section className="panel split-panel">
+        <div>
+          <span className="mini-label">Powtórka przed egzaminem</span>
+          <h2>Trudne tematy</h2>
+          <p>
+            Zagadnienia zgłoszone jako trudne do zapamiętania — pytanie, poprawna odpowiedź,
+            wyjaśnienie i przykład, do szybkiego doczytania w jednym miejscu.
+          </p>
+        </div>
+        <span className="status-pill">{verifiedHardTopics.length} zagadnień</span>
+      </section>
+
+      {clusters.map(({ cluster, topics }) => (
+        <section key={cluster} className="panel">
+          <div className="section-heading">
+            <div>
+              <span className="mini-label">Grupa tematyczna</span>
+              <h2>{cluster}</h2>
+            </div>
+          </div>
+          <div className="hard-topic-list">
+            {topics.map((topic) => (
+              <HardTopicCard key={topic.id} topic={topic} />
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function HardTopicCard({ topic }: { topic: HardTopic }) {
+  return (
+    <article className="hard-topic-card">
+      <span className="mini-label">{topic.topic}</span>
+
+      <div className="hard-topic-question">
+        <TextBlock text={topic.question} />
+      </div>
+
+      <div className="hard-topic-answer">
+        <Check aria-hidden="true" />
+        <span>{topic.correctAnswer}</span>
+      </div>
+
+      <TextBlock text={topic.explanation} />
+
+      <div className="hard-topic-example">
+        <span className="mini-label">Przykład</span>
+        <TextBlock text={topic.example} />
+      </div>
+
+      <SourceLinks urls={topic.sourceUrls} />
+    </article>
   );
 }
 

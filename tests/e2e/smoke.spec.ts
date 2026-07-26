@@ -22,6 +22,16 @@ test('articles can be opened from the list, read, and marked read', async ({ pag
   await expect(readPill).toHaveText(`${initialCount + 1}/${totalArticles} przeczytane`);
 });
 
+test('hard topics tab shows question, answer, and example', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Trudne tematy', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Trudne tematy' })).toBeVisible();
+  await expect(page.locator('.hard-topic-card').first()).toBeVisible();
+  await expect(page.locator('.hard-topic-answer').first()).toBeVisible();
+  await expect(page.locator('.hard-topic-example').first()).toBeVisible();
+  await expect(page.getByText('Microsoft Learn').first()).toBeVisible();
+});
+
 test('subchapter exam shows explanations after submit', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Egzaminy', exact: true }).click();

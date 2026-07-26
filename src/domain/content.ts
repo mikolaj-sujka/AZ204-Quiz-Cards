@@ -1,6 +1,7 @@
 import rawContent from '../data/az204-content.json';
 import rawSourceQuiz from '../data/source-quiz.generated.json';
 import rawArticles from '../data/articles.json';
+import rawHardTopics from '../data/hard-topics.json';
 
 export type ChapterId = 'compute' | 'storage' | 'security' | 'monitoring' | 'integration';
 
@@ -105,6 +106,28 @@ export type ArticleBank = {
   articles: Article[];
 };
 
+export type HardTopic = {
+  id: string;
+  chapterId: ChapterId;
+  subchapterId: string;
+  cluster: string;
+  topic: string;
+  question: string;
+  correctAnswer: string;
+  explanation: string;
+  example: string;
+  sourceUrls: string[];
+  verifiedAt: string;
+  auditStatus: AuditStatus;
+  order: number;
+};
+
+export type HardTopicBank = {
+  generatedAt: string;
+  sourceNote: string;
+  topics: HardTopic[];
+};
+
 export type ExamContent = {
   metadata: {
     examCode: string;
@@ -128,6 +151,7 @@ export type ExamContent = {
 export const content = rawContent as unknown as ExamContent;
 export const sourceQuizBank = rawSourceQuiz as unknown as SourceQuizBank;
 export const articleBank = rawArticles as unknown as ArticleBank;
+export const hardTopicBank = rawHardTopics as unknown as HardTopicBank;
 
 export const sourceQuizQuestions: Question[] = sourceQuizBank.items
   .filter((item) => item.options.length > 0 && item.answerIds.length > 0)
@@ -165,6 +189,10 @@ export const verifiedQuestions = [...originalVerifiedQuestions, ...sourceQuizQue
 export const verifiedArticles = articleBank.articles.filter(
   (article) => article.auditStatus === 'verified'
 );
+
+export const verifiedHardTopics = hardTopicBank.topics
+  .filter((topic) => topic.auditStatus === 'verified')
+  .sort((a, b) => a.order - b.order);
 
 export function getChapter(chapterId: ChapterId) {
   return content.chapters.find((chapter) => chapter.id === chapterId);

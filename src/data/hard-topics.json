@@ -1,0 +1,686 @@
+{
+  "generatedAt": "2026-07-26",
+  "sourceNote": "Curated hard/tricky exam questions, drawn from the app's own verified question bank (original + imported), with Polish explanations and worked examples for quick pre-exam review.",
+  "topics": [
+    {
+      "id": "ht-monitoring-activity-log-vs-telemetry",
+      "chapterId": "monitoring",
+      "subchapterId": "app-insights",
+      "cluster": "Monitoring i Application Insights",
+      "topic": "Activity Log vs. Application Insights",
+      "question": "You have the following code:\n\n```csharp\ntelemetry.TrackTrace(\"Monitor\");\n```\n\nCan you use `az monitor activity-log` to view it?",
+      "correctAnswer": "Nie (opcja „No”) — `az monitor activity-log` nie pokaże tego wpisu.",
+      "explanation": "Activity Log to log płaszczyzny zarządzania (control plane) — rejestruje operacje na samych zasobach Azure: kto utworzył, zmienił albo usunął zasób, błędy wdrożeń ARM, akcje autoscale, zdarzenia Service Health. Nie rejestruje operacji odczytu ani niczego, co dzieje się WEWNĄTRZ aplikacji. `telemetry.TrackTrace(\"Monitor\")` to telemetria aplikacyjna (płaszczyzna danych) wysyłana do zasobu Application Insights — znajdziesz ją w Log Analytics/Kusto (tabela `traces`) albo w Transaction Search w portalu App Insights, a nie w Activity Log. Dodatkowo: `az monitor activity-log list` faktycznie pokazuje operacje takie jak utworzenie/zmiana/usunięcie zasobu, błędy wdrożenia, zdarzenia Service Health czy akcje autoscale — dla subskrypcji, grupy zasobów albo konkretnego zasobu w wybranym oknie czasowym.",
+      "example": "Jeśli administrator ręcznie zrestartuje Twoją Web App z portalu, ten fakt (`Microsoft.Web/sites/restart/action`) pojawi się w `az monitor activity-log list --resource-group myRG --offset 1d`. Ale ślad z kodu aplikacji jak `TrackTrace(\"Monitor\")` znajdziesz dopiero po stronie Application Insights, np. zapytaniem `traces | where message == \"Monitor\"` w Log Analytics — to dwa zupełnie różne systemy logowania: jeden dla operacji na zasobach Azure, drugi dla telemetrii Twojego kodu.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/platform/activity-log",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 1
+    },
+    {
+      "id": "ht-monitoring-availability-test-global",
+      "chapterId": "monitoring",
+      "subchapterId": "app-insights",
+      "cluster": "Monitoring i Application Insights",
+      "topic": "Availability Tests z wielu lokalizacji",
+      "question": "In your organization, you are working on an ASP.NET web application that is hosted on a development server within the company's internal network. Before transitioning the application to the production server, you must gather performance data from various global locations. What action should you take?",
+      "correctAnswer": "Implement a URL ping test using Application Insights.",
+      "explanation": "Application Insights Availability Tests (URL ping test) wysyłają żądania do publicznego URL aplikacji z wielu punktów obecności Microsoft na całym świecie i mierzą czas odpowiedzi oraz dostępność z każdej lokalizacji — dokładnie odpowiada to na potrzebę „danych wydajnościowych z różnych lokalizacji globalnych” przed przejściem na produkcję. VPN, Application Gateway, Load Balancer czy sam profil Traffic Managera (bez włączonego monitorowania endpointów) to komponenty sieciowe/routingowe, a nie narzędzia do pomiaru wydajności per region.",
+      "example": "Konfigurujesz standardowy test dostępności w Application Insights, wskazujesz kilka lokalizacji testowych (np. West US, East Asia, West Europe), a Application Insights co kilka minut odpytuje Twój URL z każdej z nich i pokazuje wykres czasu odpowiedzi per region — dzięki temu widzisz np., że z Azji odpowiedź trwa 800 ms, a z Europy 120 ms, zanim jeszcze ktokolwiek w produkcji to odczuje.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/availability-overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 2
+    },
+    {
+      "id": "ht-monitoring-application-map-cross-platform-topology",
+      "chapterId": "monitoring",
+      "subchapterId": "app-insights",
+      "cluster": "Monitoring i Application Insights",
+      "topic": "Application Map: pełna topologia AKS + App Service",
+      "question": "You're designing a distributed architecture deployed in containers across AKS and App Services. You want to visualize the full topology in Application Map, including dependencies between components.\n\nWhich actions you should take?",
+      "correctAnswer": "Use the same Application Insights instrumentation key across all services; Define `service.name` and `service.namespace` attributes in each service's telemetry configuration.",
+      "explanation": "Żeby Application Map poprawnie zbudował pełną mapę zależności między usługami rozproszonymi na AKS i App Service, wszystkie komponenty muszą wysyłać telemetrię do TEGO SAMEGO zasobu Application Insights (ten sam instrumentation key/connection string) — inaczej korelacja między nimi się urywa. Dodatkowo trzeba ustawić atrybuty OpenTelemetry `service.name`/`service.namespace` w każdej usłudze — to one, po stronie zasobu, tłumaczą się na `cloud_RoleName`, czyli nazwę węzła widoczną na mapie. Wspólna subskrypcja Azure nie ma znaczenia (mapa łączy nawet zasoby w różnych subskrypcjach, jeśli masz do nich dostęp), a `cloud_RoleInstance` odpowiada za identyfikację konkretnej instancji, a nie za pogrupowanie węzłów.",
+      "example": "Masz `orders-api` na AKS i `payments-api` na App Service. Jeśli oba raportują do TEGO SAMEGO zasobu Application Insights i mają ustawione `service.name=orders-api` / `service.name=payments-api`, mapa pokaże dwa osobne, podpisane węzły połączone strzałką zależności HTTP. Gdyby `payments-api` wysyłał telemetrię do innego zasobu App Insights, strzałka by się urwała — zobaczyłbyś `orders-api` wołający „coś”, bez dalszej mapy po stronie `payments-api`.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-configuration",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-map"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 3
+    },
+    {
+      "id": "ht-monitoring-span-kinds-request-vs-dependency",
+      "chapterId": "monitoring",
+      "subchapterId": "app-insights",
+      "cluster": "Monitoring i Application Insights",
+      "topic": "Span kinds: Server vs Client (czym są spans)",
+      "question": "You instrument an ASP.NET Core app using OpenTelemetry. You want to track incoming HTTP requests and outgoing calls to a payment gateway.\n\nWhich span kinds should you explicitly use?",
+      "correctAnswer": "`Server` dla przychodzących żądań HTTP, `Client` dla wywołań wychodzących (np. do bramki płatności).",
+      "explanation": "Span („odcinek”) to pojedyncza jednostka pracy w rozproszonym śladzie (trace) — ma nazwę, czas rozpoczęcia i zakończenia oraz opcjonalnie atrybuty i relację nadrzędny/podrzędny z innymi spanami w tym samym żądaniu; ich sekwencja tworzy pełny obraz tego, co się działo podczas obsługi jednego żądania, włącznie z wywołaniami do innych usług. Rodzaj spana (`span kind`) decyduje, czy trafi do tabeli `requests` (żądania przychodzące) czy `dependencies` (wywołania wychodzące) w Application Insights: `Server`/`Consumer` → requests, `Client`/`Producer`/`Internal` → dependencies. `Producer`/`Consumer` są zarezerwowane dla systemów kolejkowych (np. Service Bus), a `Internal` dla pracy czysto wewnątrzprocesowej bez żadnego I/O.",
+      "example": "Przychodzące żądanie HTTP `POST /api/orders` do Twojego ASP.NET Core API powinno być spanem typu `Server` (trafi do `requests`). Wewnątrz obsługi tego żądania wywołujesz zewnętrzną bramkę płatności przez HTTP — ten wychodzący call powinien być spanem typu `Client` (trafi do `dependencies`). Jeśli oznaczysz wywołanie do bramki jako `Internal`, Application Insights w ogóle nie pokaże go jako zależności na mapie ani w widoku transakcji end-to-end.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-add-modify"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 4
+    },
+    {
+      "id": "ht-monitoring-incomplete-dependency-lines",
+      "chapterId": "monitoring",
+      "subchapterId": "app-insights",
+      "cluster": "Monitoring i Application Insights",
+      "topic": "Application Map: niekompletne linie zależności",
+      "question": "You're debugging a performance issue in a multi-service architecture. Application Map shows incomplete dependency lines between services.\n\nWhat are the likely causes?",
+      "correctAnswer": "Services send telemetry to separate Application Insights resources; `cloud_RoleName` is not uniquely configured per service.",
+      "explanation": "Dwie najbardziej prawdopodobne przyczyny „urwanych” linii zależności na Application Map to: (1) różne usługi wysyłają telemetrię do RÓŻNYCH zasobów Application Insights — Application Insights nie koreluje automatycznie danych między osobnymi zasobami, więc mapa urywa się na granicy zasobu; (2) `cloud_RoleName` nie jest ustawiony unikalnie dla każdej usługi — bez tego usługi mogą nakładać się na jeden węzeł albo w ogóle nie pojawić się jako osobne węzły. Brak `service.namespace` to co najwyżej problem z grupowaniem (nie urywa mapy), brak eksporterów Prometheusa jest nieistotny dla App Insights, a surowe gniazda TCP zamiast HTTP to osobny, rzadszy problem — Application Map z założenia śledzi zależności HTTP.",
+      "example": "Masz `frontend` i `backend-api`, oba raportujące telemetrię — ale `backend-api` przez pomyłkę wysyła dane do zasobu Application Insights ze środowiska staging, a `frontend` do zasobu produkcyjnego. Na produkcyjnej mapie zobaczysz `frontend` wołający jakiś zewnętrzny adres HTTP bez żadnego węzła po drugiej stronie — bo dane z `backend-api` fizycznie trafiają gdzie indziej i nie da się ich skorelować.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-map",
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 5
+    },
+    {
+      "id": "ht-monitoring-noise-filtering-health-checks",
+      "chapterId": "monitoring",
+      "subchapterId": "app-insights",
+      "cluster": "Monitoring i Application Insights",
+      "topic": "Redukcja szumu: wykluczanie health checków",
+      "question": "You want to reduce noise in your telemetry and exclude internal spans and health checks from being sent to Application Insights.\n\nWhich approaches should you implement?",
+      "correctAnswer": "Use a custom span processor to drop internal spans; use instrumentation-level filtering before export.",
+      "explanation": "Żeby faktycznie NIE WYSYŁAĆ (a nie tylko ukryć po fakcie) telemetrii health checków i wewnętrznych spanów, filtrowanie musi się odbyć PRZED eksportem — czyli przez custom span processor (odrzuca span, zanim trafi do eksportera) albo filtrowanie na poziomie samej instrumentacji (np. predykat `Filter` w opcjach instrumentacji ASP.NET Core w OpenTelemetry .NET, który w ogóle nie tworzy spana dla danej ścieżki). Filtrowanie w KQL po stronie Log Analytics dzieje się już PO zjedzeniu kosztu ingestii — dane już zostały wysłane i policzone. Wyłączenie całej auto-kolekcji telemetrii wyłączyłoby też ruch, który chcesz widzieć. Reguły firewalla to obejście sieciowe, nie mechanizm filtrowania śladów.",
+      "example": "W OpenTelemetry .NET: `.AddAspNetCoreInstrumentation(options => options.Filter = httpContext => httpContext.Request.Path != \"/healthz\")` — dzięki temu span dla żądania `GET /healthz` nigdy nie zostanie utworzony ani wysłany, więc nie zapłacisz za jego ingestię i nie zaśmieci Ci widoku Application Map. Gdybyś zamiast tego filtrował w zapytaniu KQL (`requests | where name != \"GET /healthz\"`), dane o health checkach nadal trafiłyby do Application Insights i nadal by kosztowały.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 6
+    },
+    {
+      "id": "ht-monitoring-cpu-time-plans",
+      "chapterId": "monitoring",
+      "subchapterId": "app-insights",
+      "cluster": "Monitoring i Application Insights",
+      "topic": "CPU Time — kiedy jest przydatny",
+      "question": "You are monitoring an Azure App Service Web App and want to use the CPU Time metric. In which of the following App Service plans is the CPU Time metric particularly useful as one of the quotas is defined in CPU minutes used by the app? (Choose all that apply)",
+      "correctAnswer": "Free i Shared.",
+      "explanation": "Metryka CPU Time pokazuje łączny czas procesora zużyty przez aplikację i jest szczególnie przydatna w planach Free i Shared, bo to właśnie w tych warstwach jeden z limitów (quot) jest zdefiniowany wprost w minutach CPU (CPU (Short) — 5-minutowe okno, i CPU (Day) — limit dobowy). W Basic/Standard/Premium nie ma takiego limitu w minutach CPU — tam liczy się rozmiar instancji i ich liczba, więc bardziej informatywna jest metryka CPU Percentage.",
+      "example": "Masz apkę na planie Free. Jeśli w ciągu 5 minut zużyje więcej niż przydzielony limit CPU (Short), Azure automatycznie ZATRZYMA aplikację do końca tego okna — a każde przychodzące żądanie dostanie HTTP 403, dopóki limit się nie zresetuje. Śledząc metrykę CPU Time, widzisz dokładnie, ile z tego dziennego/5-minutowego budżetu CPU już „spaliłeś”, zanim dojdzie do wyłączenia aplikacji.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/app-service/web-sites-monitor"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 7
+    },
+    {
+      "id": "ht-monitoring-cpu-percentage-plans",
+      "chapterId": "monitoring",
+      "subchapterId": "app-insights",
+      "cluster": "Monitoring i Application Insights",
+      "topic": "CPU Percentage — kiedy jest przydatny",
+      "question": "You are tasked with monitoring the CPU usage of an Azure App Service Web App and want to use the CPU Percentage metric. In which of the following App Service plans is the CPU Percentage metric a good indication of the overall usage across all instances? (Choose all that apply.)",
+      "correctAnswer": "Basic, Standard i Premium.",
+      "explanation": "CPU Percentage pokazuje procentowe wykorzystanie CPU i jest dobrym wskaźnikiem w planach Basic/Standard/Premium, bo te warstwy można skalować w poziomie (scale-out) do wielu instancji — CPU Percentage agreguje wykorzystanie CPU po wszystkich instancjach planu, dając realny obraz obciążenia całej floty, a nie tylko jednej maszyny. Free i Shared działają na współdzielonej infrastrukturze bez tego modelu skalowania, więc tam kluczowe są twarde limity w minutach CPU (patrz poprzednie pytanie), a nie procent wykorzystania.",
+      "example": "Masz plan Standard skalowany do 3 instancji. Jedna instancja jest przeciążona (95% CPU), a dwie pozostałe mają zapas (20% CPU) — CPU Percentage pokaże uśrednioną wartość w całym planie, co jest dokładnie tym sygnałem, którego potrzebujesz do skonfigurowania reguły autoscale „dodaj instancję, gdy średnie CPU > 70%”.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/app-service/web-sites-monitor"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 8
+    },
+    {
+      "id": "ht-security-graph-app-only-permissions",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Delegated vs Application permissions (Microsoft Graph)",
+      "question": "Aplikacja daemon ma czytać dane z Microsoft Graph bez zalogowanego użytkownika. Jaki typ uprawnień jest właściwy?",
+      "correctAnswer": "Application permissions.",
+      "explanation": "Delegated permissions działają „w imieniu zalogowanego użytkownika” — wymagają, żeby ktoś się zalogował i (czasem) wyraził zgodę; token niesie połączenie uprawnień aplikacji i użytkownika. Application permissions (czasem nazywane „app-only”) działają bez żadnego zalogowanego użytkownika — aplikacja uwierzytelnia się sama sobą (np. client credentials flow) i działa z uprawnieniami przyznanymi jej wprost jako tożsamości, zwykle po zgodzie administratora (admin consent).",
+      "example": "Nocny job w Azure Functions, który co noc synchronizuje listę pracowników z Microsoft Graph (`GET /users`) bez żadnego interaktywnego logowania, to klasyczny scenariusz Application permissions (`User.Read.All` jako uprawnienie aplikacji, z admin consent) — nie ma tam żadnego zalogowanego człowieka, w którego imieniu appka by działała.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/graph/auth/auth-concepts"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 9
+    },
+    {
+      "id": "ht-security-application-proxy-remote-access",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Bezpieczny zdalny dostęp do aplikacji on-premises",
+      "question": "You are tasked with providing secure remote access to an on-premises application for your organization's employees. Which action should you perform?",
+      "correctAnswer": "Activate application proxy in Microsoft Entra ID.",
+      "explanation": "Microsoft Entra Application Proxy publikuje wewnętrzną (on-premises) aplikację webową na zewnątrz bez otwierania portów przychodzących w firmowym firewallu i bez klasycznego VPN — pracownik łączy się przez chmurę Microsoft Entra, a lekki „connector” zainstalowany wewnątrz sieci nawiązuje wyłącznie połączenia WYCHODZĄCE do usługi Entra i przekazuje ruch do aplikacji. Do tego dochodzi preauthentication przez Entra ID (w tym MFA/Conditional Access), więc aplikacja legacy nie musi sama tego implementować. Samo podniesienie licencji do P1 albo dodanie polityki Conditional Access niczego nie „publikuje” — to dodatki do już opublikowanego dostępu, a B2C dotyczy klientów zewnętrznych/konsumentów, nie własnych pracowników.",
+      "example": "Masz starą aplikację ERP dostępną tylko w sieci firmowej pod `http://erp.internal`. Instalujesz Application Proxy connector na serwerze w tej sieci, publikujesz aplikację jako `https://erp-twojafirma.msappproxy.net`, a pracownicy logują się do niej z domu przez przeglądarkę — bez VPN-a, z pełnym Conditional Access/MFA po drodze, a firewall firmowy nie potrzebuje żadnego otwartego portu przychodzącego (connector używa tylko portów wychodzących 80/443).",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview",
+        "https://learn.microsoft.com/en-us/entra/identity/app-proxy/overview-what-is-app-proxy"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 10
+    },
+    {
+      "id": "ht-security-b2b-partner-access",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Udostępnianie aplikacji partnerowi (B2B)",
+      "question": "Your organization is planning to collaborate with a partner company on a project. You need to provide the partner company's users with access to certain applications in your Microsoft Entra ID. Which action should you perform?",
+      "correctAnswer": "Configure the applications to use Microsoft Entra ID business-to-business (B2B).",
+      "explanation": "Microsoft Entra B2B collaboration pozwala zaprosić użytkowników z organizacji partnera jako „guest” (gościa) do Twojego katalogu Entra ID — logują się własnymi, firmowymi poświadczeniami (partner nie zakłada dla nich kont u Ciebie), a Ty przyznajesz im dostęp do konkretnych aplikacji/zasobów tak jak zwykłym użytkownikom (role, grupy, Conditional Access też działają). To coś innego niż Application Proxy (publikacja WŁASNEJ wewnętrznej aplikacji dla WŁASNYCH pracowników) czy B2C (uwierzytelnianie klientów/konsumentów w Twojej konsumenckiej aplikacji).",
+      "example": "Firma partnerska ma dostarczyć dane do Twojej wewnętrznej aplikacji raportowej. Zapraszasz 3 osoby z partnera jako guest users przez B2B (Entra wysyła im mail z zaproszeniem), przypisujesz im rolę z dostępem tylko do tej jednej aplikacji — logują się swoim firmowym Entra ID (albo innym IdP), a Ty w każdej chwili możesz odebrać dostęp, bez zarządzania ich hasłami.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview",
+        "https://learn.microsoft.com/en-us/entra/external-id/what-is-b2b"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 11
+    },
+    {
+      "id": "ht-security-mfa-security-defaults",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Wymuszenie MFA dla wszystkich (startup, bez licencji Premium)",
+      "question": "As an administrator for a startup utilizing Microsoft Entra ID for identity and access management, you're tasked with implementing mandatory multi-factor authentication for all users. What is the most appropriate step to take?",
+      "correctAnswer": "Activate security defaults in Microsoft Entra ID.",
+      "explanation": "Security defaults to darmowy, gotowy zestaw podstawowych zabezpieczeń Entra ID (m.in. wymagane MFA dla wszystkich użytkowników, blokada starych protokołów uwierzytelniania) — włączasz je jednym przełącznikiem, bez potrzeby licencji Premium P1/P2. Conditional Access dałby dokładniejszą kontrolę (np. MFA tylko dla części użytkowników albo w zależności od ryzyka), ale wymaga licencji Entra ID P1 — dla startupu bez tej licencji to nie jest „najbardziej odpowiedni”, czyli najprostszy i od razu dostępny, krok.",
+      "example": "10-osobowy startup bez żadnych dodatkowych licencji Entra ID włącza Security defaults w Entra admin center jednym kliknięciem — od tego momentu każdy pracownik przy logowaniu musi skonfigurować i używać MFA (np. Microsoft Authenticator), a stare, mniej bezpieczne protokoły logowania są blokowane, bez żadnych dodatkowych kosztów licencyjnych.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview",
+        "https://learn.microsoft.com/en-us/entra/fundamentals/security-defaults"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 12
+    },
+    {
+      "id": "ht-security-risk-based-mfa-p2",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "MFA wyzwalane ryzykownym logowaniem (Identity Protection)",
+      "question": "Your organization uses Microsoft Entra ID for identity management. You want to implement a policy that triggers multi-factor authentication (MFA) when a sign-in is deemed risky. Which two actions should you perform?",
+      "correctAnswer": "Upgrade the staff accounts to Microsoft Entra ID Premium P2; establish a new risk-based Conditional Access policy.",
+      "explanation": "Polityki oparte na ryzyku logowania (sign-in risk) korzystają z Microsoft Entra ID Protection, a to funkcja dostępna dopiero w licencji Premium P2 — bez P2 nie masz dostępu do sygnału „risk” w ogóle. Drugi krok to faktyczne utworzenie polityki Conditional Access z warunkiem „Sign-in risk” (np. Medium i wyżej) i kontrolą dostępu „Wymagaj MFA”. Samo Security defaults (bezpłatne) daje jednolite MFA dla wszystkich, ale nie reaguje dynamicznie na poziom ryzyka logowania — do tego zawsze potrzeba P2 i dedykowanej polityki.",
+      "example": "Użytkownik loguje się z nowego kraju, z nietypowego adresu IP oznaczonego jako źródło ataków — Entra oznacza to jako sign-in risk = High. Z licencją P2 i odpowiednią polityką Conditional Access system automatycznie zażąda dodatkowego MFA właśnie w tym jednym, ryzykownym logowaniu — podczas gdy to samo logowanie z biura, z zaufanego adresu IP, przejdzie bez dodatkowego wyzwania.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 13
+    },
+    {
+      "id": "ht-security-conditional-access-license-expiry",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Wygaśnięcie licencji a polityki Conditional Access",
+      "question": "In Microsoft Entra ID, what happens to Conditional Access policies when the licenses required for them expire?",
+      "correctAnswer": "Polityki pozostają aktywne — można je wyświetlić i usunąć, ale nie można ich już zaktualizować.",
+      "explanation": "Wygaśnięcie licencji wymaganej do Conditional Access (np. Entra ID P1/P2) NIE usuwa ani automatycznie nie wyłącza istniejących polityk — nadal obowiązują (są egzekwowane), nadal można je zobaczyć i usunąć, ale nie można ich już edytować/aktualizować, dopóki licencja nie zostanie odnowiona. To celowy „stan łaskowy” (graceful state), żeby brak licencji nie powodował nagłej zmiany poziomu bezpieczeństwa. To ważna pułapka egzaminacyjna — intuicyjnie można by pomyśleć, że brak licencji = polityka przestaje działać, a jest odwrotnie.",
+      "example": "Firma miała politykę „Wymagaj MFA dla logowań spoza kraju” przy aktywnej licencji P1. Licencja wygasa (np. z powodu nieodnowienia subskrypcji) — polityka nadal blokuje ryzykowne logowania tak jak wcześniej, ale administrator, próbując dodać do niej nową grupę użytkowników, zobaczy, że edycja jest zablokowana, dopóki nie odnowi licencji.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity/conditional-access/overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 14
+    },
+    {
+      "id": "ht-security-groupmembershipclaims-configure",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Odbiór członkostwa w grupach w tokenie",
+      "question": "You are developing an application that uses Microsoft Entra ID for authentication. The application needs to authorize users based on their group membership in the organization. The application should receive this information in the user's token when they authenticate. How would you configure your application in Microsoft Entra ID to achieve this?",
+      "correctAnswer": "Configure the `groupMembershipClaims` attribute in the application manifest.",
+      "explanation": "Żeby token wydany po zalogowaniu zawierał informację o grupach, do których należy użytkownik, ustawiasz atrybut `groupMembershipClaims` w manifeście rejestracji aplikacji (równoważnie: UI „Token configuration” → „Add groups claim”). `OAuth2AllowImplicitFlow` dotyczy zupełnie innej rzeczy (włącza implicit grant), `requiredResourceAccess` deklaruje, jakich uprawnień/scope'ów aplikacja żąda od innych API (nic wspólnego z emisją grup), a `knownClientApplications` służy do budowania zgody dla zestawu powiązanych aplikacji klienckich.",
+      "example": "Ustawiasz w manifeście `\"groupMembershipClaims\": \"SecurityGroup\"`. Po zalogowaniu token użytkownika będzie zawierał claim `groups` z listą identyfikatorów (object ID) grup zabezpieczeń, do których należy — aplikacja może to odczytać z tokenu i np. pokazać dodatkowe menu administracyjne tylko członkom grupy `IT-Admins`, bez dodatkowego wywołania do Microsoft Graph.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/optional-claims"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 15
+    },
+    {
+      "id": "ht-security-groupmembershipclaims-securitygroup-only",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "groupMembershipClaims = SecurityGroup",
+      "question": "You are developing an application that uses Microsoft Entra ID for authentication. The application needs to authorize users based on their group membership in the organization. However, due to the large number of groups in your organization, you want to limit the groups included in the user's token to only Security Groups. How would you configure the `groupMembershipClaims` attribute in your application's manifest in Microsoft Entra ID to achieve this?",
+      "correctAnswer": "Set `groupMembershipClaims` to `SecurityGroup`.",
+      "explanation": "Wartość `SecurityGroup` ogranicza claim `groups` w tokenie wyłącznie do grup zabezpieczeń (security groups), pomijając role katalogowe i listy dystrybucyjne. `All` włączyłoby też role katalogowe i listy dystrybucyjne (więcej niż potrzebujesz przy dużej liczbie grup), `None` w ogóle nie emitowałoby claimu grup, a `DirectoryRole` dawałoby tylko role katalogowe — zupełnie inny typ obiektu niż zwykłe grupy zabezpieczeń.",
+      "example": "Firma ma tysiące grup dystrybucyjnych (mailingowych) obok grup zabezpieczeń używanych do autoryzacji. Ustawiając `\"groupMembershipClaims\": \"SecurityGroup\"` w manifeście, token użytkownika zawiera tylko te grupy, które realnie służą do kontroli dostępu w aplikacji — bez zaśmiecania (i bez ryzyka przekroczenia limitu grup w JWT) listami mailingowymi, które i tak by zignorowała logika autoryzacji.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/optional-claims"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 16
+    },
+    {
+      "id": "ht-security-ca-challenge-obo-flow",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Które scenariusze wymagają obsługi Conditional Access challenge w kodzie",
+      "question": "Which of the following app scenarios require code to handle Conditional Access challenges?",
+      "correctAnswer": "Apps performing the on-behalf-of flow.",
+      "explanation": "Aplikacja realizująca on-behalf-of (OBO) flow to usługa pośrednia (np. web API), która w imieniu użytkownika woła kolejne, downstream API — jeśli to downstream API ma politykę Conditional Access (np. wymaga MFA albo zarejestrowanego urządzenia), a token OBO jej nie spełnia, usługa pośrednia dostanie „claims challenge” (odpowiedź 401 z nagłówkiem `WWW-Authenticate` zawierającym `claims`) i musi w swoim kodzie przekazać ten challenge z powrotem do użytkownika/klienta, żeby ten mógł ponownie uwierzytelnić się interaktywnie, spełniając wymóg CA — usługa pośrednia sama nie może „kliknąć” MFA za użytkownika. Device-code flow i Integrated Windows Authentication z definicji nie mają w tym samym kroku możliwości interaktywnej obsługi wyzwania.",
+      "example": "SPA loguje użytkownika i woła Twoje web API (`orders-api`), a `orders-api` w OBO flow woła dalej Microsoft Graph, żeby pobrać profil użytkownika. Jeśli administrator ustawił politykę CA „wymagaj zarejestrowanego urządzenia” na Graph, a token OBO tego nie spełnia, Graph zwróci `orders-api` błąd 401 z claims challenge. `orders-api` musi przekazać ten challenge z powrotem do SPA, żeby SPA mogło zainicjować ponowne, interaktywne logowanie użytkownika spełniające wymóg CA.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview",
+        "https://learn.microsoft.com/en-us/entra/identity-platform/claims-challenge"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 17
+    },
+    {
+      "id": "ht-security-scope-omitted-defaults-graph",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Domyślny zasób, gdy scope nie wskazuje resource",
+      "question": "What does the Microsoft Identity platform assume if the resource identifier is omitted in the scope parameter during requests to authorization, token, or consent endpoints?",
+      "correctAnswer": "The resource is Microsoft Graph.",
+      "explanation": "Jeśli w parametrze `scope` żądania do endpointu authorize/token/consent nie podasz identyfikatora zasobu (np. sam `openid profile` bez prefiksu URI zasobu), platforma Microsoft Identity domyślnie zakłada, że chodzi o Microsoft Graph. To ważne, bo w praktyce oznacza, że wydany token będzie ważny dla Graph, a NIE dla Twojego własnego API czy innej usługi Azure (np. Key Vault) — jeśli chcesz token dla czegoś innego, musisz to jawnie wskazać w scope, np. `api://twoje-api/.default` albo `https://vault.azure.net/.default`.",
+      "example": "Twój kod woła endpoint tokenowy z `scope=openid profile` (bez żadnego resource identifier). Mimo że Twoja intencja mogła być inna, otrzymasz token audience'owany na Microsoft Graph — jeśli spróbujesz użyć go do wywołania własnego API, dostaniesz błąd autoryzacji, bo token po prostu nie jest dla tego zasobu.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 18
+    },
+    {
+      "id": "ht-security-scope-parameter-function",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Funkcja parametru scope",
+      "question": "In the context of the Microsoft Identity platform, what is the function of the `scope` parameter?",
+      "correctAnswer": "It indicates the type of resource being requested.",
+      "explanation": "Parametr `scope` w żądaniach OAuth 2.0/OpenID Connect do platformy Microsoft Identity wskazuje, o jaki zasób (resource/API) i jakie uprawnienia w jego obrębie aplikacja się ubiega — np. `https://graph.microsoft.com/User.Read` mówi „chcę token uprawniający do odczytu profilu w Microsoft Graph”. To nie ustawia poziomu dostępu użytkownika (to zależy od ról/uprawnień przypisanych w katalogu), nie determinuje mechanizmu uwierzytelnienia (to zależy od wybranego flow) i nie zarządza czasem trwania sesji (to konfiguruje się osobno, np. przez token lifetime policy).",
+      "example": "Żądając `scope=https://graph.microsoft.com/Mail.Read offline_access`, mówisz platformie „wydaj mi token uprawniający do czytania poczty w Graph, i dodatkowo daj mi refresh token (offline_access), żebym mógł odświeżać dostęp bez ponownego logowania użytkownika” — to `scope` decyduje, do czego token będzie można użyć, a nie kim jest użytkownik ani jak długo token będzie ważny.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 19
+    },
+    {
+      "id": "ht-security-user-read-keyvault-scope-mismatch",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "User.Read scope wobec Key Vault",
+      "question": "What happens if a user attempts to access Microsoft Key Vault with `scope=User.Read` in the Microsoft Identity platform?",
+      "correctAnswer": "The request fails because `User.Read` is intended for a different resource.",
+      "explanation": "`User.Read` to scope zdefiniowany przez Microsoft Graph, a nie przez Key Vault — token wydany dla tego scope będzie miał audience (`aud`) ustawione na Microsoft Graph. Key Vault sprawdza, czy dostaje token z odpowiednim audience (dla Key Vault to np. `https://vault.azure.net/.default`) — token „dla Graph” zostanie odrzucony przez Key Vault, niezależnie od tego, jakie uprawnienia ma użytkownik. To nie jest kwestia niewystarczających uprawnień użytkownika — to fundamentalny mismatch: zły zasób w tokenie.",
+      "example": "Twoja aplikacja żąda tokenu z `scope=User.Read` (Graph), a potem próbuje tym samym tokenem wywołać `GET https://myvault.vault.azure.net/secrets/mySecret`. Key Vault odrzuci żądanie, bo token nie jest dla niego wystawiony — musisz osobno zażądać tokenu z `scope=https://vault.azure.net/.default`, żeby w ogóle móc się uwierzytelnić do Key Vault.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 20
+    },
+    {
+      "id": "ht-security-public-client-flows",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Flow'y publicznego klienta (Public client)",
+      "question": "Which of the following authorization flows are primarily utilized by Public client applications?",
+      "correctAnswer": "Authorization code, Implicit, Device code, Integrated Windows, Interactive, Username/password.",
+      "explanation": "Public client to aplikacja, która nie może bezpiecznie przechowywać sekretu (SPA, aplikacja mobilna, desktopowa, CLI) — dlatego korzysta z flow'ów niewymagających client secret: Authorization Code (z PKCE), Implicit (starszy, odradzany), Device Code (urządzenia bez przeglądarki/klawiatury), Integrated Windows Authentication (cicha autentykacja na komputerach domenowych), Interactive oraz Username/Password (ROPC, też odradzany, ale technicznie dostępny publicznym klientom). On-behalf-of NIE jest flow'em publicznego klienta — wymaga, żeby usługa pośrednia (poufny klient) uwierzytelniła się WŁASNYM sekretem/certyfikatem, więc jest zarezerwowany dla confidential clients; client credentials z tego samego powodu też nie pasuje.",
+      "example": "Aplikacja mobilna (iOS/Android) loguje użytkownika przez Authorization Code flow + PKCE — nie ma w niej żadnego client secret zaszytego w kodzie (bo każdy mógłby go wyciągnąć z pliku APK/IPA), więc PKCE zastępuje sekret matematycznym dowodem (code_verifier/code_challenge) powiązanym z tą konkretną sesją logowania.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview",
+        "https://learn.microsoft.com/en-us/entra/identity-platform/msal-client-applications"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 21
+    },
+    {
+      "id": "ht-security-confidential-client-flows",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Flow'y poufnego klienta (Confidential client)",
+      "question": "Which of the following authorization flows are primarily utilized by Confidential client applications?",
+      "correctAnswer": "Client credentials, On-behalf-of.",
+      "explanation": "Confidential client to aplikacja działająca po stronie serwera, zdolna bezpiecznie przechowywać sekret (client secret albo certyfikat) — np. web API, usługa backendowa, daemon. Client Credentials flow (aplikacja uwierzytelnia się WŁASNYM sekretem, działa „jako ona sama”, bez użytkownika) i On-Behalf-Of (usługa pośrednia wymienia token użytkownika na token do kolejnego, downstream API, uwierzytelniając się przy tym własnym sekretem) z definicji wymagają posiadania i ochrony sekretu — więc są zarezerwowane dla confidential clients. Integrated Windows Authentication i Username/Password (ROPC) to z kolei flow'y publicznych klientów, więc nie pasują tutaj.",
+      "example": "Nocny job (Azure Function/WebJob) synchronizujący dane bez żadnego zalogowanego użytkownika używa Client Credentials flow — uwierzytelnia się swoim client secret (albo certyfikatem) bezpośrednio do Entra ID i dostaje token „jako aplikacja”, z uprawnieniami przypisanymi jej wprost (application permissions), a nie w imieniu kogokolwiek.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview",
+        "https://learn.microsoft.com/en-us/entra/identity-platform/msal-client-applications"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 22
+    },
+    {
+      "id": "ht-security-publicclientapplicationbuilder-mobile-browser",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "MSAL: który application builder dla mobile + web",
+      "question": "You are tasked to build an application that will run on mobile devices and web browsers. This application needs to securely obtain tokens in the name of the user, using an Authorization Code flow. Which application builder should you use?",
+      "correctAnswer": "`PublicClientApplicationBuilder`.",
+      "explanation": "Aplikacja działająca na urządzeniach mobilnych i w przeglądarkach nie ma bezpiecznego miejsca na przechowanie sekretu klienta (użytkownik/atakujący ma pełny dostęp do binarki albo kodu JS) — to definicja public client. W MSAL budujesz taką instancję przez `PublicClientApplicationBuilder`, co pozwala zrealizować Authorization Code flow (z PKCE) do uzyskania tokenu w imieniu użytkownika bez żadnego client secret. `ConfidentialClientApplicationBuilder` wymaga skonfigurowania sekretu/certyfikatu i jest przeznaczony dla aplikacji serwerowych (web app, web API, daemon), które mogą go bezpiecznie chronić.",
+      "example": "Piszesz jedną aplikację .NET MAUI, która ma działać zarówno jako appka mobilna, jak i (przez Blazor WASM) w przeglądarce. W obu przypadkach inicjujesz MSAL przez `PublicClientApplicationBuilder.Create(clientId).WithRedirectUri(...).Build()` — bez podawania żadnego client secret, bo w obu środowiskach sekret i tak nie byłby bezpieczny (kod działa po stronie klienta/urządzenia użytkownika).",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview",
+        "https://learn.microsoft.com/en-us/entra/identity-platform/msal-client-applications"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 23
+    },
+    {
+      "id": "ht-security-mfa-specific-team-p1",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "MFA dla konkretnego zespołu (nie dla wszystkich)",
+      "question": "You are creating an internal portal for staff members to access confidential financial reports. The portal uses Microsoft Entra ID for user authentication. The staff accounts are currently on Microsoft Entra ID Basic licenses. You are tasked with setting up multi-factor authentication (MFA) for a specific team of staff members. Which two steps should you take?",
+      "correctAnswer": "Upgrade the staff accounts to Microsoft Entra ID Premium P1; establish a new Conditional Access policy.",
+      "explanation": "Chcesz MFA tylko dla KONKRETNEGO zespołu, a nie dla wszystkich — to wyklucza Security defaults (włącza MFA dla WSZYSTKICH użytkowników, bez możliwości ograniczenia do grupy) i Application Proxy/B2C (nie mają nic wspólnego z MFA). Jedynym mechanizmem pozwalającym targetować politykę na konkretną grupę jest Conditional Access — ale wymaga licencji Microsoft Entra ID Premium P1 (obecne konta są na Basic, czyli bez CA). Trzeba więc: podnieść licencje zespołu do P1 ORAZ utworzyć politykę CA scope'owaną na tę grupę.",
+      "example": "Portal finansowy ma 200 pracowników, ale tylko 8-osobowy zespół księgowości ma dostęp do poufnych raportów. Przypisujesz licencję Entra ID P1 tylko tym 8 kontom, tworzysz grupę zabezpieczeń „Finance-Reports”, i budujesz politykę Conditional Access z warunkiem „Users: członkowie grupy Finance-Reports” + kontrolą „Wymagaj MFA” — reszta firmy (na Basic) nie jest tym objęta i nie płacisz za P1 dla wszystkich.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview",
+        "https://learn.microsoft.com/en-us/entra/identity/conditional-access/overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 24
+    },
+    {
+      "id": "ht-security-single-tenant-account-type",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Typ konta ograniczający dostęp do jednego tenanta",
+      "question": "You need to implement authentication for two applications: a web application and an API. Only users from a specific Entra ID tenant should be able to access both applications. Which of the following account types should you select to meet the security requirements?",
+      "correctAnswer": "Accounts in this organizational directory only (Single tenant).",
+      "explanation": "Kiedy rejestrujesz aplikację (web app czy API) w Microsoft Entra ID, wybierasz typ obsługiwanych kont. „Accounts in this organizational directory only” (single-tenant) ogranicza logowanie WYŁĄCZNIE do użytkowników z Twojego jednego, konkretnego tenanta Entra ID. Opcje „any organizational directory” (multi-tenant) wpuściłyby użytkowników z DOWOLNEGO tenanta Entra ID na świecie — sprzeczne z wymaganiem. Personal Microsoft accounts to zupełnie inny typ tożsamości (konta typu Xbox/Skype/Outlook.com), niezwiązany z tenantem firmowym.",
+      "example": "Firma Contoso rejestruje web app i API w swoim tenancie `contoso.onmicrosoft.com` z opcją single-tenant. Pracownik Contoso loguje się bez problemu. Ktoś z zupełnie innej firmy, mający konto we WŁASNYM tenancie Entra ID (np. `fabrikam.onmicrosoft.com`), nie może się zalogować — bo aplikacja jest zarejestrowana tylko dla jednego, konkretnego katalogu.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 25
+    },
+    {
+      "id": "ht-security-graph-own-photo",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Pobranie własnego zdjęcia z Graph",
+      "question": "How a user can obtain their own photo in Graph?",
+      "correctAnswer": "`https://graph.microsoft.com/v1.0/me/photo/$value`",
+      "explanation": "Zasób `photo` w Microsoft Graph to tzw. stream property (dane binarne) — samo `GET /me/photo` zwraca tylko METADANE zdjęcia (rozmiar, typ zawartości), a żeby pobrać SAME BAJTY obrazu, trzeba dodać segment `$value` na końcu ścieżki. To ogólny wzorzec OData dla właściwości binarnych w Graph (dotyczy też np. załączników wiadomości).",
+      "example": "`GET https://graph.microsoft.com/v1.0/me/photo/$value` zwróci surowe dane obrazu (np. JPEG), które można od razu wyświetlić jako `<img src=...>` albo zapisać do pliku — zupełnie inaczej niż `GET /me/photo` (bez `$value`), które zwróci JSON z polami typu `width`, `height`, `@odata.mediaContentType`.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/graph/overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 26
+    },
+    {
+      "id": "ht-security-graph-own-photo-metadata",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Pobranie metadanych własnego zdjęcia z Graph",
+      "question": "How a user can obtain the metadata of their own photo in Graph?",
+      "correctAnswer": "`https://graph.microsoft.com/v1.0/me/photo/`",
+      "explanation": "To dokładne lustrzane odbicie poprzedniego pytania: samo `GET /me/photo` (bez `$value`) zwraca obiekt JSON z metadanymi zdjęcia (m.in. `id`, `height`, `width`, `@odata.mediaContentType`), a nie same bajty obrazu. `$metadata`, `$info` czy `metadata`/`info` jako osobne segmenty ścieżki to nie są prawidłowe konstrukcje OData dla tego zasobu — jedyny poprawny „przełącznik” to obecność albo brak `$value`.",
+      "example": "`GET https://graph.microsoft.com/v1.0/me/photo/` może zwrócić np. `{\"id\":\"648x648\",\"height\":648,\"width\":648,\"@odata.mediaContentType\":\"image/jpeg\"}` — dzięki temu aplikacja może np. sprawdzić rozmiar zdjęcia PRZED pobraniem właściwych bajtów przez `.../photo/$value`, co oszczędza transfer danych, gdy interesuje ją tylko rozdzielczość.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/graph/overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 27
+    },
+    {
+      "id": "ht-security-graph-select-displayname",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Składnia $select w Microsoft Graph",
+      "question": "What is the proper way to select `displayName` field of current user?",
+      "correctAnswer": "`https://graph.microsoft.com/v1.0/me?$select=displayName`",
+      "explanation": "Parametry zapytań OData w Microsoft Graph (jak `$select`, `$filter`, `$expand`, `$top`) zawsze zaczynają się od znaku dolara `$` — to odróżnia je od zwykłych parametrów query string. `select=displayName` (bez `$`) zostanie zignorowany albo potraktowany jako nieznany, dowolny parametr, a nie instrukcja OData. `$fields`/`fields` w ogóle nie istnieje w Graph (to nazewnictwo z innych API), a `/me/displayName` czy `/me|displayName` to nie są prawidłowe ścieżki REST.",
+      "example": "`GET https://graph.microsoft.com/v1.0/me?$select=displayName,mail` poprosi Graph o zwrócenie TYLKO tych dwóch pól w odpowiedzi JSON (zamiast całego, dużego obiektu profilu użytkownika) — to zarówno szybsze, jak i tańsze (mniej danych do przesłania), co ma znaczenie przy skalowaniu aplikacji.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/graph/overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 28
+    },
+    {
+      "id": "ht-security-graph-filter-select-jobtitle",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "$filter + $select w jednym zapytaniu Graph",
+      "question": "You are tasked with building a web service that integrates with Microsoft Graph. You need to fetch users who have the job title \"Developer\" and only return their email addresses. Which of the following query parameter combinations should you use?",
+      "correctAnswer": "`?$filter=jobTitle eq 'Developer'&$select=email`",
+      "explanation": "`$filter` w Graph używa składni OData, gdzie porównanie równości zapisuje się operatorem `eq` (nie funkcją typu `equals(...)`, której Graph nie obsługuje w ten sposób) — poprawnie: `jobTitle eq 'Developer'`. Do ograniczenia zwracanych pól (tu: tylko adres e-mail) służy `$select=email`, a nie wymyślony, nieistniejący w Graph parametr `$only`.",
+      "example": "`GET https://graph.microsoft.com/v1.0/users?$filter=jobTitle eq 'Developer'&$select=mail` zwróci listę użytkowników z `jobTitle` dokładnie równym „Developer”, każdy reprezentowany tylko przez pole `mail` — bez zbędnych danych jak `id`, `department` czy `officeLocation`, których nie potrzebujesz.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/graph/overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 29
+    },
+    {
+      "id": "ht-security-graph-consent-endpoint-default-resource",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Endpointy zakładające domyślnie Microsoft Graph",
+      "question": "Which of the following endpoints may assume the resource as Microsoft Graph when the resource identifier is omitted in the scope parameter?",
+      "correctAnswer": "Consent.",
+      "explanation": "To ten sam fakt co w pytaniu o pominięty `scope`, tylko z innej strony: kiedy pomijasz identyfikator zasobu w `scope`, platforma Microsoft Identity domyślnie zakłada Microsoft Graph — dotyczy to endpointów authorize, token ORAZ consent. Spośród podanych opcji tylko „Consent” jest realnym, nazwanym endpointem platformy Microsoft Identity — „Synchronization”, „Processing” i „Access” to sztuczne, nieistniejące nazwy dystraktorów.",
+      "example": "Aplikacja przekierowuje użytkownika na endpoint zgody (`/oauth2/v2.0/authorize` z `prompt=consent`) z `scope=openid profile` (bez podania zasobu) — ekran zgody, który zobaczy użytkownik, będzie dotyczył uprawnień Microsoft Graph, bo to domyślny zasób przyjmowany przez platformę, gdy nic innego nie wskazano.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/entra/identity-platform/v2-overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 30
+    },
+    {
+      "id": "ht-security-graph-mandatory-request-id-header",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Obowiązkowy nagłówek odpowiedzi Graph",
+      "question": "Which of the following headers is mandatory in the response from Microsoft Graph?",
+      "correctAnswer": "request-id.",
+      "explanation": "Microsoft Graph zawsze dołącza nagłówek `request-id` do odpowiedzi — to unikalny identyfikator, który pozwala skorelować konkretne żądanie z logami po stronie Microsoftu (kluczowe przy zgłaszaniu problemów do supportu). `Authorization` to nagłówek ŻĄDANIA (nie odpowiedzi) służący do uwierzytelnienia klienta. `Content-Type` bywa w odpowiedzi, ale nie jest gwarantowany w każdej sytuacji. `If-Match` to nagłówek żądania używany do optymistycznej kontroli współbieżności (na podstawie ETag), nie nagłówek odpowiedzi.",
+      "example": "Gdy integracja z Graph zwraca niespodziewany błąd 500, zgłaszając sprawę do supportu Microsoftu, podajesz właśnie wartość nagłówka `request-id` z tej konkretnej odpowiedzi — inżynier supportu może po nim odnaleźć dokładnie to żądanie w wewnętrznych logach Microsoftu, nawet bez dostępu do Twojego kodu.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/graph/throttling",
+        "https://learn.microsoft.com/en-us/graph/use-the-api"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 31
+    },
+    {
+      "id": "ht-security-graph-user-read-blank-constraint",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "User.Read bez rozszerzeń = tylko własny profil",
+      "question": "You are developing a web application that will utilize Microsoft Graph to interact with Microsoft 365 services. The application must be restricted to performing read operations solely on the resources belonging to the authenticated user. You have already granted the `User.Read` permission. How should you set up the permission constraint in Microsoft Graph to meet this requirement?",
+      "correctAnswer": "Leave the constraint part blank.",
+      "explanation": "Uprawnienie `User.Read` (bez żadnego dodatkowego rozszerzenia) to najwęższe możliwe uprawnienie odczytu w Graph — pozwala aplikacji odczytać WYŁĄCZNIE profil zalogowanego użytkownika (`/me`), bez dostępu do plików, innych użytkowników czy czegokolwiek szerszego. Dodanie `Read.All`, `Files` czy przejście na `User.ReadBasic.All` rozszerzyłoby zakres poza to, czego wymaga zadanie (odczyt tylko własnych danych) — naruszając zasadę najmniejszych uprawnień (least privilege).",
+      "example": "Aplikacja z uprawnieniem `User.Read` (bez rozszerzeń) może wywołać `GET /me` i dostać profil zalogowanej osoby — ale próba `GET /users/{innyUzytkownik}` albo `GET /me/drive` zakończy się błędem 403 Forbidden, bo te operacje wymagają szerszych uprawnień (np. `User.Read.All` albo `Files.Read`), których aplikacja świadomie nie ma.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/graph/overview",
+        "https://learn.microsoft.com/en-us/graph/permissions-reference"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 32
+    },
+    {
+      "id": "ht-security-graph-calendars-read-shared",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Calendars.Read.Shared — dostęp do udostępnionych kalendarzy",
+      "question": "The app is granted the `Calendars.Read` permission to access Microsoft 365 calendar services from your new web app through Microsoft Graph. You need to ensure that the app can not only access the calendars owned by the signed-in user but also the calendars that other users have shared with the signed-in user. How should you configure the permission?",
+      "correctAnswer": "Apply the `Shared` constraint — użyj `Calendars.Read.Shared`.",
+      "explanation": "`Calendars.Read` daje dostęp tylko do kalendarza WŁASNEGO zalogowanego użytkownika. Żeby dodatkowo czytać kalendarze innych osób UDOSTĘPNIONE temu użytkownikowi, potrzebne jest osobne, szersze uprawnienie z przyrostkiem `.Shared` — czyli `Calendars.Read.Shared` (potwierdzone w oficjalnym Microsoft Graph permissions reference). Samo `ReadWrite` rozszerzyłoby zakres operacji (odczyt+zapis), ale nie dodałoby dostępu do cudzych, współdzielonych kalendarzy; zostawienie constraintu pustym to dokładnie to, co już masz (`Calendars.Read`, tylko własny kalendarz).",
+      "example": "Asystentka ma dostęp do kalendarza swojego szefa udostępniony bezpośrednio w Outlooku. Aplikacja, uwierzytelniona jako asystentka z uprawnieniem `Calendars.Read.Shared`, może wywołać Graph i pobrać zarówno WŁASNY kalendarz asystentki, jak i kalendarz szefa (bo jest jej udostępniony) — z samym `Calendars.Read` dostałaby tylko swój własny.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/graph/permissions-reference",
+        "https://learn.microsoft.com/en-us/graph/outlook-get-shared-events-calendars"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 33
+    },
+    {
+      "id": "ht-security-graph-activities-recent-patch",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Pobranie ostatnich aktywności i ich aktualizacja (Graph)",
+      "question": "You are building an application that leverages the Microsoft Graph API to manage user activities. You need to retrieve the most recent activities for a user and also be able to update a specific activity. Which REST API calls should you opt for?",
+      "correctAnswer": "`GET /me/activities/recent`; `PATCH /me/activities/{activityId}`.",
+      "explanation": "`GET /me/activities/recent` to specjalny endpoint OData zwracający aktywności posortowane wg najnowszej modyfikacji (odpowiednik „ostatnio używane”), w odróżnieniu od zwykłego `GET /me/activities`, który zwraca aktywności bez tego sortowania. Do CZĘŚCIOWEJ aktualizacji konkretnej aktywności używa się metody `PATCH` (nie `PUT`, który semantycznie oznacza pełne zastąpienie zasobu, ani `POST`, który tworzy NOWY zasób) na ścieżce z identyfikatorem konkretnej aktywności. Ten endpoint wciąż istnieje w wersji v1.0 Graph i wymaga uprawnienia `UserActivity.ReadWrite.CreatedByApp`.",
+      "example": "Aplikacja produktywności chce pokazać widget „Kontynuuj od miejsca, w którym skończyłeś” — woła `GET /me/activities/recent?$top=5`, dostaje 5 najświeższych aktywności, a gdy użytkownik zmieni status jednej z nich, aplikacja wysyła `PATCH /me/activities/{activityId}` z tylko tym jednym zmienianym polem, zamiast przesyłać cały obiekt aktywności ponownie.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/graph/api/projectrome-get-recent-activities?view=graph-rest-1.0"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 34
+    },
+    {
+      "id": "ht-security-sas-stored-access-policy-modify-revoke",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Modyfikacja/unieważnienie stored access policy",
+      "question": "How can you modify or revoke a stored access policy in Azure Storage?",
+      "correctAnswer": "Wywołanie operacji access control list dla danego typu zasobu, żeby zastąpić istniejącą politykę; usunięcie stored access policy; zmiana nazwy (signed identifier); ustawienie czasu wygaśnięcia w przeszłości.",
+      "explanation": "Stored access policy to obiekt trzymany PO STRONIE zasobu (np. kontenera blob), niezależny od konkretnego wystawionego tokenu SAS — dlatego można go modyfikować/unieważnić bezpośrednio: nadpisać przez wywołanie odpowiedniej operacji ACL zasobu, usunąć go, zmienić jego `signed identifier` (nazwę), albo ustawić czas wygaśnięcia w przeszłości (co natychmiast unieważnia wszystkie SAS-y powiązane z tą polityką). Regenerowanie samego tokenu SAS NIE dotyka stored access policy (to dwa oddzielne byty), a zmiana klucza konta unieważnia SAS-y podpisane TYM kluczem, ale nie zmienia ani nie usuwa samej zapisanej polityki.",
+      "example": "Masz stored access policy `readonly-2026` przypisaną do kontenera, z której korzysta kilkanaście już wystawionych tokenów SAS. Chcesz natychmiast zablokować dostęp wszystkim naraz, bez czekania na ich naturalne wygaśnięcie — zmieniasz w polityce datę wygaśnięcia na wczoraj (albo od razu usuwasz politykę). Każdy SAS powiązany z tym `signed identifier` przestaje działać natychmiast, mimo że sam token SAS technicznie „wygląda” na wciąż ważny.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 35
+    },
+    {
+      "id": "ht-security-sas-best-practice-stored-policy",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Najbardziej elastyczna i bezpieczna praktyka SAS",
+      "question": "Which of the following best practices provides the most flexible and secure way to use a service or account shared access signature (SAS)?",
+      "correctAnswer": "Associate SAS tokens with a stored access policy.",
+      "explanation": "Powiązanie tokenów SAS ze stored access policy daje NAJWIĘKSZĄ elastyczność (można w każdej chwili zmienić uprawnienia/czas wygaśnięcia polityki i to natychmiast wpływa na WSZYSTKIE powiązane, już wystawione tokeny) połączoną z bezpieczeństwem (jedna zmiana po stronie serwera unieważnia/modyfikuje wiele tokenów naraz, bez potrzeby ich re-dystrybucji). User delegation SAS jest najbardziej bezpieczny z dostępnych typów (oparty o poświadczenia Microsoft Entra ID zamiast klucza konta), ale wymaga zarządzania tożsamościami Entra ID i nie jest tak elastyczny operacyjnie. Samo używanie HTTPS to dobra, ale osobna praktyka (chroni transmisję, nie zarządzanie/unieważnianie samych tokenów).",
+      "example": "Wystawiasz 50 różnych linków do pobrania plików (każdy jako osobny SAS), wszystkie powiązane z jedną stored access policy `download-links-q3`. Gdy trzeba skrócić czas ważności wszystkich naraz (np. wykryto wyciek jednego linku), zmieniasz JEDNĄ politykę — i wszystkie 50 tokenów natychmiast się dostosowuje, zamiast musieć unieważniać/wysyłać na nowo każdy z osobna.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 36
+    },
+    {
+      "id": "ht-security-storage-cdn-global-latency",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Szybkie i bezpieczne serwowanie danych globalnie",
+      "question": "Your global company is using Azure Storage and wants to ensure that data is served to users securely and quickly regardless of their location. Which service should you use?",
+      "correctAnswer": "Azure CDN.",
+      "explanation": "Azure CDN buforuje (cache'uje) zawartość na serwerach brzegowych (edge) rozmieszczonych blisko użytkowników na całym świecie — dzięki temu żądanie trafia do najbliższego węzła zamiast zawsze do oryginalnego regionu magazynu, co drastycznie skraca opóźnienia dla globalnie rozproszonych użytkowników. Azure Functions, Key Vault i Virtual Network nie mają nic wspólnego z globalną dystrybucją treści — to usługi compute, zarządzania sekretami i sieciowania.",
+      "example": "Firma z siedzibą w Europie ma klientów też w Australii i USA. Bez CDN, użytkownik z Sydney pobierający plik z konta storage w West Europe czeka na transfer przez pół globu. Z Azure CDN skonfigurowanym przed tym storage, ten sam plik po pierwszym pobraniu zostaje zbuforowany na węźle CDN blisko Sydney — kolejni użytkownicy z tego regionu dostają go z lokalnego cache, znacznie szybciej.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/storage/common/authorize-data-access"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 37
+    },
+    {
+      "id": "ht-security-storage-native-tls-no-custom-domain",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Szyfrowanie w transporcie bez custom domain",
+      "question": "Your company stores data in Azure and needs to ensure the data's secure transmission over the network, but doesn't require a custom domain name. Which service should you use for this requirement?",
+      "correctAnswer": "Native Azure Storage functionality with TLS.",
+      "explanation": "Azure Storage natywnie wspiera szyfrowanie W TRANSPORCIE (in-transit) przez TLS na swoim domyślnym endpoincie (`*.blob.core.windows.net` itp.) — nie trzeba do tego żadnej dodatkowej usługi, jeśli nie potrzebujesz własnej domeny. SSE (Storage Service Encryption) szyfruje dane W SPOCZYNKU (at rest, na dysku), a nie w trakcie przesyłania — to inny mechanizm. Key Vault zarządza kluczami/sekretami, nie transmisją danych. Azure CDN potrafi zapewnić szyfrowanie w transporcie, ale jest zbędny (dodatkowy koszt/złożoność), skoro custom domain nie jest wymagany.",
+      "example": "Aplikacja backendowa łączy się bezpośrednio z `https://mystorageaccount.blob.core.windows.net/...` — samo to połączenie jest już szyfrowane TLS-em natywnie, bez żadnej dodatkowej konfiguracji. Dopiero gdyby klienci mieli widzieć adres `https://pliki.twojafirma.pl/...` zamiast domyślnego adresu `*.blob.core.windows.net`, potrzebny byłby CDN (bo sam magazyn nie pozwala wgrać własnego certyfikatu SSL dla domeny niestandardowej).",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/storage/common/authorize-data-access"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 38
+    },
+    {
+      "id": "ht-security-storage-cdn-custom-domain",
+      "chapterId": "security",
+      "subchapterId": "auth",
+      "cluster": "Uwierzytelnianie, Entra ID i Conditional Access",
+      "topic": "Serwowanie danych z własnej domeny",
+      "question": "Your company uses Azure Storage and wants to serve data from a custom domain. Which service should you use for this requirement?",
+      "correctAnswer": "Azure CDN.",
+      "explanation": "Azure Storage pozwala PODPIĄĆ własną domenę do konta magazynu, ale NIE pozwala wgrać własnego certyfikatu SSL dla tej domeny — certyfikat SSL musi być wystawiony dokładnie na domenę, przez którą serwowana jest treść przez HTTPS, a Azure Storage tej funkcji nie udostępnia. Dlatego do obsługi custom domain + HTTPS jednocześnie potrzebny jest Azure CDN (działa jako proxy przed magazynem i sam zarządza certyfikatem SSL dla Twojej domeny). Geo-redundancy dotyczy replikacji danych między regionami (nie dystrybucji/cache'owania), a Traffic Manager i Load Balancer to usługi routingu ruchu sieciowego, nie cache'owania.",
+      "example": "Chcesz, żeby pliki statyczne były dostępne pod `https://cdn.twojafirma.pl/logo.png` zamiast pod domyślnym adresem storage. Podpinasz domenę bezpośrednio do konta storage — działa przez HTTP, ale HTTPS się nie uda (storage nie przyjmie certyfikatu SSL dla tej domeny). Stawiając przed tym Azure CDN i konfigurując tam custom domain + HTTPS, CDN przejmuje terminację TLS dla `cdn.twojafirma.pl` i przekazuje żądania dalej do magazynu.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/storage/common/authorize-data-access",
+        "https://learn.microsoft.com/en-us/azure/storage/blobs/storage-custom-domain-name"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 39
+    }
+  ]
+}

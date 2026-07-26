@@ -7,12 +7,14 @@ const __dirname = path.dirname(__filename);
 const contentPath = path.join(__dirname, '..', 'src', 'data', 'az204-content.json');
 const sourceQuizPath = path.join(__dirname, '..', 'src', 'data', 'source-quiz.generated.json');
 const articlesPath = path.join(__dirname, '..', 'src', 'data', 'articles.json');
+const hardTopicsPath = path.join(__dirname, '..', 'src', 'data', 'hard-topics.json');
 
 const officialSourcePattern = /^https:\/\/learn\.microsoft\.com\//;
 
 const content = JSON.parse(await fs.readFile(contentPath, 'utf8'));
 const sourceQuiz = JSON.parse(await fs.readFile(sourceQuizPath, 'utf8'));
 const articleBank = JSON.parse(await fs.readFile(articlesPath, 'utf8'));
+const hardTopicBank = JSON.parse(await fs.readFile(hardTopicsPath, 'utf8'));
 const errors = [];
 
 const chapterIds = new Set(content.chapters.map((chapter) => chapter.id));
@@ -125,6 +127,40 @@ for (const chapter of content.chapters) {
   }
 }
 
+const hardTopicIds = new Set();
+
+for (const topic of hardTopicBank.topics) {
+  if (topic.auditStatus !== 'verified') continue;
+  const prefix = `Hard topic ${topic.id}`;
+  if (hardTopicIds.has(topic.id)) {
+    errors.push(`${prefix} is not unique.`);
+  }
+  hardTopicIds.add(topic.id);
+  if (!chapterIds.has(topic.chapterId)) {
+    errors.push(`${prefix} references missing chapter ${topic.chapterId}.`);
+  }
+  if (!subchapterIds.has(`${topic.chapterId}:${topic.subchapterId}`)) {
+    errors.push(`${prefix} references missing subchapter ${topic.subchapterId}.`);
+  }
+  if (!topic.cluster || !topic.topic || !topic.question || !topic.correctAnswer) {
+    errors.push(`${prefix} is missing cluster, topic, question, or correctAnswer.`);
+  }
+  if (!topic.explanation || topic.explanation.length < 30) {
+    errors.push(`${prefix} needs a meaningful explanation.`);
+  }
+  if (!topic.example || topic.example.length < 30) {
+    errors.push(`${prefix} needs a meaningful example.`);
+  }
+  if (!topic.verifiedAt) {
+    errors.push(`${prefix} is missing verifiedAt.`);
+  }
+  if (!Array.isArray(topic.sourceUrls) || topic.sourceUrls.length === 0) {
+    errors.push(`${prefix} has no sourceUrls.`);
+  } else if (!topic.sourceUrls.every((url) => officialSourcePattern.test(url))) {
+    errors.push(`${prefix} must use official Microsoft Learn source URLs.`);
+  }
+}
+
 const backlogTotal = content.importedQuestionManifest.reduce((sum, item) => sum + item.count, 0);
 if (!Array.isArray(sourceQuiz.items) || sourceQuiz.items.length === 0) {
   errors.push(`Generated source quiz should contain items, got ${sourceQuiz.items?.length ?? 0}.`);
@@ -173,5 +209,5 @@ if (errors.length > 0) {
 }
 
 console.log(
-  `Content validation passed: ${content.questions.length} original questions, ${articleBank.articles.length} articles, ${sourceQuiz.items.length} source-quiz items Microsoft-mapped.`
+  `Content validation passed: ${content.questions.length} original questions, ${articleBank.articles.length} articles, ${hardTopicBank.topics.length} hard topics, ${sourceQuiz.items.length} source-quiz items Microsoft-mapped.`
 );

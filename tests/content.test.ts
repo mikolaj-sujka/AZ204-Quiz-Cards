@@ -9,6 +9,7 @@ import {
   importedVerifiedCount,
   sourceQuizBank,
   verifiedArticles,
+  verifiedHardTopics,
   verifiedQuestions
 } from '../src/domain/content';
 
@@ -61,6 +62,30 @@ describe('content model', () => {
         const orders = articles.map((article) => article.order);
         expect(orders).toEqual([...orders].sort((a, b) => a - b));
       }
+    }
+  });
+
+  it('keeps hard topics verified, officially sourced, and mapped to real subchapters', () => {
+    expect(verifiedHardTopics.length).toBeGreaterThan(0);
+    const seenIds = new Set<string>();
+    const validSubchapters = new Set(
+      content.chapters.flatMap((chapter) =>
+        chapter.subchapters.map((subchapter) => `${chapter.id}:${subchapter.id}`)
+      )
+    );
+    for (const topic of verifiedHardTopics) {
+      expect(seenIds.has(topic.id)).toBe(false);
+      seenIds.add(topic.id);
+      expect(validSubchapters.has(`${topic.chapterId}:${topic.subchapterId}`)).toBe(true);
+      expect(topic.auditStatus).toBe('verified');
+      expect(topic.question.length).toBeGreaterThan(0);
+      expect(topic.correctAnswer.length).toBeGreaterThan(0);
+      expect(topic.explanation.length).toBeGreaterThan(0);
+      expect(topic.example.length).toBeGreaterThan(0);
+      expect(topic.sourceUrls.length).toBeGreaterThan(0);
+      expect(
+        topic.sourceUrls.every((url) => url.startsWith('https://learn.microsoft.com/'))
+      ).toBe(true);
     }
   });
 });

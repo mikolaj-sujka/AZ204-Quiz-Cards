@@ -7,6 +7,7 @@ The app includes:
 - Microsoft Learn-aligned chapters and subchapters.
 - 484 imported source-quiz items mapped to Microsoft Learn topic sources, all usable as exam questions.
 - 34 original reference articles, one per exam-relevant service/concept, written and verified against Microsoft Learn, with a "read" toggle in `localStorage`.
+- A "Trudne tematy" (hard topics) tab: a curated, single-page revision sheet of tricky exam questions pulled from the app's own question bank, each with the correct answer, a Polish explanation, and a worked example.
 - Sequential subchapter exams and weighted 100-question mock exam mode.
 - End-of-exam review with score, all questions, correct answers, explanations, and Microsoft Learn links.
 - Polish UI/explanations with official English Azure terms.
@@ -48,7 +49,7 @@ Open `http://localhost:5173/AZ204-Quiz-Cards/`.
 
 ## Content Model
 
-The app uses three content layers:
+The app uses four content layers:
 
 1. `src/data/az204-content.json`
    - Official Microsoft AZ-204 chapter structure.
@@ -63,6 +64,10 @@ The app uses three content layers:
 3. `src/data/articles.json`
    - Original reference articles, one per exam-relevant service/concept (e.g. Container Registry, Container Instances, Container Apps), grouped under the same chapters/subchapters as the rest of the app.
    - Researched and written directly against current Microsoft Learn documentation, not derived from the source quiz.
+
+4. `src/data/hard-topics.json`
+   - A curated subset of tricky questions drawn from the app's own question bank (original + imported), each with the correct answer, a Polish explanation, and a worked example.
+   - Not a replacement for the question bank — a fast, single-page revision sheet for topics the user found difficult.
 
 The generated bank currently contains:
 
