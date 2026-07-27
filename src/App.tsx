@@ -816,8 +816,21 @@ function ArticleDetail({
 }
 
 function HardTopicsView() {
+  const chaptersWithTopics = content.chapters.filter((chapter) =>
+    verifiedHardTopics.some((topic) => topic.chapterId === chapter.id)
+  );
+  const [chapterId, setChapterId] = useState<ChapterId>(chaptersWithTopics[0]?.id ?? 'compute');
+
+  const chapterOptions = chaptersWithTopics.map((chapter) => ({
+    value: chapter.id,
+    label: chapter.title,
+    meta: `${verifiedHardTopics.filter((topic) => topic.chapterId === chapter.id).length} zagadnień`
+  }));
+
+  const chapterTopics = verifiedHardTopics.filter((topic) => topic.chapterId === chapterId);
+
   const clusters: { cluster: string; topics: HardTopic[] }[] = [];
-  for (const topic of verifiedHardTopics) {
+  for (const topic of chapterTopics) {
     const group = clusters[clusters.length - 1];
     if (group && group.cluster === topic.cluster) {
       group.topics.push(topic);
@@ -837,7 +850,20 @@ function HardTopicsView() {
             wyjaśnienie i przykład, do szybkiego doczytania w jednym miejscu.
           </p>
         </div>
-        <span className="status-pill">{verifiedHardTopics.length} zagadnień</span>
+        <span className="status-pill">{verifiedHardTopics.length} zagadnień łącznie</span>
+      </section>
+
+      <section className="filter-bar" aria-label="Filtr działu">
+        <div className="filter-title">
+          <Filter aria-hidden="true" />
+          <span>Dział</span>
+        </div>
+        <ElegantDropdown
+          label="Chapter"
+          value={chapterId}
+          options={chapterOptions}
+          onChange={(value) => setChapterId(value as ChapterId)}
+        />
       </section>
 
       {clusters.map(({ cluster, topics }) => (

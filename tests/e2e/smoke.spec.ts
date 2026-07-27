@@ -22,7 +22,9 @@ test('articles can be opened from the list, read, and marked read', async ({ pag
   await expect(readPill).toHaveText(`${initialCount + 1}/${totalArticles} przeczytane`);
 });
 
-test('hard topics tab shows question, answer, and example', async ({ page }) => {
+test('hard topics tab filters by chapter and shows question, answer, and example', async ({
+  page
+}) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Trudne tematy', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Trudne tematy' })).toBeVisible();
@@ -30,6 +32,14 @@ test('hard topics tab shows question, answer, and example', async ({ page }) => 
   await expect(page.locator('.hard-topic-answer').first()).toBeVisible();
   await expect(page.locator('.hard-topic-example').first()).toBeVisible();
   await expect(page.getByText('Microsoft Learn').first()).toBeVisible();
+
+  const firstTopic = await page.locator('.hard-topic-card .mini-label').first().textContent();
+
+  await page.getByRole('button', { name: /Chapter:/ }).click();
+  await page.getByRole('option', { name: /Implement Azure security/i }).click();
+  await expect(page.locator('.hard-topic-card').first()).toBeVisible();
+  const filteredTopic = await page.locator('.hard-topic-card .mini-label').first().textContent();
+  expect(filteredTopic).not.toBe(firstTopic);
 });
 
 test('subchapter exam shows explanations after submit', async ({ page }) => {

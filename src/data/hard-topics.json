@@ -681,6 +681,93 @@
       "verifiedAt": "2026-07-26",
       "auditStatus": "verified",
       "order": 39
+    },
+    {
+      "id": "ht-storage-locationmode-primary-then-secondary",
+      "chapterId": "storage",
+      "subchapterId": "blob-storage",
+      "cluster": "Storage: replikacja, kopiowanie, archiwizacja i RBAC",
+      "topic": "LocationMode dla odczytu z RA-GRS (legacy SDK)",
+      "question": "As a cloud solutions developer, you're working with an existing codebase that uses Azure's legacy Storage SDK. During a service disruption at the primary data center, you need to configure the Azure Storage client to retry any failed requests on the secondary location using RA-GRS storage.\n\nWhich LocationMode option from the `Microsoft.Azure.Storage.RetryPolicies.LocationMode` class should you use?",
+      "correctAnswer": "`LocationMode.PrimaryThenSecondary`",
+      "explanation": "`PrimaryThenSecondary` kieruje żądania ODCZYTU najpierw do lokalizacji podstawowej (primary), a jeśli ta zwróci błąd, który można ponowić, kolejne próby na przemian trafiają do lokalizacji drugorzędnej (secondary) i podstawowej. Ważny szczegół: LocationMode dotyczy WYŁĄCZNIE odczytów — zapisy zawsze trafiają do primary, niezależnie od ustawionego trybu (poza `SecondaryOnly`, które w ogóle nie nadaje się do zapisu). Ta opcja ma sens tylko dla kont RA-GRS (Read-Access Geo-Redundant Storage), bo tylko one udostępniają lokalizację drugorzędną do odczytu.",
+      "example": "Twoja aplikacja czyta dane z konta storage w regionie primary (np. West Europe) skonfigurowanego jako RA-GRS. Gdy primary ma awarię i żądanie odczytu zwraca błąd typu retryable, klient z `LocationMode.PrimaryThenSecondary` automatycznie ponawia to samo żądanie na sekundarnym endpointcie (np. `mystorageaccount-secondary.blob.core.windows.net`) — aplikacja nadal dostaje dane (może nieco starsze, bo replikacja jest asynchroniczna), zamiast zwracać błąd użytkownikowi.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/dotnet/api/microsoft.azure.storage.retrypolicies.locationmode?view=azure-dotnet",
+        "https://learn.microsoft.com/en-us/azure/storage/common/storage-redundancy"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 40
+    },
+    {
+      "id": "ht-storage-azcopy-sync-identical-containers",
+      "chapterId": "storage",
+      "subchapterId": "blob-storage",
+      "cluster": "Storage: replikacja, kopiowanie, archiwizacja i RBAC",
+      "topic": "AzCopy: utrzymanie dwóch kontenerów identycznymi",
+      "question": "GreenTech Energy Solutions specializes in providing real-time energy consumption data to its clients. They store sensor data in Azure Blob Storage and have decided to maintain two copies of each data file in the 'North Europe' and 'South Africa North' Azure regions. New sensor data files are initially uploaded to the 'North Europe' blob storage. What Azure tool and command would you use to ensure both blob containers have completely identical data?",
+      "correctAnswer": "`azcopy sync --recursive`",
+      "explanation": "`azcopy sync` porównuje nazwy plików i znaczniki czasu ostatniej modyfikacji między źródłem a celem i przesyła tylko RÓŻNICE — to narzędzie stworzone właśnie do utrzymywania dwóch lokalizacji w zgodzie ze sobą. `azcopy copy` natomiast po prostu kopiuje wskazaną zawartość i NIE usuwa z celu plików, których już nie ma w źródle — jednorazowy transfer, nie synchronizacja. Ważna precyzja: samo `sync` domyślnie NIE usuwa nadmiarowych plików w celu — do pełnego \"lustrzanego\" usuwania plików, których już nie ma w źródle, trzeba dodatkowo ustawić flagę `--delete-destination=true` (albo `prompt`, żeby dostać pytanie przed usunięciem).",
+      "example": "Nowy plik z czujnika trafia do kontenera w North Europe. Uruchamiasz `azcopy sync 'https://northeurope...blob.core.windows.net/sensors' 'https://southafricanorth...blob.core.windows.net/sensors' --recursive` — AzCopy porównuje oba kontenery i kopiuje tylko nowy/zmieniony plik, pomijając te, które już są identyczne po obu stronach. Gdybyś dodatkowo chciał, żeby usunięte w North Europe pliki znikały też z South Africa North, dodałbyś `--delete-destination=true`.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-blobs-synchronize"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 41
+    },
+    {
+      "id": "ht-storage-startcopyfromuriasync-optimal-copy",
+      "chapterId": "storage",
+      "subchapterId": "blob-storage",
+      "cluster": "Storage: replikacja, kopiowanie, archiwizacja i RBAC",
+      "topic": "Najbardziej optymalne kopiowanie blob między kontenerami",
+      "question": "Which of the following methods is the most optimal way to copy a blob from one container to another in Azure Blob Storage?",
+      "correctAnswer": "`await targetBlob.StartCopyFromUriAsync(sourceBlob.Uri);`",
+      "explanation": "`StartCopyFromUriAsync` inicjuje kopiowanie PO STRONIE SERWERA — dane wędrują bezpośrednio między serwerami usługi Blob Storage, bez przechodzenia przez pamięć/dysk Twojej aplikacji. Podejście „download-then-upload” (`DownloadToAsync` + `UploadAsync`) ściąga cały blob do aplikacji, a potem wysyła go z powrotem — zużywa dodatkowy transfer sieciowy, pamięć i czas, i skaluje się dużo gorzej dla dużych plików. Kluczowy szczegół składniowy: wywołanie robi się na docelowym (`targetBlob`) obiekcie, przekazując URI ŹRÓDŁA — nie odwrotnie.",
+      "example": "Kopiujesz 2 GB plik wideo z kontenera `raw-uploads` do `processed`. Z `StartCopyFromUriAsync` serwery Azure Storage przesyłają dane między sobą w tle, a Twoja aplikacja jedynie inicjuje operację i (opcjonalnie) sprawdza `CopyStatus` przez `GetPropertiesAsync()`. Z podejściem download+upload Twoja aplikacja musiałaby ściągnąć te 2 GB do siebie, a potem odesłać je z powrotem do Azure — podwójny transfer przez Twoją infrastrukturę zamiast zera.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/dotnet/api/azure.storage.blobs.specialized.blobbaseclient.startcopyfromuriasync"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 42
+    },
+    {
+      "id": "ht-storage-archive-tier-rehydrate-first-step",
+      "chapterId": "storage",
+      "subchapterId": "blob-storage",
+      "cluster": "Storage: replikacja, kopiowanie, archiwizacja i RBAC",
+      "topic": "Dostęp do bloba w warstwie Archive",
+      "question": "A healthcare organization is considering Azure Blob Storage for storing patient records that are rarely accessed but need to be retained for compliance reasons. They are particularly interested in minimizing storage costs. If they need to access a file stored in Azure Blob Archive storage, which of the following are a valid first step they can take?",
+      "correctAnswer": "Change the tier of the blob; copy the blob to another tier.",
+      "explanation": "Blob w warstwie Archive jest offline — nie da się go odczytać ani zmodyfikować bezpośrednio. Żeby uzyskać dostęp do danych, trzeba go najpierw REHYDRATOWAĆ jedną z dwóch metod: (1) zmienić tier bezpośrednio na Hot/Cool (Set Blob Tier) — oryginalny blob zmienia stan w miejscu, albo (2) skopiować blob do NOWEGO bloba w warstwie Hot/Cool (Copy Blob) — oryginał zostaje nietknięty w Archive. Standardowa rehydracja może potrwać do ~15 godzin, priorytetowa (high-priority) często kończy się poniżej godziny dla mniejszych obiektów. Rekonfiguracja konta, rotacja kluczy czy zmiana uprawnień nie mają nic wspólnego z odblokowaniem dostępu do zarchiwizowanych danych.",
+      "example": "Szpital musi udostępnić archiwalną dokumentację pacjenta na potrzeby audytu. Zamiast zmieniać tier oryginalnego bloba (co na stałe przenosi go z Archive, wpływając na koszty i minimalny 180-dniowy okres przechowywania), kopiuje go do nowego bloba w warstwie Cool — oryginał zostaje bezpiecznie w Archive (bez opłaty za wcześniejsze usunięcie), a kopia w Cool jest od razu czytelna dla zespołu audytowego.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/storage/blobs/archive-rehydrate-overview"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 43
+    },
+    {
+      "id": "ht-storage-user-impersonation-entra-rbac",
+      "chapterId": "storage",
+      "subchapterId": "blob-storage",
+      "cluster": "Storage: replikacja, kopiowanie, archiwizacja i RBAC",
+      "topic": "Uprawnienie OAuth do Azure Storage przez Entra ID",
+      "question": "You're building an ASP.Net Core app to interact with Azure Blob containers using Entra ID and role-based access. What permission should you set for the Azure Storage API?",
+      "correctAnswer": "`user_impersonation`",
+      "explanation": "Azure Storage jako zasób w Microsoft Entra ID (`https://storage.azure.com/`) udostępnia jeden delegowany scope o nazwie `user_impersonation` — pozwala aplikacji działać \"jako zalogowany użytkownik\", dziedzicząc dokładnie te role RBAC (np. Storage Blob Data Reader/Contributor), które ten użytkownik ma nadane na koncie storage. `User.Read`/`User.Write` to scope'y Microsoft Graph, nie Storage. `client_id` to identyfikator aplikacji, a nie uprawnienie. Same nazwy ról RBAC (`Storage Blob Data Contributor` itd.) NIE są scope'ami do żądania tokenu — to role przypisywane OSOBNO w Azure RBAC, na podstawie których serwer decyduje, co faktycznie wolno zrobić po uwierzytelnieniu tokenem z `user_impersonation`.",
+      "example": "Aplikacja ASP.NET Core żąda tokenu ze scope `https://storage.azure.com/user_impersonation` w imieniu zalogowanego pracownika. Sam token potwierdza tylko TOŻSAMOŚĆ i intencję \"działania jako ten użytkownik\" — to, czy pracownik faktycznie może odczytać albo zapisać dany kontener, decyduje osobno przypisana mu rola RBAC (np. Storage Blob Data Reader) na koncie storage, a nie sam scope w tokenie.",
+      "sourceUrls": [
+        "https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory",
+        "https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-with-azure-active-directory"
+      ],
+      "verifiedAt": "2026-07-26",
+      "auditStatus": "verified",
+      "order": 44
     }
   ]
 }

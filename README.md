@@ -7,7 +7,7 @@ The app includes:
 - Microsoft Learn-aligned chapters and subchapters.
 - 484 imported source-quiz items mapped to Microsoft Learn topic sources, all usable as exam questions.
 - 34 original reference articles, one per exam-relevant service/concept, written and verified against Microsoft Learn, with a "read" toggle in `localStorage`.
-- A "Trudne tematy" (hard topics) tab: a curated, single-page revision sheet of tricky exam questions pulled from the app's own question bank, each with the correct answer, a Polish explanation, and a worked example.
+- A "Trudne tematy" (hard topics) tab: a curated revision sheet of tricky exam questions pulled from the app's own question bank, filterable by chapter, each with the correct answer, a Polish explanation, and a worked example.
 - Sequential subchapter exams and weighted 100-question mock exam mode.
 - End-of-exam review with score, all questions, correct answers, explanations, and Microsoft Learn links.
 - Polish UI/explanations with official English Azure terms.
