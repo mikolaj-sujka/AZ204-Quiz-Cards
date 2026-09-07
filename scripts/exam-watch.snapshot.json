@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "checkedAt": "2026-07-07T10:20:02.769Z",
+  "checkedAt": "2026-09-07T07:11:21.438Z",
   "watchPolicy": "microsoft-learn-only",
   "exam": {
     "code": "AZ-204",
@@ -17,10 +17,10 @@
       "description": "Build end-to-end solutions in Microsoft Azure to create Azure Functions, implement and manage web apps, develop solutions utilizing Azure storage, and more.",
       "msDate": "",
       "canonicalUrl": "https://learn.microsoft.com/en-us/credentials/certifications/azure-developer/",
-      "etag": "\"cdgkjPtEFBVdD0TG/NxHl5R42Ok=\"",
-      "lastModified": "Thu, 11 Jun 2026 01:46:26 GMT",
-      "contentLength": 4733,
-      "contentHash": "7c55d3a23927b660114dafd82790102034627f3793ec9c953030f81ebcbe64a6"
+      "etag": "\"LoKryIkguv9p2WjEcXIEdKUKjHE=\"",
+      "lastModified": "Wed, 05 Aug 2026 08:14:57 GMT",
+      "contentLength": 3688,
+      "contentHash": "243c3652e2dabbfa1823d2f4f7dcfbfe8b697611a7931d34fd6f7cb7a64599cb"
     },
     {
       "label": "Study guide",
@@ -30,23 +30,23 @@
       "description": "Study guide for Exam AZ-204: Developing Solutions for Microsoft Azure | Microsoft Docs",
       "msDate": "2025-10-26T00:00:00Z",
       "canonicalUrl": "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-204",
-      "etag": "\"TrW2JeFyWmtUv255WvpVFs6MODo=\"",
-      "lastModified": "Thu, 11 Jun 2026 01:46:27 GMT",
-      "contentLength": 7908,
-      "contentHash": "138b89e1730c14b91ed9d0544736691a42e0d77f8049cf6fb8d5a2842cc2a658"
+      "etag": "\"p9PCSkeDnuVEEknxArm+OhYoebM=\"",
+      "lastModified": "Tue, 25 Aug 2026 15:27:33 GMT",
+      "contentLength": 7909,
+      "contentHash": "8fe08ab3913457476520595563f6b3e8ef1fb2e75c7704e8353cd787de89348a"
     },
     {
       "label": "Training course",
       "url": "https://learn.microsoft.com/en-us/training/courses/az-204t00",
       "status": 200,
-      "title": "Course AZ-204T00-A: Develop Solutions for Microsoft Azure - Training | Microsoft Learn",
-      "description": "Course AZ-204T00-A: Develop Solutions for Microsoft Azure",
-      "msDate": "",
-      "canonicalUrl": "https://learn.microsoft.com/en-us/training/courses/az-204t00",
-      "etag": "\"nnB9EGdfJgFIM7wz3ly34YwoYJc=\"",
-      "lastModified": "Thu, 11 Jun 2026 01:46:30 GMT",
-      "contentLength": 1706,
-      "contentHash": "aca4e790b2663baff0d694c16e325bdae9f782a64bd277c64341d296977780f7"
+      "title": "Browse all training - Training | Microsoft Learn",
+      "description": "Learn new skills and discover the power of Microsoft products with step-by-step guidance. Start your journey today by exploring our learning paths and modules.",
+      "msDate": "2025-03-03T00:00:00Z",
+      "canonicalUrl": "https://learn.microsoft.com/en-us/training/browse/",
+      "etag": "\"aURQPDMMgyVpFT3l//7j8F556YM=\"",
+      "lastModified": "Wed, 05 Aug 2026 08:16:49 GMT",
+      "contentLength": 179,
+      "contentHash": "86ad31fe28d4084f76c5208bc6f64ea0f633d78dbcd7d62238b47f4861975b81"
     }
   ]
 }
